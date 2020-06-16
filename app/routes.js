@@ -1,18 +1,18 @@
+
 module.exports = (app, passport) => {
-  app.get("/signup", (req, res) => {
-    res.render("index");
-  });
 
   app.get('/signup', (req,res) => {
       res.render('signup', {
-          user : req
+          user : req,
+          message : req.flash("message")
       });
   })
 
   app.post('/signup', 
   passport.authenticate("signup", {
     successRedirect: "/login",
-    failureRedirect: "/signup"
+    failureRedirect: "/signup",
+    failureFlash : true
   })
   )
 
@@ -25,7 +25,7 @@ module.exports = (app, passport) => {
 
   app.get("/login", (req, res) => {
     if (!req.isAuthenticated()) {
-      res.render("login");
+      res.render("login", {message : req.flash('message')});
     } else {
       res.redirect("/logged");
     }
@@ -35,7 +35,8 @@ module.exports = (app, passport) => {
     "/login",
     passport.authenticate("login", {
       successRedirect: "/logged",
-      failureRedirect: "/login"
+      failureRedirect: "/login",
+      failureFlash : true 
     })
   );
 

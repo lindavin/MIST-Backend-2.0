@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocal = require("passport-local-mongoose");
+const flash = require("connect-flash");
 LocalStrategy = require("passport-local").Strategy;
 
 mongoose.connect("mongodb://localhost:27017/usersDB", {
@@ -17,6 +18,8 @@ const app = express();
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(flash());
 
 app.use(
   session({
