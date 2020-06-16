@@ -8,3 +8,6 @@ Currently working on:
 3. Albums (NK)
 4. Images (AB)
 5. Login, Logout, Remember Me (MF)
+
+Stuff to do for the future:
+A lot
