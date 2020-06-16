@@ -6,7 +6,7 @@ const passport = require("passport");
 const passportLocal = require("passport-local-mongoose");
 LocalStrategy = require("passport-local").Strategy;
 
-mongoose.connect("mongodb://localhost:27017/usersDB", {
+mongoose.connect("mongodb://localhost:27017/acme", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
