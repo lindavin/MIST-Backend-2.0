@@ -2,6 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
+const passportLocal = require("passport-local-mongoose");
+const flash = require("connect-flash");
+LocalStrategy = require("passport-local").Strategy;
 const database = require('./app/database');
 
 LocalStrategy = require("passport-local").Strategy;
@@ -11,6 +14,8 @@ const app = express();
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(flash());
 
 app.use(
   session({
