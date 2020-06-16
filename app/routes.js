@@ -1,7 +1,7 @@
-
-module.exports = (app, passport) => {
-
-  //------------------------------------------------
+module.exports = (app, passport, database) => {
+  app.get("/signup", (req, res) => {
+    res.render("index");
+  });
 
   app.get('/signup', (req,res) => {
       res.render('signup', {
@@ -33,14 +33,14 @@ module.exports = (app, passport) => {
     if (!req.isAuthenticated()) {
       res.render("login", {message : req.flash('message')});
     } else {
-      res.redirect("/logged");
+      res.redirect("/");
     }
   });
 
   app.post(
     "/login",
     passport.authenticate("login", {
-      successRedirect: "/logged",
+      successRedirect: "/",
       failureRedirect: "/login",
       failureFlash : true 
     })
@@ -75,6 +75,15 @@ module.exports = (app, passport) => {
   })
 
   //------------------------------------------------
+   
+  app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/');
+  });
+
+  const challengeRouter = require('./challengesRouter')(database);
+  
+  app.use("/challenges", challengeRouter);
 
   app.listen(5000, () => {
     console.log("listening on 5000..");

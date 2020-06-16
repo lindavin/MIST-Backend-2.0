@@ -1,18 +1,14 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocal = require("passport-local-mongoose");
 const flash = require("connect-flash");
 LocalStrategy = require("passport-local").Strategy;
+const database = require('./app/database');
 
-mongoose.connect("mongodb://localhost:27017/usersDB", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+LocalStrategy = require("passport-local").Strategy;
 
-mongoose.set("useCreateIndex", true);
 const app = express();
 
 app.set("view engine", "ejs");
@@ -32,29 +28,16 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-const usersSchema = new mongoose.Schema({
-  email : String,
-  fname : String,
-  lname : String,
-  username: String,
-  password: String,
-});
 
-usersSchema.plugin(passportLocal);
-
-const User = mongoose.model("User", usersSchema);
-
-//passport.use(User.createStrategy());
-
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.serializeUser(database.User.serializeUser());
+passport.deserializeUser(database.User.deserializeUser());
 
 // passport/login.js
 
-require('./app/loginStrategy')(passport, User);
+require('./app/loginStrategy')(passport, database.User);
 
-require('./app/signupStrategy')(passport, User);
+require('./app/signupStrategy')(passport, database.User);
 
-require('./app/routes')(app, passport);
+require('./app/routes')(app, passport, database);
 
 
