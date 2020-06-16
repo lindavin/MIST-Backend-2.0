@@ -30,6 +30,17 @@ module.exports = (app, passport, database) => {
     });
   })
 
+  app.get('/gallery', (req,res) => {
+    res.render('gallery', {
+        user : req,
+        userData : req.user,
+        type : "",
+        images : "",
+        currentPage : "",
+        nextPage : "",
+    });
+  })
+
   app.get("/login", (req, res) => {
     if (!req.isAuthenticated()) {
       res.render("login");
@@ -65,6 +76,21 @@ module.exports = (app, passport, database) => {
       );
     } else {
       res.redirect("/login");
+    }
+  });
+
+  app.get('/me', function(req, res) {
+    if (req.session.user){
+    res.redirect("/user/"+req.session.user.username)
+  }
+  else {
+    res.redirect("/");
+  }
+  });
+
+  app.post('/me', function(req,res) {
+    if(req.body.aboutSubmit != null) {
+      profile.changeAboutSection(req, res, database);
     }
   });
 

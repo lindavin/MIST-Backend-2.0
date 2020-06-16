@@ -3,12 +3,12 @@
   edit it directly.
 
   The command used to generate this file was
-    gejs albums.gejs -t mist.ejs -o albums.ejs
+    gejs gallery.gejs -t mist.ejs -o gallery.ejs
  -->
 <!DOCTYPE html>
 <html lang="en">
  <head>
-  <title><%= username + "'s albums on MIST"%>
+  <title> MIST Galleries
 </title>
   <!-- Meta Information -->
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -17,7 +17,8 @@
 
   <!-- CSS -->
   <link rel='stylesheet' href='/css/styles.css'>
-  <link rel='stylesheet', href='/css/albums.css'>
+  <link rel='stylesheet', href='/css/gallery.css'>
+  
 
 
   <!-- Scripts -->
@@ -71,48 +72,51 @@
     </nav>
   </header>
   <div id="main">
-<div id="pageTitleGeneral"><h1>   albums  <!--<%= username %> --> 
+<div id="pageTitleGeneral"><h1>     gallery
+    
 </h1></div>
 
-    <div id = 'subviews'>
-      <a href='/user/<%- username %>' class='subview'>profile</a>
-      <a href='/badges' class='subview'>badges</a>
-      <a href='#' class='subview' id='selected'>albums</a>
-      <a href='/user/<%- username %>/images' class='subview'>images</a>
+    <div id='subviews'>
+      <a href='/gallery/random' class='subview' <%- (type==="random") ? "id='selected'" : "" %>>random</a>
+      <a href='/gallery/recent' class='subview'  <%- (type==="recent") ? "id='selected'" : "" %>>recent</a>
+      <a href='/gallery/toprated' class='subview'  <%- (type==="toprated") ? "id='selected'" : "" %>>top rated</a>
+      <a href='/gallery/featured' class='subview'  <%- (type==="featured") ? "id='selected'" : "" %>>featured</a>
     </div>
-    <% if (user && user.username===username) { %>
-      <div id = 'createNew'>
-        <button id='newAlbums' class='albumBtn'>create album</button>
-        <div id = 'albumMaker' style='display:none;'>
-          <script type='text/javascript'>
-            var newAlbums = document.getElementById("newAlbums");
-            if (newAlbums) {
-              newAlbums.onclick = function(event) {
-                var albumMaker= document.getElementById("albumMaker");
-                if (albumMaker.style.display == "none") {
-                  albumMaker.style.display = "block";
-                }
-                else {
-                  albumMaker.style.display = "none";
-                }
-              } // newAlbums.onclick
-            } // if (code)
-          </script>
-          <form method='POST'>
-            <textarea name='newAlbum' required= 'required' placeholder='enter new album name' cols='5' rows='5'></textarea>
-            <input type='submit' value='enter' class='album' name='newAlbumSubmit'>
-          </form>
-        </div>
+    <div id='gallery'>
+      <div id='images'>
+        <ul class='rig columns-3'>
+          <% for (var i=0; i < images.length; i++) {%>
+            <li>
+              <figure data-imageid=<%= images[i].imageid %>>
+                <a href='/image/<%= images[i].imageid %>'>
+                  <figcaption class='center'><%= images[i].title %></figcaption>
+                  <canvas id='<%= 'canvas'+ i%>' width='300px' height='300px'></canvas>
+                  <input type='hidden' id='<%= 'code'+ i %>' value='<%= images[i].code %>'>
+                </a>
+                <% if(images[i].code.indexOf("t.") > -1 || images[i].code.indexOf("m.") > -1) { %>
+                  <p class= 'run'>
+                    <img src='/icons/time.png' width ='20px' height='20 px'>
+                  </p>
+                <% } %>
+                <a href='/user/<%= images[i].username %>'>
+                  <figcaption class='right'><%= images[i].username%></figcaption>
+                </a>
+                <figcaption class = 'left <%= images[i].liked ? "starred" : "unstarred" %>'>★<%=images[i].rating%></figcaption>
+              </figure>
+            </li>
+          <% } %>
+        </ul>
+      <div id='pageNumber'>
+        <% if (!(type === "random")) { %>
+             <% if (!(currentPage==1)) {%>
+                  <a href='/gallery/<%= type + '/' + (currentPage-1) %>'> « previous</a>
+             <% } %>
+             <% if (nextPage) {%>
+                 <a href='/gallery/<%=  type + '/' + ++currentPage %>'>    next »</a>
+            <% } %>
+        <% } %>
       </div>
-    <% } %>
-    <div id = 'albums'>
-      <% for(var i=0; i < albums.length; i++) { %>
-        <figure>
-          <a href='/user/<%- username %>/albums/<%- albums[i].albumid %>'>
-            <h1><%- albums[i].name %></h1>
-          </a>
-        </figure>
-      <% } %>
+    </div>
 
   </div>
   <footer>
