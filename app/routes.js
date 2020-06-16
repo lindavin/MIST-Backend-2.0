@@ -27,24 +27,21 @@ module.exports = (app, passport, database) => {
     if (!req.isAuthenticated()) {
       res.render("login");
     } else {
-      res.redirect("/logged");
+      res.redirect("/");
     }
   });
 
   app.post(
     "/login",
     passport.authenticate("login", {
-      successRedirect: "/logged",
+      successRedirect: "/",
       failureRedirect: "/login"
     })
   );
 
-  app.get("/logged", (req, res) => {
-    if (req.isAuthenticated()) {
-      res.render("logged");
-    } else {
-      res.redirect("/signup");
-    }
+  app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/');
   });
 
   app.listen(5000, () => {
