@@ -44,6 +44,10 @@ module.exports = (app, passport, database) => {
     res.redirect('/');
   });
 
+  const challengeRouter = require('./challengesRouter')(database);
+  
+  app.use("/challenges", challengeRouter);
+
   app.listen(5000, () => {
     console.log("listening on 5000..");
   });
