@@ -1,0 +1,17 @@
+#text {
+  font-family: 'Open Sans', sans-serif;
+  color: #4A4A4A;
+  padding: 50px 0 50px 50px;
+  width: 600px;
+}
+
+#display {
+width: 150px;
+height: 150px;
+}
+
+table{
+margin: 0 auto 0 50px;
+clear: left;
+padding: 20px 0 0 0;
+}

@@ -3,23 +3,43 @@
   edit it directly.
 
   The command used to generate this file was
-    gejs about.gejs -t mist.ejs -o about.ejs
+    gejs create-challenge.gejs -t mist.ejs -o create-challenge.ejs
  -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <title> About MIST
-  </title>
+  <title> Create Challenge</title>
   <!-- Meta Information -->
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
   <link rel="shortcut icon" href="/logos/favicon.ico">
 
   <!-- CSS -->
-  <link rel='stylesheet' href='/css/styles.css'>
-  <link rel='stylesheet' href='/css/about.css'>
-  
+  <link rel='stylesheet' href='./public/css/styles.css'>
+
+  <style class='text/css'>
+    form#create label {
+      display: block;
+      text-align: left;
+      margin-top: 5px;
+    }
+
+    form#create input[type='submit'] {
+      margin-top: 5px;
+      margin-left: 0px;
+      width: auto;
+      font-size: 1em;
+    }
+
+    form#create input,
+    form#create select,
+    form#create textarea {
+      width: 5in;
+      margin-left: 20px;
+      display: block;
+    }
+  </style>
 
 
   <!-- Scripts -->
@@ -38,7 +58,7 @@
 <body>
   <header>
     <div id="headerLogo">
-      <a href="/"><img src="logos/header.png"></a>
+      <a href="/"><img src="/logos/header.png"></a>
     </div>
     <form id="search" action="/search">
       <input type="search" name="searchQuery" id="searchBar">
@@ -54,7 +74,7 @@
           <li><a href="/about">about</a></li>
           <li><a href="/help">help</a></li>
           <% if (!user.isAuthenticated()) { %>
-          <li id="slider"><a href="/login">login/signup</a></li>
+          <li id="slider">login/signup</li>
         </span>
         <form method="POST" action="/login" class="hidden" style="display: none; opacity: 0;"><input type="text"
             placeholder="username" name="username" required="required"><input type="password" placeholder="password"
@@ -66,7 +86,7 @@
           <li id="cancel">cancel</li>
         </form>
         <% } else {%>
-        <li><a href='/me'><%= userData.username %></a></li>
+        <li><a href='/me'><%= user.username %></a></li>
         <li><a href='/logout'>logout</a></li>
         </span>
         <% } %>
@@ -75,48 +95,45 @@
   </header>
   <div id="main">
     <div id="pageTitleGeneral">
-      <h1> about
-
+      <h1> Create a Challenge
       </h1>
     </div>
 
-    <div id='galleryImages'>
-      <table>
-        <tr>
-          <td><img src='/samples/bw2.jpg' id='display'>
-          </td>
-          <td rowspan='3' id='text'>
-            <p style='text-align:center'>
-              <em>MIST is currently in public beta. Look at the <a href='/welcome'>welcome page</a> for more
-                information.</em>
-            </p>
-            <p>
-              MIST (the Mathematical Image Synthesis Toolkit) isn’t just about the pretty pictures. By using the MIST
-              application, it is our intention that users will explore functional problem solving and computational
-              thinking by creating non-representational images. Computational thinking is an essential part of computer
-              science, and MIST allows anyone to develop this skill. Anyone can use MIST because it does not require any
-              prior experience in computer science. Users have the option of creating images from scratch, or completing
-              tutorials and challenges that encourage problem solving and computational thinking through image building.
-              MIST also encourages interactions between users. Create an account to see, share, and modify the work of
-              other users. Our goal is to develop a community where users enjoy learning computational thinking by
-              associating mathematical functions with interesting images.
-            </p>
-            <p>
-              If you have any questions or comments, contact us at <a
-                href='mailto:MIST@grinnell.edu'>MIST@grinnell.edu</a>.
-            </p>
-        </tr>
-        <tr>
-          <td>
-            <img src='/samples/color2.jpg' id='display'>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <img src='/samples/color2.jpg' id='display'>
-          </td>
-      </table>
-    </div>
+    <% if (user.isAuthenticated()) {%>
+    <form id="create" method="post" action="/challenges/add">
+      <input type="hidden" value="<% user.userid %>">
+      <label for="name">Name</label>
+      <input type="text" name="name" id="name">
+      <label for="title">Title</label>
+      <input type="text" name="title" id="title">
+      <label for="category">Category</label>
+      <!-- These shouldn't be hardcoded, but I'm lazy. -->
+      <select name="category" id="category">
+        <option value="2">Beginning, Greyscale, Static</option>
+        <option value="3">Intermediate, Greyscale, Static</option>
+        <option value="4">Advanced, Greyscale, Static</option>
+        <option value="5">Beginning, RGB, Static</option>
+        <option value="6">Intermediate, RGB, Static</option>
+        <option value="7">Advanced, RGB, Static</option>
+        <option value="8">Beginning, Greyscale, Animated</option>
+        <option value="9">Intermediate, Greyscale, Animated</option>
+        <option value="10">Advanced, Greyscale, Animated</option>
+        <option value="11">Beginning, RGB, Animated</option>
+        <option value="12">Intermediate, RGB, Animated</option>
+        <option value="13">Advanced, RGB, Animated</option>
+      </select>
+      <label for="position">Position (Numeric)</label>
+      <input type="text" name="position" id="position">
+      <label for="description">Description</label>
+      <textarea name="description" id="description" rows=6></textarea>
+      <label for="code">Code</label>
+      <textarea name="code" id="code" rows=6></textarea>
+      <input type="submit">
+    </form>
+    <% } %>
+    <% if (!user.isAuthenticated()) { %>
+    <p>You must be logged in to to create a challenge.</p>
+    <% } %>
 
   </div>
   <footer>

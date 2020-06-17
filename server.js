@@ -1,22 +1,21 @@
+// server.js
+
+//================= Load Modules =========================
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
-const passportLocal = require("passport-local-mongoose");
+const flash = require("connect-flash");
 LocalStrategy = require("passport-local").Strategy;
-
-mongoose.connect("mongodb://localhost:27017/acme", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-mongoose.set("useCreateIndex", true);
+const database = require('./app/database');
 const app = express();
 
+//================== Set View Engine =======================
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(flash());
 
 app.use(
   session({
@@ -26,32 +25,21 @@ app.use(
   })
 );
 
+//=================== Setup Passport =======================
 app.use(passport.initialize());
 app.use(passport.session());
 
-const usersSchema = new mongoose.Schema({
-  email : String,
-  fname : String,
-  lname : String,
-  username: String,
-  password: String,
-});
 
-usersSchema.plugin(passportLocal);
+passport.serializeUser(database.User.serializeUser());
+passport.deserializeUser(database.User.deserializeUser());
 
-const User = mongoose.model("User", usersSchema);
+require('./app/loginStrategy')(passport, database.User);
 
-//passport.use(User.createStrategy());
+require('./app/signupStrategy')(passport, database.User);
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+//=================== Routes ================================
+require('./app/routes')(app, passport, database);
 
-// passport/login.js
-
-require('./app/loginStrategy')(passport, User);
-
-require('./app/signupStrategy')(passport, User);
-
-require('./app/routes')(app, passport);
-
+//=================== Serving Static Files ==================
+app.use(express.static("public"));
 
