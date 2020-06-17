@@ -1,7 +1,4 @@
 module.exports = (app, passport, database) => {
-  app.get("/signup", (req, res) => {
-    res.render("index");
-  });
 
   app.get('/signup', (req,res) => {
       res.render('signup', {
