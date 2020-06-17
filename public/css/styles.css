@@ -85,12 +85,12 @@
  
  header nav {
    width: calc(100% - 126px - 180px - 30px); /* width - img - search - extra*/
-   whitespace: nowrap;
+   white-space: nowrap;
    text-align: right;
  }
  
  header ul {
-   whitespace: nowrap;
+   white-space: nowrap;
    width: 98%;
    height: 33%;
    margin-top: 20px;
