@@ -12,6 +12,10 @@ module.exports = (router, database) => {
         }); //renders the form to create a challenge
     });
 
+    router.get('/view/:name', (req, res) =>{
+        challenge.view(req, res, database);
+    })
+
     router.post('/add', (req, res) => {
         console.log('Trying to add a new challenge.');
         challenge.add(req, res, database, req.body);
