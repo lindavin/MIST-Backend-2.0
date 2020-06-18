@@ -36,6 +36,7 @@ module.exports.add = function (req, res, database, info) {
         rating: 0,
     });// create new challenge
 
+    // need to check if this is actually save to do
     challenge.save()
         .then(doc => {
             console.log(doc)
@@ -58,28 +59,21 @@ module.exports.gallery = function (req, res, database, info) {
     var color = database.sanitize(info.color || "Greyscale");
     var animation = database.sanitize(info.animation || "Static");
     var category = level + ", " + color + ", " + animation;
-    var query = "SELECT challenges.id, challenges.name, challenges.title, challenges.code FROM challengecategories,challenges WHERE challengecategories.description='" + category + "' and challengecategories.id = challenges.categoryid ORDER BY challenges.position;";
-    console.log(query);
-    database.query(query, function (rows, error) {
-        // Sanity check
-        if (error) {
-            res.send(error);
-            return;
-        }
-        // We got a result, so render it
-        res.render('challenge-gallery', {
-            user: req.session.user,
-            challenge: {},
-            level: level,
-            color: color,
-            animation: animation,
-            sample: [
-                { id: 1, name: "First", code: "x" },
-                { id: 9, name: "Second", code: "y" }
-            ],
-            challenges: rows
-        }); // res.render
-    }); // database.query
+
+    // We got a result, so render it
+    res.render('challenge-gallery', {
+        user: req.session.user,
+        challenge: {},
+        level: level,
+        color: color,
+        animation: animation,
+        sample: [
+            { id: 1, name: "First", code: "x" },
+            { id: 9, name: "Second", code: "y" }
+        ],
+        challenges: "",
+    }); // res.render
+
 }; // gallery
 
 /**
