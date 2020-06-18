@@ -23,6 +23,39 @@ module.exports = (router, database) => {
         }); //renders the gallery
       })
 
+      router.get('/featured', (req,res) => {
+        res.render('gallery', {
+            user : req,
+            userData : req.user,
+            type : "",
+            images : "",
+            currentPage : "",
+            nextPage : "",
+        }); //renders the gallery
+      })
+
+      router.get('/recent', (req,res) => {
+        res.render('gallery', {
+            user : req,
+            userData : req.user,
+            type : "",
+            images : "",
+            currentPage : "",
+            nextPage : "",
+        }); //renders the gallery
+      })
+
+      router.get('/toprated', (req,res) => {
+        res.render('gallery', {
+            user : req,
+            userData : req.user,
+            type : "",
+            images : "",
+            currentPage : "",
+            nextPage : "",
+        }); //renders the gallery
+      })
+
     /* 
     router.get('/featured', function(req, res) {
         gallery.buildFeaturedPage(req, res, database);
