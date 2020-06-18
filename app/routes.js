@@ -17,14 +17,20 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  app.get('/', (req,res) => {
+  app.get('/about', (req,res) => {
       res.render('about', {
           user : req,
           userData : req.user
       });
   })
 
-  //------------------------------------------------
+  app.get('/about', (req,res) => {
+    res.render('about', {
+        user : req,
+        userData : req.user
+    });
+  })
+
 
   app.get("/login", (req, res) => {
     if (!req.isAuthenticated()) {
@@ -53,6 +59,20 @@ module.exports = (app, passport, database) => {
     }
   });
 
+  app.get("/albums", (req, res) => {
+    if (req.isAuthenticated()) {
+      res.render("albums",{ 
+        user : req,
+        userData : req.user,
+        username : req.user.username,
+        albums : "",
+      }, 
+      );
+    } else {
+      res.redirect("/login");
+    }
+  });
+
   //------------------------------------------------
 
   app.get("/me", (req,res) => {
@@ -78,9 +98,15 @@ module.exports = (app, passport, database) => {
     res.redirect('/');
   });
 
-  const challengeRouter = require('./challengesRouter')(database);
+  const express = require('express');
+  const challengeRouter = require('./challengesRouter')(express.Router(), database);
+  const indexRouter = require('./indexRouter')(express.Router(), database);
+  const galleryRouter = require('./galleryRouter')(express.Router(), database);
+
+  app.use('/', indexRouter);
+  app.use('/challenges', challengeRouter);
+  app.use('/gallery', galleryRouter);
   
-  app.use("/challenges", challengeRouter);
 
   app.listen(5000, () => {
     console.log("listening on 5000..");

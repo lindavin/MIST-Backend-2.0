@@ -24,8 +24,10 @@ var quote = function (str) {
  * The api for adding challenges.
  */
 module.exports.add = function (req, res, database, info) {
-    let challenge = new database.Challenges({
-        categoryid: database.sanitize(info.categoryid),
+    // name is the url route
+    // title is what is shown
+    let challenge = new database.Challenge({
+        category: database.sanitize(info.category),
         position: database.sanitize(info.position),
         createdAt: Date(),
         modifiedAt: Date(),
@@ -36,6 +38,9 @@ module.exports.add = function (req, res, database, info) {
         rating: 0,
     });// create new challenge
 
+    // we need to check that there isn't already challenge with the same name.
+
+    // need to check if this is actually safe to do
     challenge.save()
         .then(doc => {
             console.log(doc)
@@ -54,94 +59,128 @@ module.exports.edit = function (req, res, database) {
 }; // edit
 
 module.exports.gallery = function (req, res, database, info) {
-    var level = database.sanitize(info.level || "Beginning");
-    var color = database.sanitize(info.color || "Greyscale");
-    var animation = database.sanitize(info.animation || "Static");
-    var category = level + ", " + color + ", " + animation;
-    var query = "SELECT challenges.id, challenges.name, challenges.title, challenges.code FROM challengecategories,challenges WHERE challengecategories.description='" + category + "' and challengecategories.id = challenges.categoryid ORDER BY challenges.position;";
-    console.log(query);
-    database.query(query, function (rows, error) {
+
+    const LEVEL = database.sanitize(info.level || "Beginning");
+    const COLOR = database.sanitize(info.color || "Greyscale");
+    const ANIMATION = database.sanitize(info.animation || "Static");
+    const CATEGORY = LEVEL + ", " + COLOR + ", " + ANIMATION;
+
+    const QUERY = database.Challenge.find({
+        category: CATEGORY,
+    });
+
+    // since we only need the name title and code
+    QUERY.select("name title code")
+
+    QUERY.exec((err, challenges) => {
+        console.log(challenges);
         // Sanity check
-        if (error) {
+        if (err) {
             res.send(error);
             return;
-        }
+        };
         // We got a result, so render it
         res.render('challenge-gallery', {
             user: req.session.user,
             challenge: {},
-            level: level,
-            color: color,
-            animation: animation,
+            level: LEVEL,
+            color: COLOR,
+            animation: ANIMATION,
             sample: [
                 { id: 1, name: "First", code: "x" },
                 { id: 9, name: "Second", code: "y" }
             ],
-            challenges: rows
+            challenges: challenges,
         }); // res.render
-    }); // database.query
+    });// execute query
 }; // gallery
 
 /**
  * The page for showing challenges.
  */
 module.exports.view = function (req, res, database) {
-    var id = database.sanitize(req.params.id);
+    const NAME = database.sanitize(req.params.name);
+    console.log(NAME);
+    // // First try to query by name
+    // var query = "SELECT title,description,code FROM challenges WHERE name='"
+    //     + TITLE + "';";
+    const QUERY = database.Challenge.find({
+        name: NAME
+    });
 
-    // First try to query by name
-    var query = "SELECT title,description,code FROM challenges WHERE name='"
-        + id + "';";
-    console.log(query);
-    database.query(query, function (rows, error) {
+    // since we only need title description and code fields
+    QUERY.select("title description code");
+
+    QUERY.exec((err, challenges) => {
+        console.log(challenges);
         // Sanity check 1
-        if (error) {
+        if (err) {
             utils.error(req, res, "Database problem", error);
             return;
-        } // if (error)
+        }; // if (error)
 
         // Make sure that we have a row.
-        if (rows.length > 0) {
-            console.log("Rendering by name", rows[0]);
+        if (challenges.length > 0) {
+            console.log("Rendering by name", challenges[0]);
             res.render('view-challenge.ejs', {
-                user: req.session.user,
-                challenge: rows[0]
+                user: req,
+                challenge: challenges[0]
             }); // render
             return;
-        } // if (rows.length > 0)
+        }; // if (rows.length > 0)
 
-        // If it's not a number, we can't search by numeric id
-        if (isNaN(id)) {
-            utils.error(req, res, "Unknown challenge", "Challenge " + id +
-                " does not exist");
-        } // if isNaN(id)
+    });
 
-        // OKay, if we got to here, we didn't generate a page, so we should
-        // try the other query
-        var query = "SELECT title,description,code FROM challenges WHERE id="
-            + id + ";";
-        console.log(query);
-        database.query(query, function (rows, error) {
-            // Sanity check 1
-            if (error) {
-                utils.error(req, res, "Database problem", error);
-                return;
-            } // if (error)
+    // database.query(query, function (rows, error) {
+    //     // Sanity check 1
+    //     if (error) {
+    //         utils.error(req, res, "Database problem", error);
+    //         return;
+    //     } // if (error)
 
-            // Make sure that we have a row.
-            if (rows.length > 0) {
-                console.log("Rendering by id", rows[0]);
-                res.render('view-challenge.ejs', {
-                    user: req.session.user,
-                    challenge: rows[0]
-                }); // render
-                return;
-            } // if (rows.length > 0)
+    //     // Make sure that we have a row.
+    //     if (rows.length > 0) {
+    //         console.log("Rendering by name", rows[0]);
+    //         res.render('view-challenge.ejs', {
+    //             user: req.session.user,
+    //             challenge: rows[0]
+    //         }); // render
+    //         return;
+    //     } // if (rows.length > 0)
 
-            // If we got to here, we couldn't find the challenge.
-            utils.error(req, res, "Unknown challenge", "Challenge " + id +
-                " does not exist.");
-        }); // inner database.query
-    }); // outer database.query
+    //     // If it's not a number, we can't search by numeric id
+    //     if (isNaN(ID)) {
+    //         utils.error(req, res, "Unknown challenge", "Challenge " + ID +
+    //             " does not exist");
+    //     } // if isNaN(id)
+
+    //     // OKay, if we got to here, we didn't generate a page, so we should
+    //     // try the other query
+    //     var query = "SELECT title,description,code FROM challenges WHERE id="
+    //         + ID + ";";
+    //     console.log(query);
+    //     database.query(query, function (rows, error) {
+    //         // Sanity check 1
+    //         if (error) {
+    //             utils.error(req, res, "Database problem", error);
+    //             return;
+    //         } // if (error)
+
+    //         // Make sure that we have a row.
+    //         if (rows.length > 0) {
+    //             console.log("Rendering by id", rows[0]);
+    //             res.render('view-challenge.ejs', {
+    //                 user: req.session.user,
+    //                 challenge: rows[0]
+    //             }); // render
+    //             return;
+    //         } // if (rows.length > 0)
+
+    //         // If we got to here, we couldn't find the challenge.
+    //         utils.error(req, res, "Unknown challenge", "Challenge " + ID +
+    //             " does not exist.");
+    //     }); // inner database.query
+    // }); // outer database.query
 
     return;
 };

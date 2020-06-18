@@ -3,23 +3,21 @@
   edit it directly.
 
   The command used to generate this file was
-    gejs index.gejs -t mist.ejs -o index.ejs
+    gejs gallery.gejs -t mist.ejs -o gallery.ejs
  -->
 <!DOCTYPE html>
 <html lang="en">
  <head>
-  <title>MIST by Glimmer
+  <title> MIST Galleries
 </title>
   <!-- Meta Information -->
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name='google-site-verification' content='P8V7MGREuNuon08HmOnVFcxjSKSXUbpgyXCCIdCqP1o'>
-  
 
   <link rel="shortcut icon" href="/logos/favicon.ico">
 
   <!-- CSS -->
   <link rel='stylesheet' href='/css/styles.css'>
-  <link rel='stylesheet', href='/css/index.css'>
+  <link rel='stylesheet', href='/css/gallery.css'>
   
 
 
@@ -74,33 +72,52 @@
     </nav>
   </header>
   <div id="main">
-
-
-    <div id='intro'>
-      <div id='featuredImage'>
-        <img src='/logos/featured.png'>
-      </div>
-      <div id='about'>
-        <p>Create abstract images and animations using simple math functions.</p>
-      </div>
-    </div>
-    <p id="welcomeLink">MIST is in public beta. Look at the <a href="/welcome">welcome page</a> for more information.</p>
-    <div id='homeButtons'>
-      <a href='/create' id='create'>create</a>
-      <a href='/help' id='tutorials'>tutorials</a>
-      <a href='/gallery' id='gallery'>gallery</a>
-    </div>
-    <p class='warning'> WARNING: Some of the images rendered on this site may feature flashing animations and patterns. <br>For those with a history of epilepsy, viewer discretion is advised.</p>
-    <div id='featuredImages'>
-      <h2><a href='/gallery/featured'>Featured Images</a></h2>
+<div id="pageTitleGeneral"><h1>     gallery
     
-      <div id='galleryImages'>
-       
-        
-      </div>
+</h1></div>
 
-      <p class='info'>Images with <img src='/icons/time.png' width ='25 px' height='25 px'> will animate when you hover over them</p>
+    <div id='subviews'>
+      <a href='/gallery/random' class='subview' <%- (type==="random") ? "id='selected'" : "" %>>random</a>
+      <a href='/gallery/recent' class='subview'  <%- (type==="recent") ? "id='selected'" : "" %>>recent</a>
+      <a href='/gallery/toprated' class='subview'  <%- (type==="toprated") ? "id='selected'" : "" %>>top rated</a>
+      <a href='/gallery/featured' class='subview'  <%- (type==="featured") ? "id='selected'" : "" %>>featured</a>
     </div>
+    <div id='gallery'>
+      <div id='images'>
+        <ul class='rig columns-3'>
+          <% for (var i=0; i < images.length; i++) {%>
+            <li>
+              <figure data-imageid=<%= images[i].imageid %>>
+                <a href='/image/<%= images[i].imageid %>'>
+                  <figcaption class='center'><%= images[i].title %></figcaption>
+                  <canvas id='<%= 'canvas'+ i%>' width='300px' height='300px'></canvas>
+                  <input type='hidden' id='<%= 'code'+ i %>' value='<%= images[i].code %>'>
+                </a>
+                <% if(images[i].code.indexOf("t.") > -1 || images[i].code.indexOf("m.") > -1) { %>
+                  <p class= 'run'>
+                    <img src='/icons/time.png' width ='20px' height='20 px'>
+                  </p>
+                <% } %>
+                <a href='/user/<%= images[i].username %>'>
+                  <figcaption class='right'><%= images[i].username%></figcaption>
+                </a>
+                <figcaption class = 'left <%= images[i].liked ? "starred" : "unstarred" %>'>★<%=images[i].rating%></figcaption>
+              </figure>
+            </li>
+          <% } %>
+        </ul>
+      <div id='pageNumber'>
+        <% if (!(type === "random")) { %>
+             <% if (!(currentPage==1)) {%>
+                  <a href='/gallery/<%= type + '/' + (currentPage-1) %>'> « previous</a>
+             <% } %>
+             <% if (nextPage) {%>
+                 <a href='/gallery/<%=  type + '/' + ++currentPage %>'>    next »</a>
+            <% } %>
+        <% } %>
+      </div>
+    </div>
+
   </div>
   <footer>
    <p>&copy;2014 Glimmer Labs</p>

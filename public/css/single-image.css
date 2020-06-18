@@ -1,0 +1,454 @@
+/**
+ * image.css
+ *   CSS for the single image page.
+ */
+/*
+ * We use div#main for the main body of every page.  We want this
+ * page formatted slightly differently, so we override that
+ * setting.
+ */
+div#main {
+  text-align: center;
+}
+
+/*
+ * Various settings for the headings.
+ */
+h1 {
+  color: #4A4A4A;
+  font-size: 2em;
+  margin: 0 auto;
+  font-weight: normal;
+}
+
+h2 {
+  color: #979797;
+  font-size: 1em;
+  margin: 0 auto;
+  padding: 0;
+  font-weight: normal;
+}
+
+/* +---------------+---------------------------------------------------
+ * | Miscellaneous |
+ * +---------------+
+ */
+
+figure {
+  margin: 5px auto;
+  width: 400px;
+}
+
+figure img {
+  height: 400px;
+  width: 400px;
+}
+
+/**
+ * We have paragraphs of code.  Right now, all we control
+ * are margins.
+ */
+p.code {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+/**
+ * ???
+ */
+.starred,
+.unstarred {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+.starred::first-letter{
+  color: #EFDC5C;
+  font-size: 1.2em;
+}
+
+.starred:hover::first-letter, .unstarred:hover::first-letter {
+  text-shadow:0 1px 1px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+/* +----------+--------------------------------------------------------
+ * | Comments |
+ * +----------+
+ */
+
+table#comments {
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+div.comment {
+  border: 1px solid black;
+  background-color: yellow;
+}
+
+div.comment a {
+  clear: left;
+  margin: 0px;
+  color: #FFF;
+  font-size: .5em;
+  box-shadow: -4px 5px 4px 0px #666;
+  text-align: center;
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #979797;
+  text-decoration: none;
+}
+
+div.comment p {
+  margin: 0px;
+  text-align: left;
+}
+
+div.comment h1.op a{
+  background-color: #3fAAA0;
+}
+
+
+#leaveComment form textarea {
+  width: 450px;
+  height: 40px;
+  resize: none;
+}
+
+/* Flag Comment and Delete Comment Styling */
+.flagComment {
+  display: inline;
+  background-color: gray;
+  border: 1px solid black;
+  border-radius: .25em;
+  cursor: pointer;
+}
+.flagComment:hover {
+  box-shadow: black 1px 1px;
+}
+.deleteComment {
+  display: inline;
+  background-color: gray;
+  border: 1px solid black;
+  border-radius: .25em;
+  cursor: pointer;
+  padding-left: .2em;
+  padding-right: .2em;
+  color: #a00;
+  margin-left: 2px;
+}
+.deleteComment:hover {
+  box-shadow: black 1px 1px;
+}
+td.flagged {
+  cursor: default;
+  color: #a00;
+}
+td.flagged:hover {
+  box-shadow: none;
+}
+/* End Flag Comment and Delete Comment Styling */
+
+input[type='submit'] {
+  color: #FFF;
+  background-color: #979797;
+  border:1px solid white;
+  font-size: 1.5em;
+  font-weight: 800;
+}
+
+input[type='submit']:hover {
+    color: #979797;
+    background-color: #FFF;
+    cursor: pointer;
+}
+
+input[type='submit'].profile{
+    font-size: 1em;
+}
+
+input[type='submit'].delete{
+    font-size: 1em;
+    background-color: #BC1414;
+}
+
+input[type='submit'].delete:hover{
+    color: #BC1414;
+    background-color: #FFFFFF;
+}
+
+input[type='submit'].select{
+    font-size: 1em;
+    font-weight: 100;
+    float: right;
+    border: none;
+    margin-top: -22px;
+    -webkit-transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
+}
+
+input[type='submit'].select:hover{
+    background-color: #555;
+    color: #FFF;
+}
+
+/* +-------------------------+-----------------------------------------
+ * | Format Comments Section |
+ * +-------------------------+
+ */
+
+tr.comment {
+  valign: top;
+  vertical-align: top;
+  text-align: left;
+}
+
+td.comment {
+  width: 60%;
+}
+
+td.date {
+  font-style: italic;
+}
+
+th.user {
+  margin: 0;
+  valign: top;
+  vertical-align: top;
+  text-align: right;
+  padding: 10px;
+}
+
+th.user a {
+  align: right;
+  vertical-align: top;
+  margin: 0px;
+  color: #FFF;
+  font-size: 1em;
+  box-shadow: -4px 5px 4px 0px #666;
+  text-align: center;
+  border-radius: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: #979797;
+  text-decoration: none;
+}
+
+/* +-------+-----------------------------------------------------------
+ * | Menus |
+ * +-------+
+ *
+ * Dropdown menu based on
+ *   <http://cssdeck.com/labs/another-simple-css3-dropdown-menu >
+ */
+
+/* The menu */
+div#menu ul {
+  text-align: left;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+/* One menu item. */
+div#menu ul li,
+div#menu ul li ul li {
+  display: inline-block;
+  clear: left;
+  position: relative;
+  width: 105px;
+  height: 17px;
+  font-size: 12px;
+  text-align: center;
+  border: 1px solid grey;
+  cursor: pointer;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding: 1px;
+  -webkit-transition: all 0.2s;
+  -moz-transition: all 0.2s;
+  -ms-transition: all 0.2s;
+  -o-transition: all 0.2s;
+  transition: all 0.2s;
+  color: #555555;
+  background: #ffffff;
+}
+
+/* by-pass presets on 'a' elements */
+div#menu .menuitem {
+  color: #555555;
+}
+
+/* When you hover over the item, it inverts. */
+div#menu ul li:hover,
+div#menu ul li ul li:hover
+div#menu ul li:hover a,
+div#menu ul li ul li:hover a {
+  color: #ffffff;
+  background: #555555;
+}
+div#menu li:hover a.menuitem {
+  color: #ffffff;
+}
+
+/* When hovering over an item with a submenu, show it */
+div#menu ul li:hover ul {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* A submenu */
+div#menu ul li ul {
+  padding: 0;
+  position: absolute;
+  /* top: 48px; */
+  left: 0;
+  width: 150px;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  -webkit-transition: opacity 0.2s;
+  -moz-transition: opacity 0.2s;
+  -ms-transition: opacity 0.2s;
+  -o-transition: opacity 0.2s;
+  -transition: opacity 0.2s;
+}
+
+/* An item in a submenu */
+#add ul li ul li {
+  background: #555;
+  display: block;
+  color: #fff;
+  text-shadow: 0 -1px 0 #000;
+}
+#add ul li ul li:hover { background: #666; }
+
+/* ------------------------------------------------------------------- */
+
+#image-sharing {
+  margin: 0 auto;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#image-fb-share {
+  margin:0 5px 0 10px;
+}
+
+#image-tweet {
+margin: 0 auto 0 5px;
+}
+
+#settings {
+display:inline-flex;
+margin-left: 1150px;
+}
+
+
+.animations {
+	background-color:#ededed;
+	border-top-left-radius:13px;
+	border-top-right-radius:13px;
+	border-bottom-right-radius:13px;
+	border-bottom-left-radius:13px;
+	text-indent:0;
+	border:2px solid #dcdcdc;
+	display:inline-block;
+	color:#777777;
+	font-family:arial;
+	font-size:12px;
+        width: 50px;
+	font-style:normal;
+}
+.animations:hover {
+	background-color:#dfdfdf;
+}
+
+#recorder:hover {
+	background-color:#ff0000;
+	border: #ffffff;
+	color: #ffffff;
+}
+
+@keyframes recording {
+	from {background-color: red; color: white;}
+	to {background-color: white; color: red;}
+}
+
+#recorder[value="1"] {
+	background-color:#ff0000;
+	border: #ffffff;
+	color: #ffffff;
+	animation: recording 1s infinite;
+}
+
+#image-controls{
+  padding-top:5px;
+  padding-bottom:5px;
+  font-size: 13px;
+  color: #777777;
+}
+
+#dl{
+  display: none;
+  width: 80px;
+}
+
+input[type=range] {
+    -webkit-appearance:none !important;
+    background-color: #777777;
+    width: 80px;
+    height:3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none !important;
+    background-color: grey;
+    opacity: 0.5;
+    width: 7px;
+    height: 20px;
+}
+
+#imageSettings{
+display:flex;
+}
+
+/**
+ * Our pretty-printed code.
+ */
+p.pretty {
+  font-size: 1.5em;
+  padding-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: block;
+  text-align: left;
+  white-space: pre;
+  font-family: Courier New, Courier, monospace;
+  word-wrap:break-word;
+  border: 1px solid grey;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+textarea.pretty {
+  readonly;
+  font-family: Courier New, Courier, monospace;
+  font-size: 2em;
+}
+
+/* This button was generated using CSSButtonGenerator.com */

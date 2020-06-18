@@ -1,12 +1,8 @@
-module.exports = (database) => {
-    const express = require('express');
-    const router = express.Router();
-    const challenge = require('./functions/challenges');
+module.exports = (router, database) => {
+    const challenge = require('./functions/challenge');
 
     router.get('/', (req, res) => {
-        res.render('challenge-gallery', {
-
-        });//renders the gallery of challenges
+        challenge.gallery(req, res, database, req.query);//renders the gallery of challenges
     });
 
     router.get('/create', (req, res) => {
@@ -15,6 +11,10 @@ module.exports = (database) => {
             userData: req.user
         }); //renders the form to create a challenge
     });
+
+    router.get('/view/:name', (req, res) =>{
+        challenge.view(req, res, database);
+    })
 
     router.post('/add', (req, res) => {
         console.log('Trying to add a new challenge.');
