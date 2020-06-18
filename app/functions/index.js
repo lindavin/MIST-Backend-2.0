@@ -13,6 +13,7 @@ module.exports.buildFeaturedPage = (function(req, res, database) {
   // });
   res.render('index', {
     user: req,
+    userData : req.user,
   })
 });
 /*
