@@ -11,394 +11,393 @@
 /**
  * We like open sans as our font, and import info on it from Google.
  */
- @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,800');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,800');
 
 
- /* Set the default font. */
- * {
-  font-family: 'Open Sans', sans-serif; 
- }
- 
- p {
-   font-size: 1em;
- }
- 
- /* +---------+---------------------------------------------------------
-  * | Headers |
-  * +---------+
-  */
- 
- /**
-  * The main body of the page is offset 80 pixels from the top to allow 
-  * space for the annoying header.
-  */
- div#main {
-   margin-top: 80px;
-   clear: both;
- }
- 
- /**
-  * The header at the top of the page has to be offset -80px 
-  * to correspond to the margin-top in div#main.
-  */
- header {
-   margin-top: -80px;
-   margin-left: -10px;
-   width: 101%;
-   height: 60px;
-   background-color: #4A4A4A;
-   position:fixed;
-   box-shadow: 0 2px 4px 0 #000;
-   z-index : 1;
-   vertical-align: top;
- }
- 
- /**
-  * The MIST Logo in the header.
-  */
- #headerLogo {
-   /* float:left; */
-   width: 126px;
-   margin: 0px 10px;
- }
- 
- #headerLogo img{
-   height:60px;
- }
- 
- header {
-   vertical-align: top;
-   white-space: nowrap;
- }
- 
- header nav,
- header #search,
- header #headerLogo {
-   vertical-align: top;
-   display: inline-block;
- }
- 
- header #search {
-   width: 150px;
-   display: inline-block;
- }
- 
- header nav {
-   width: calc(100% - 126px - 180px - 30px); /* width - img - search - extra*/
-   white-space: nowrap;
-   text-align: right;
- }
- 
- header ul {
-   white-space: nowrap;
-   width: 98%;
-   height: 33%;
-   margin-top: 20px;
-   margin-bottom: 20px;
-   margin-left: 0px;
-   margin-right: 0px;
-   padding: 0px;
- }
- 
- header nav a {
-  text-decoration:none;
-  color:#E1E1E1;
- }
- 
- header nav a:hover {
-  color: #9B9B9B;
- }
- 
- header nav li {
-  display: inline-block;
-  padding: 0 10px;
-  margin: 0;
-  color: #E1E1E1
- }
- 
- /* Put lines between elements in the nav bar. */
- header nav li+li {
-  border-left: 1px solid #9B9B9B;
- }
- 
- header nav li:hover {
-  color: #9B9B9B;
-  cursor: pointer;
- }
- 
- /** 
-  * Make it so "Remember Me" li doesn't change when hovering on the 
-  * right of the text
-  */
- #rememberMeContainer:hover label { 
-   color: #E1E1E1;
- }
- #rememberMe { /*Make it so "Remember Me" has the pointer cursor*/
-   cursor: pointer;
- }
- #rememberMe:hover { /*Make it so "Remember Me" doesn't change color when hovered over*/
-   color: #E1E1E1;
- }
- 
- /* +-----------------+-------------------------------------------------
-  * | Search Features |
-  * +-----------------+
-  */
- 
- /*
-  * Provide styling for searchbar in header
-  */
- #search {
-   padding-top: 15px;
-   padding-left: 30px;
- 
- }
- .menu {
-     position: relative;
-     margin: 0px;
-     list-style: none;
-     width: 100%;
-     left: 0px;
- }
- .menu li{
-     display: block;
-     padding: 5px 5px 5px 5px;
-     background-color: #555;
-     width: 100%;
-     z-index: 1;
-     color: #FFFFFF;
-     -webkit-transition: all 0.2s;
-     -moz-transition: all 0.2s;
-     -ms-transition: all 0.2s;
-     -o-transition: all 0.2s;
-     transition: all 0.2s;
-     text-shadow: 0 -1px 0 #000;
- }
- 
- .menu li:hover{
-     background-color: #666;
- }
- 
- .menu li.title{
-     display: block;
-     padding: 5px 5px 5px 5px;
-     background-color: #979797;
-     text-align: center;
-     width: 100%;
-     text-shadow: none;
- }
- .menu li.line{
-     height: 0px;
-     border-bottom: 1px solid #555;
-     padding: 0px 5px 0px 5px;
- }
- 
- input[type='submit'].more{
-     font-size: 1em;
-     font-weight: 100;
-     border: none;
-     -webkit-transition: all 0.2s;
-     -moz-transition: all 0.2s;
-     -ms-transition: all 0.2s;
-     -o-transition: all 0.2s;
-     transition: all 0.2s;
- }
- 
- input[type='submit'].more:hover{
-     background-color: #555;
-     cursor: pointer;
-     text-shadow: 0 -1px 0 #000;
- }
- 
- /* +-------------+-----------------------------------------------------
-  * | Other Stuff |
-  * +-------------+
-  */
- 
- #pageTitle {
-  height:100px;
-  min-width:400px;
-  margin: 0px;
-  float: left;
-  background-color: #EFDC5C;
- }
- 
- #pageTitle h1{
-  border: 7px solid white;
-  margin: 15px;
-  color: #FFF;
-  display: inline-block;
-  font-weight: 600;
-  font-size: 2em;
-  padding: 5px;
-  clear: left;
- }
- 
- #pageTitleGeneral {
-  height:100px;
-  min-width:400px;
-  margin: 0px;
-  float: left;
-  background-color: #3FAAA0;
- }
- 
- #pageTitleGeneral h1 {
-  border: 7px solid white;
-  margin: 15px;
-  color: #FFF;
-  display: inline-block;
-  font-weight: 600;
-  font-size: 2em;
-  padding: 5px;
-  clear: left;
-  float: left;
- }
- 
- #subTitle {
-  /* float: left; */
-  text-align: left;
-  clear: left;
-  color: #979797;
-  margin-left: 20px;
-  margin-top: 20px;
-  display: block;
- }
- 
- #subTitle h2 {
-   text-align: left;
- }
- 
- #flashZone {
-  clear:left;
-  background-color: #E1E1E1;
-  display:block;
-  text-align: left;
-  border: 10px solid white;
-   width: 100%;
-  color: #7B7B7B;
-  border-radius: 15px;
-  margin:0 auto;
- }
- 
- 
- .code {
-  font-family: Courier New, Courier, monospace;
-   word-wrap:break-word;
-  font-size: 2em;
- }
- 
- form input[type='submit'] {
-  background: #979797;
-  color: white;
- }
- 
- #subviews {
-  float: right;
-  width: 450px;
-  margin-top: -10px;
- }
- 
- .subview {
- 
-  text-decoration: none;
-  color: #FFF;
-  background-color: #C8C8C8;
-  display: inline-block;
-  height: 40px;
-  width: 37%;
-  text-align: center;
-  font-size: 1.7em;
-  float: left;
-  margin: 10px 2%;
- }
- 
- .subview:hover, #selected {
-  background-color: #979797;
- }
- 
- figure figcaption.left {
-  float: left;
-  text-align: left;
-  color: #979797;
- }
- 
- figure figcaption.right {
-  text-align: right;
-  float: right;
-  color: #979797;
- }
- 
- a {
- text-decoration: none;
- color: #979797;
- }
- 
- .error {
-  color: red;
- }
- 
- /* Footer */
- footer nav ul {
-  margin: 0 40px 0 auto;
-  display: block;
-  list-style-type: none;
- }
- 
- footer a {
-  text-decoration:none;
-  color: #9B9B9B;
- }
- 
- footer a:hover {
-  text-decoration:none;
-  color: #666;
- }
- 
- footer nav li {
-  margin: 0 5px 0 5px;
-  display: inline-block;
- }
- 
- footer nav {
-  margin: 0 auto;
- }
- 
- footer p {
-  margin: 0 auto 0 auto;
- }
- 
- #fb-root {
-   margin: 0 5px 0 auto;
- }
- 
- #google-follow {
-   margin: 5px auto 0 5px;
- }
- 
- #twitter-follow {
-   margin: 0 0 0 5px;
- }
- 
- #sharing {
-   margin: 0 auto;
-   display: -webkit-flex;
-   -webkit-flex-direction: row;
-   display: flex;
-   flex-direction: row;
-   align-items: center;
- }
- 
- footer {
-  width: 60%;
-  margin: 0 auto;
+/* Set the default font. */
+* {
+ font-family: 'Open Sans', sans-serif; 
+}
+
+p {
+  font-size: 1em;
+}
+
+/* +---------+---------------------------------------------------------
+ * | Headers |
+ * +---------+
+ */
+
+/**
+ * The main body of the page is offset 80 pixels from the top to allow 
+ * space for the annoying header.
+ */
+div#main {
+  margin-top: 80px;
   clear: both;
-  width:90%;
-  border-width: 1px 0 0 0;
-  border-style: solid;
-  border-color: #979797;
-  text-align: center;
- }
- 
- /* End of Footer */
- 
- 
+}
+
+/**
+ * The header at the top of the page has to be offset -80px 
+ * to correspond to the margin-top in div#main.
+ */
+header {
+  margin-top: -80px;
+  margin-left: -10px;
+  width: 101%;
+  height: 60px;
+  background-color: #4A4A4A;
+  position:fixed;
+  box-shadow: 0 2px 4px 0 #000;
+  z-index : 1;
+  vertical-align: top;
+}
+
+/**
+ * The MIST Logo in the header.
+ */
+#headerLogo {
+  /* float:left; */
+  width: 126px;
+  margin: 0px 10px;
+}
+
+#headerLogo img{
+  height:60px;
+}
+
+header {
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+header nav,
+header #search,
+header #headerLogo {
+  vertical-align: top;
+  display: inline-block;
+}
+
+header #search {
+  width: 150px;
+  display: inline-block;
+}
+
+header nav {
+  width: calc(100% - 126px - 180px - 30px); /* width - img - search - extra*/
+  whitespace: nowrap;
+  text-align: right;
+}
+
+header ul {
+  whitespace: nowrap;
+  width: 98%;
+  height: 33%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding: 0px;
+}
+
+header nav a {
+ text-decoration:none;
+ color:#E1E1E1;
+}
+
+header nav a:hover {
+ color: #9B9B9B;
+}
+
+header nav li {
+ display: inline-block;
+ padding: 0 10px;
+ margin: 0;
+ color: #E1E1E1
+}
+
+/* Put lines between elements in the nav bar. */
+header nav li+li {
+ border-left: 1px solid #9B9B9B;
+}
+
+header nav li:hover {
+ color: #9B9B9B;
+ cursor: pointer;
+}
+
+/** 
+ * Make it so "Remember Me" li doesn't change when hovering on the 
+ * right of the text
+ */
+#rememberMeContainer:hover label { 
+  color: #E1E1E1;
+}
+#rememberMe { /*Make it so "Remember Me" has the pointer cursor*/
+  cursor: pointer;
+}
+#rememberMe:hover { /*Make it so "Remember Me" doesn't change color when hovered over*/
+  color: #E1E1E1;
+}
+
+/* +-----------------+-------------------------------------------------
+ * | Search Features |
+ * +-----------------+
+ */
+
+/*
+ * Provide styling for searchbar in header
+ */
+#search {
+  padding-top: 15px;
+  padding-left: 30px;
+
+}
+.menu {
+    position: relative;
+    margin: 0px;
+    list-style: none;
+    width: 100%;
+    left: 0px;
+}
+.menu li{
+    display: block;
+    padding: 5px 5px 5px 5px;
+    background-color: #555;
+    width: 100%;
+    z-index: 1;
+    color: #FFFFFF;
+    -webkit-transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
+    text-shadow: 0 -1px 0 #000;
+}
+
+.menu li:hover{
+    background-color: #666;
+}
+
+.menu li.title{
+    display: block;
+    padding: 5px 5px 5px 5px;
+    background-color: #979797;
+    text-align: center;
+    width: 100%;
+    text-shadow: none;
+}
+.menu li.line{
+    height: 0px;
+    border-bottom: 1px solid #555;
+    padding: 0px 5px 0px 5px;
+}
+
+input[type='submit'].more{
+    font-size: 1em;
+    font-weight: 100;
+    border: none;
+    -webkit-transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
+}
+
+input[type='submit'].more:hover{
+    background-color: #555;
+    cursor: pointer;
+    text-shadow: 0 -1px 0 #000;
+}
+
+/* +-------------+-----------------------------------------------------
+ * | Other Stuff |
+ * +-------------+
+ */
+
+#pageTitle {
+ height:100px;
+ min-width:400px;
+ margin: 0px;
+ float: left;
+ background-color: #EFDC5C;
+}
+
+#pageTitle h1{
+ border: 7px solid white;
+ margin: 15px;
+ color: #FFF;
+ display: inline-block;
+ font-weight: 600;
+ font-size: 2em;
+ padding: 5px;
+ clear: left;
+}
+
+#pageTitleGeneral {
+ height:100px;
+ min-width:400px;
+ margin: 0px;
+ float: left;
+ background-color: #3FAAA0;
+}
+
+#pageTitleGeneral h1 {
+ border: 7px solid white;
+ margin: 15px;
+ color: #FFF;
+ display: inline-block;
+ font-weight: 600;
+ font-size: 2em;
+ padding: 5px;
+ clear: left;
+ float: left;
+}
+
+#subTitle {
+ /* float: left; */
+ text-align: left;
+ clear: left;
+ color: #979797;
+ margin-left: 20px;
+ margin-top: 20px;
+ display: block;
+}
+
+#subTitle h2 {
+  text-align: left;
+}
+
+#flashZone {
+ clear:left;
+ background-color: #E1E1E1;
+ display:block;
+ text-align: left;
+ border: 10px solid white;
+  width: 100%;
+ color: #7B7B7B;
+ border-radius: 15px;
+ margin:0 auto;
+}
+
+
+.code {
+ font-family: Courier New, Courier, monospace;
+  word-wrap:break-word;
+ font-size: 2em;
+}
+
+form input[type='submit'] {
+ background: #979797;
+ color: white;
+}
+
+#subviews {
+ float: right;
+ width: 450px;
+ margin-top: -10px;
+}
+
+.subview {
+
+ text-decoration: none;
+ color: #FFF;
+ background-color: #C8C8C8;
+ display: inline-block;
+ height: 40px;
+ width: 37%;
+ text-align: center;
+ font-size: 1.7em;
+ float: left;
+ margin: 10px 2%;
+}
+
+.subview:hover, #selected {
+ background-color: #979797;
+}
+
+figure figcaption.left {
+ float: left;
+ text-align: left;
+ color: #979797;
+}
+
+figure figcaption.right {
+ text-align: right;
+ float: right;
+ color: #979797;
+}
+
+a {
+text-decoration: none;
+color: #979797;
+}
+
+.error {
+ color: red;
+}
+
+/* Footer */
+footer nav ul {
+ margin: 0 40px 0 auto;
+ display: block;
+ list-style-type: none;
+}
+
+footer a {
+ text-decoration:none;
+ color: #9B9B9B;
+}
+
+footer a:hover {
+ text-decoration:none;
+ color: #666;
+}
+
+footer nav li {
+ margin: 0 5px 0 5px;
+ display: inline-block;
+}
+
+footer nav {
+ margin: 0 auto;
+}
+
+footer p {
+ margin: 0 auto 0 auto;
+}
+
+#fb-root {
+  margin: 0 5px 0 auto;
+}
+
+#google-follow {
+  margin: 5px auto 0 5px;
+}
+
+#twitter-follow {
+  margin: 0 0 0 5px;
+}
+
+#sharing {
+  margin: 0 auto;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+footer {
+ width: 60%;
+ margin: 0 auto;
+ clear: both;
+ width:90%;
+ border-width: 1px 0 0 0;
+ border-style: solid;
+ border-color: #979797;
+ text-align: center;
+}
+
+/* End of Footer */
+
