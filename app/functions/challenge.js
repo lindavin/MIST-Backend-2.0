@@ -24,8 +24,8 @@ var quote = function (str) {
  * The api for adding challenges.
  */
 module.exports.add = function (req, res, database, info) {
-    let challenge = new database.Challenges({
-        categoryid: database.sanitize(info.categoryid),
+    let challenge = new database.Challenge({
+        category: database.sanitize(info.category),
         position: database.sanitize(info.position),
         createdAt: Date(),
         modifiedAt: Date(),
@@ -55,25 +55,34 @@ module.exports.edit = function (req, res, database) {
 }; // edit
 
 module.exports.gallery = function (req, res, database, info) {
-    var level = database.sanitize(info.level || "Beginning");
-    var color = database.sanitize(info.color || "Greyscale");
-    var animation = database.sanitize(info.animation || "Static");
-    var category = level + ", " + color + ", " + animation;
+    const level = database.sanitize(info.level || "Beginning");
+    const color = database.sanitize(info.color || "Greyscale");
+    const animation = database.sanitize(info.animation || "Static");
+    const category = level + ", " + color + ", " + animation;
+    const query = database.Challenge.find({
+        category: category,
+    });
 
-    // We got a result, so render it
-    res.render('challenge-gallery', {
-        user: req.session.user,
-        challenge: {},
-        level: level,
-        color: color,
-        animation: animation,
-        sample: [
-            { id: 1, name: "First", code: "x" },
-            { id: 9, name: "Second", code: "y" }
-        ],
-        challenges: "",
-    }); // res.render
-
+    query.exec((err, challenges) => {
+        // Sanity check
+        if (err) {
+            res.send(error);
+            return;
+        };
+        // We got a result, so render it
+        res.render('challenge-gallery', {
+            user: req.session.user,
+            challenge: {},
+            level: level,
+            color: color,
+            animation: animation,
+            sample: [
+                { id: 1, name: "First", code: "x" },
+                { id: 9, name: "Second", code: "y" }
+            ],
+            challenges: challenges,
+        }); // res.render
+    });// execute query
 }; // gallery
 
 /**

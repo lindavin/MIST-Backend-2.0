@@ -16,8 +16,8 @@ const usersSchema = new mongoose.Schema({
     password: String,
 });
 
-const challengesSchema = new mongoose.Schema({
-    categoryid: String,
+const challengeSchema = new mongoose.Schema({
+    category: String,
     position: String,
     createdAt: String,
     modifiedAt: String,
@@ -35,9 +35,9 @@ usersSchema.plugin(passportLocal);
 
 // Models
 const User = mongoose.model("User", usersSchema);
-const Challenges = mongoose.model("Challenges", challengesSchema);
+const Challenge = mongoose.model("Challenge", challengeSchema);
 
 module.exports.User = User;
-module.exports.Challenges = Challenges;
+module.exports.Challenge = Challenge;
 
 module.exports.sanitize = sanitize; //sanitizes string

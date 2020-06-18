@@ -1,5 +1,5 @@
 module.exports = (router, database) => {
-    const challenge = require('./functions/challenges');
+    const challenge = require('./functions/challenge');
 
     router.get('/', (req, res) => {
         challenge.gallery(req, res, database, req.query);//renders the gallery of challenges
