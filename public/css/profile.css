@@ -1,0 +1,147 @@
+/**
+ * profile.css
+ *   Styles for the user profile pages.
+ */
+/**
+ * I'm not sure why the figure is not already the same size as the
+ * canvas, but we make it that way.
+ */
+figure {
+  width: 400px;
+}
+
+/**
+ * The title of the image.
+ */
+p.imageTitle {
+  color: #4A4A4A;
+  font-size: 2em;
+  padding: 0;
+  margin: 0;
+  font-weight: normal;
+  text-align: center;
+}
+
+/**
+ * Member since text goes between the title and the featured image.
+ */
+div#memberSince {
+  clear: both;
+  color: #979797;
+  margin-left: 20px;
+  margin-top: 20px;
+  display: block;
+}
+
+/**
+ * We have two main divs that should be side by side.
+ */
+div#profile {
+  display: flex;
+  flex-direction: row;
+  clear: both;
+}
+
+/**
+ * The two main divs should be side by side, so we make them inline
+ * and specify sizes.
+ */
+div#featuredImage,
+div#bio {
+  display: inline-block;
+  clear: left;
+}
+
+div#featuredImage {
+  min-width: 500px;
+}
+
+div#bio {
+  margin-top: 40px;
+}
+
+/**
+ * Text in the biography gets some special formatting.
+ */
+p.biography {
+  font-size: 1.5em;
+  color: #979797;
+  white-space: pre-wrap;
+}
+
+/**
+ * The program code should be invisible and take up no space.
+ */
+.code {
+  display: none;
+}
+
+/**
+ * The text area for entering a new biography.
+ */
+textarea {
+  width: 100%;
+  color: #111111;
+  border-radius: 3px;
+  border: 1px solid #979797;
+  -moz-box-shadow:    inset 0px 1px 3px 0px rgba(0,0,0,0.5);
+  box-shadow:         inset 0px 1px 3px 0px rgba(0,0,0,0.5);
+  font-size: 1.2em;
+}
+
+/**
+ * The pencil icon used for editing the biography should be 25x25.
+ */
+#edit-bio {
+  color: #FFF;
+  background-color: #979797;
+  border:1px solid white;
+  font-size: 1em;
+  font-weight: 800;
+}
+#edit-bio:hover {
+  color: #979797;
+  background-color: #FFF;
+  cursor: pointer;
+}
+
+/**
+ * Right-aligned paragraphs.
+ */
+p.right {
+  text-align: right;
+}
+
+/**
+ * The account settings link gets our traditional box.
+ */
+a.settings {
+  padding: 5px;
+  font-size: 1.7em;
+  color: #FFFFFF;
+  text-decoration: none;
+  background-color: #EFDC5C;
+}
+
+a.settings:hover {
+  .padding: 5px;
+  color: #EFDC5C;
+  background-color: #FFFFFF;
+}
+
+/**
+ * The update button gets our traditional box.
+ */
+#update {
+  color: #FFF;
+  background-color: #979797;
+  border:1px solid white;
+  font-size: 1em;
+  font-weight: 800;
+}
+
+#update:hover {
+  color: #979797;
+  background-color: #FFF;
+  cursor: pointer;
+}

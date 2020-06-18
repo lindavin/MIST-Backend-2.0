@@ -1,12 +1,8 @@
-module.exports = (database) => {
-    const express = require('express');
-    const router = express.Router();
-    const challenge = require('./functions/challenges');
+module.exports = (router, database) => {
+    const challenge = require('./functions/challenge');
 
     router.get('/', (req, res) => {
-        res.render('challenge-gallery', {
-
-        });//renders the gallery of challenges
+        challenge.gallery(req, res, database, req.query);//renders the gallery of challenges
     });
 
     router.get('/create', (req, res) => {

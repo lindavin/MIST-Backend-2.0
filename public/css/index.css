@@ -1,0 +1,153 @@
+
+#main {
+  padding: 20px;
+  max-width: 900px;
+  min-width: 800px;
+  margin: 0 auto;
+}
+
+/*
+ * Intro contains the about text and featuresd image. 
+ * flex-containter
+ */
+#intro {
+  margin: 0 auto;
+  display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
+  justify-content: center;
+  align-items: center;
+}
+
+#featuredImage {
+  margin: 0 20px;
+  display: inline-block;
+}
+#featuredImage img{
+ width: 350px;
+}
+
+#about {
+  color: #575757;
+  margin: 0 20px;
+  font-size: 1.4em;
+  /*font-weight: bold;*/
+  width: 420px;
+}
+
+p#welcomeLink {
+  text-align: center;
+}
+
+#homeButtons {
+  margin: 0 auto;
+  padding: 10px;
+  display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
+  justify-content: space-between;
+  max-width: 700px;
+ }
+
+#homeButtons a {
+}
+
+#homeButtons #create, #homeButtons #tutorials, #homeButtons #gallery {
+ /* width: 290px; */
+ /* margin: 80px 20px; */
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #979797;
+  font-weight:bold;
+  color: #FFF;
+  text-align:center;
+  text-transform:lowercase;
+  text-decoration:none;
+}
+
+#homeButtons #create:hover,
+#homeButtons #tutorials:hover,
+#homeButtons #gallery:hover {
+ background-color: #FFF;
+ color: #979797;
+}
+
+#homeButtons #tutorials {
+ text-align: right;
+ background-color: #3FAAA0;
+}
+
+#homeButtons #gallery {
+  text-align: center;
+}
+
+#homeButtons #tutorials:hover {
+  color: #3FAAA0;
+}
+
+#homeButtons #tutorials, #homeButtons #create, #homeButtons #tutorials:hover, #homeButtons #create:hover, #homeButtons #gallery {
+ font-size: 2.3em;
+ /* margin: 0px; */
+}
+
+
+#galleryImages {
+ margin-left: auto;
+ margin-right: auto;
+ /* margin: 0 auto; */
+ margin-top: 10px;
+ clear: both;
+}
+
+#galleryImages figure {
+  min-width: 150px;
+  width: 150px;
+  float: left;
+  padding: 20px;
+  margin: 0 auto;
+}
+#gallery h1 {
+ font-size:1.5em;
+ text-align:right;
+        margin-top: 0px;
+}
+
+#galleryImages a {
+ color: #878787;
+ text-decoration:none;
+}
+
+#galleryImages a:hover {
+ color: #666;
+}
+
+p.info{
+  text-align: center;
+  clear: both;
+}
+
+#figset {
+ margin: 150px auto 0 auto;
+ width: 1010px;
+}
+
+#seemore {
+  margin-top: 0px;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+p.warning{
+  text-align: center;
+  display: block;
+  padding-top: 10px;
+
+}
+
+#featuredImages {
+  padding: 1px 15px;
+  background-color: #E7E7E7;
+  border-color: #575757;
+  border-width: 3px;
+  border-style: solid;
+}
+
+#featuredImages a {
+  color: #575757;
+}

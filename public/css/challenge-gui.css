@@ -1,0 +1,43 @@
+/**
+ * Set background color, size, and border of GUI workspace
+ * Center GUI workspace
+ */
+#container,
+#gui {
+  margin: 0 0 0 40px;
+  background-color: #F1F8FF;
+  min-width: 800px;
+  width: 800px;
+  height: 534px;
+  border: 3px solid black;
+}
+
+/**
+ * Set up the image and the GUI.
+ *   * Side-by-side (if possible)
+ *   * Top aligned
+ */
+#image-and-gui {
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#image-and-gui div {
+  vertical-align: top;
+  display: inline-block;
+}
+
+/**
+ * The canvas has a black border for ease of reading
+ */
+#canvas {
+  border: 1px solid black;
+}
+
+/**
+ * ???
+ */
+#challenge-subTitle {
+  margin: 0 auto 0 30px;
+}

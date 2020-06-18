@@ -1,0 +1,97 @@
+figure{
+ width: 180px;
+ float: left;
+}
+
+figure img {
+ width:180px;
+}
+
+figure h1 {
+ color: #979797;
+ text-align: center;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ -o-text-overflow: ellipsis;
+ white-space: nowrap;
+ width: 100%;
+ font-size: 1.3em;
+ border: 1px solid #ddd;
+ box-shadow: 0 0 5px #ddd;
+ padding: 20px;
+
+}
+
+figure h1:hover {
+ color: #4A4A4A;
+}
+
+#albums {
+ clear: both;
+ width: 70%;
+ margin: 0 auto;
+}
+
+.all {
+    border: 1px solid #79C4BC;
+    color: #3FAAA0;
+    font-size: 1.3em;
+    position: inline-block;
+}
+
+.all:hover{
+    color: #2C7770;
+    cursor: pointer;
+}
+
+input[type='submit'].album{
+    color: #FFF;
+    background-color: #979797;
+    border:1px solid white;
+    font-size: 1em;
+    font-weight: 800;
+}
+
+input[type='submit'].album:hover{
+   color: #979797;
+    background-color: #FFF;
+    cursor: pointer;
+    }
+
+textarea{
+ width: 160px;
+ height:20px;
+ resize: none;
+ color: #111111;
+ border-radius: 3px;
+ border: 1px solid #979797;
+ -moz-box-shadow:    inset 0px 1px 3px 0px rgba(0,0,0,0.5);
+ box-shadow:         inset 0px 1px 3px 0px rgba(0,0,0,0.5);
+}
+
+.albumBtn {
+	background-color:#ededed;
+	border-top-left-radius:13px;
+	border-top-right-radius:13px;
+	border-bottom-right-radius:13px;
+	border-bottom-left-radius:13px;
+	text-indent:0;
+	border:2px solid #dcdcdc;
+	display:inline-block;
+	color:#777777;
+	font-family:arial;
+	font-size:21px;
+	font-style:normal;
+}
+.albumBtn:hover {
+	background-color:#dfdfdf;
+}
+
+#createNew {
+    padding-top: 40px;
+    position: absolute;
+    top: 150px;
+    left: 30px;
+
+
+}

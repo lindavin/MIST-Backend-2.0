@@ -24,8 +24,8 @@ var quote = function (str) {
  * The api for adding challenges.
  */
 module.exports.add = function (req, res, database, info) {
-    let challenge = new database.Challenges({
-        categoryid: database.sanitize(info.categoryid),
+    let challenge = new database.Challenge({
+        category: database.sanitize(info.category),
         position: database.sanitize(info.position),
         createdAt: Date(),
         modifiedAt: Date(),
@@ -36,6 +36,7 @@ module.exports.add = function (req, res, database, info) {
         rating: 0,
     });// create new challenge
 
+    // need to check if this is actually save to do
     challenge.save()
         .then(doc => {
             console.log(doc)
@@ -54,18 +55,20 @@ module.exports.edit = function (req, res, database) {
 }; // edit
 
 module.exports.gallery = function (req, res, database, info) {
-    var level = database.sanitize(info.level || "Beginning");
-    var color = database.sanitize(info.color || "Greyscale");
-    var animation = database.sanitize(info.animation || "Static");
-    var category = level + ", " + color + ", " + animation;
-    var query = "SELECT challenges.id, challenges.name, challenges.title, challenges.code FROM challengecategories,challenges WHERE challengecategories.description='" + category + "' and challengecategories.id = challenges.categoryid ORDER BY challenges.position;";
-    console.log(query);
-    database.query(query, function (rows, error) {
+    const level = database.sanitize(info.level || "Beginning");
+    const color = database.sanitize(info.color || "Greyscale");
+    const animation = database.sanitize(info.animation || "Static");
+    const category = level + ", " + color + ", " + animation;
+    const query = database.Challenge.find({
+        category: category,
+    });
+
+    query.exec((err, challenges) => {
         // Sanity check
-        if (error) {
+        if (err) {
             res.send(error);
             return;
-        }
+        };
         // We got a result, so render it
         res.render('challenge-gallery', {
             user: req.session.user,
@@ -77,9 +80,9 @@ module.exports.gallery = function (req, res, database, info) {
                 { id: 1, name: "First", code: "x" },
                 { id: 9, name: "Second", code: "y" }
             ],
-            challenges: rows
+            challenges: challenges,
         }); // res.render
-    }); // database.query
+    });// execute query
 }; // gallery
 
 /**
