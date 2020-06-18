@@ -24,7 +24,13 @@ module.exports = (app, passport, database) => {
       });
   })
 
-  //------------------------------------------------
+  app.get('/about', (req,res) => {
+    res.render('about', {
+        user : req,
+        userData : req.user
+    });
+  })
+
 
   app.get("/login", (req, res) => {
     if (!req.isAuthenticated()) {
@@ -50,6 +56,20 @@ module.exports = (app, passport, database) => {
       res.render("logged");
     } else {
       res.redirect("/signup");
+    }
+  });
+
+  app.get("/albums", (req, res) => {
+    if (req.isAuthenticated()) {
+      res.render("albums",{ 
+        user : req,
+        userData : req.user,
+        username : req.user.username,
+        albums : "",
+      }, 
+      );
+    } else {
+      res.redirect("/login");
     }
   });
 
@@ -81,9 +101,12 @@ module.exports = (app, passport, database) => {
   const express = require('express');
   const challengeRouter = require('./challengesRouter')(express.Router(), database);
   const indexRouter = require('./indexRouter')(express.Router(), database);
+  const galleryRouter = require('./galleryRouter')(express.Router(), database);
 
   app.use('/', indexRouter);
   app.use('/challenges', challengeRouter);
+  app.use('/gallery', galleryRouter);
+  
 
   app.listen(5000, () => {
     console.log("listening on 5000..");
