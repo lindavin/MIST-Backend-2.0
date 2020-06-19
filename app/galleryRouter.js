@@ -12,7 +12,7 @@ module.exports = (app, database) => {
       });
     })
 
-    app.get('/random', (req,res) => {
+    app.get('/gallery/random', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -23,7 +23,7 @@ module.exports = (app, database) => {
         }); //renders the gallery
       })
 
-      app.get('/featured', (req,res) => {
+      app.get('/gallery/featured', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -34,7 +34,7 @@ module.exports = (app, database) => {
         }); //renders the gallery
       })
 
-      app.get('/recent', (req,res) => {
+      app.get('/gallery/recent', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -45,7 +45,7 @@ module.exports = (app, database) => {
         }); //renders the gallery
       })
 
-      app.get('/toprated', (req,res) => {
+      app.get('/gallery/toprated', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,

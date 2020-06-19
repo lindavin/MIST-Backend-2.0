@@ -72,18 +72,18 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  
-  //------------------------------------------------
-
-  
 
   //------------------------------------------------
 
-  
-  app.get('/help', (req,res) => {
+
+
+  //------------------------------------------------
+
+
+  app.get('/help', (req, res) => {
     res.render('help', {
-        user : req,
-        userData : req.user
+      user: req,
+      userData: req.user
     })
   })
 
@@ -96,10 +96,10 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  app.get('/help', (req,res) => {
+  app.get('/help', (req, res) => {
     res.render('help', {
-      user : req,
-      userData : req.user
+      user: req,
+      userData: req.user
     })
   })
 
@@ -115,6 +115,15 @@ module.exports = (app, passport, database) => {
   require('./indexRouter')(app, database);
   require('./galleryRouter')(app, database);
 
+  // --------------------------------------------------
+  // Path: /create
+  //   Page for creating (something)
+  app.get('/create', function (req, res) {
+    res.render('create', {
+      user: req,
+      userData: req.user,
+    });
+  });
 
   app.listen(5000, () => {
     console.log("listening on 5000..");

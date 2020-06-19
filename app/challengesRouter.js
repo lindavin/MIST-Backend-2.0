@@ -5,14 +5,7 @@ module.exports = (app, database) => {
         challenge.gallery(req, res, database, req.query);//renders the gallery of challenges
     });
 
-    app.get('/create', (req, res) => {
-        res.render('create-challenge', {
-            user: req,
-            userData: req.user
-        }); //renders the form to create a challenge
-    });
-
-    app.get('/view/:name', (req, res) =>{
+    app.get('/challenges/view/:name', (req, res) =>{
         challenge.view(req, res, database);
     })
 
