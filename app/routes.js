@@ -31,6 +31,8 @@ module.exports = (app, passport, database) => {
     });
   })
 
+  //------------------------------------------------
+
 
   app.get("/login", (req, res) => {
     if (!req.isAuthenticated()) {
@@ -58,6 +60,8 @@ module.exports = (app, passport, database) => {
       res.redirect("/signup");
     }
   });
+
+  //------------------------------------------------
 
   app.get("/albums", (req, res) => {
     if (req.isAuthenticated()) {
@@ -93,10 +97,19 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  app.get('/logout', function (req, res) {
+  app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
   });
+
+  //------------------------------------------------
+
+  app.get('/help', (req,res) => {
+    res.render('help', {
+      user : req,
+      userData : req.user
+    })
+  })
 
   // --------------------------------------------------
   // Path: /api
