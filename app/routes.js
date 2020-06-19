@@ -93,6 +93,15 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
+  app.get('/help', (req,res) => {
+    res.render('help', {
+        user : req,
+        userData : req.user
+    })
+  })
+
+  //------------------------------------------------
+
   app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/');
