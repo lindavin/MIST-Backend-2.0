@@ -15,5 +15,16 @@ module.exports = (app, database) => {
         })
       })
 
+      app.get("/me/:username/albums", (req,res) => {
+        res.render('albums', {
+          user : req,
+          userData : req.user
+        })
+      })
+
+      app.get("/me/:username/images", (req,res) => {
+        
+      })
+
     
 }

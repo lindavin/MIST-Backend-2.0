@@ -79,10 +79,10 @@
  </h1></div>
  
      <div id = 'subviews'>
-       <a href='/user/<%= userData.username %>' class='subview' id='selected'>profile</a>
+       <a href='/me/<%= userData.username %>' class='subview' id='selected'>profile</a>
        <a href='/badges' class='subview'>badges</a>
-       <a href='/user/<%= userData.username %>/albums' class='subview'>albums</a>
-       <a href='/user/<%= userData.username %>/images' class='subview'>images</a>
+       <a href='/me/<%= userData.username %>/albums' class='subview'>albums</a>
+       <a href='/me/<%= userData.username %>/images' class='subview'>images</a>
      </div>
      <div id= 'memberSince'><%- "member since " + userData.dateJoined %></div>
      <div id= 'profile'>
