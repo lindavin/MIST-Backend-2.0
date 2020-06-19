@@ -7,6 +7,8 @@ mongoose.connect("mongodb://localhost:27017/usersDB", {
     useUnifiedTopology: true
 });// make connection to database or create it if it does not yet exist
 
+mongoose.set('useFindAndModify', false);
+
 // Schemas
 const usersSchema = new mongoose.Schema({
     //objectId: String,                 //aka user id
@@ -91,6 +93,8 @@ const Comment = mongoose.model("Comment", commentsSchema);
 const Album = mongoose.model("Album", albumsSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
 const Workspace = mongoose.model("Workspace", workspacesSchema);
+
+
 
 module.exports.User = User;
 module.exports.Image = Image;
