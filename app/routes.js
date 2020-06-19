@@ -79,21 +79,10 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  app.get("/me", (req, res) => {
-    if (req.isAuthenticated()) {
-      res.redirect("/user/" + req.user.username);
-    } else {
-      res.redirect("/login");
-    }
-  })
-
+  
   //------------------------------------------------
 
-  app.get("/user/:username", (req, res) => {
-    res.render("profile", {
-      user: req.user
-    })
-  })
+  
 
   //------------------------------------------------
 
@@ -119,6 +108,7 @@ module.exports = (app, passport, database) => {
   app.get('/api', function (req, res) { api.run(req.query, req, res); });
 
   const express = require('express');
+  require('./userRouter')(app, database);
   const challengeRouter = require('./challengesRouter')(express.Router(), database);
   const indexRouter = require('./indexRouter')(express.Router(), database);
   const galleryRouter = require('./galleryRouter')(express.Router(), database);
