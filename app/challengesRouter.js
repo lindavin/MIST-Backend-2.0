@@ -1,7 +1,7 @@
 module.exports = (app, database) => {
     const challenge = require('./functions/challenge');
 
-    app.get('/challenge', (req, res) => {
+    app.get('/challenges', (req, res) => {
         challenge.gallery(req, res, database, req.query);//renders the gallery of challenges
     });
 

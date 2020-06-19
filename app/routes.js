@@ -24,13 +24,6 @@ module.exports = (app, passport, database) => {
     });
   })
 
-  app.get('/about', (req, res) => {
-    res.render('about', {
-      user: req,
-      userData: req.user
-    });
-  })
-
   //------------------------------------------------
 
 

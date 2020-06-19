@@ -14,6 +14,7 @@ const usersSchema = new mongoose.Schema({
     lname: String,
     username: String,
     password: String,
+    dateJoined: String
 });
 
 const challengeSchema = new mongoose.Schema({

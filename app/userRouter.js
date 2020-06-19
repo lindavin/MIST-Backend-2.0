@@ -10,7 +10,8 @@ module.exports = (app, database) => {
 
       app.get("/me/:username", (req, res) => {
         res.render("profile", {
-          user: req.user
+          user: req,
+          userData : req.user
         })
       })
 

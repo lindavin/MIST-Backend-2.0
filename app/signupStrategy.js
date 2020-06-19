@@ -28,12 +28,14 @@ module.exports = (passport, User) => {
               // if there is no user with that email
               // create the user
               var newUser = new User();
+              var dt = new Date();
               // set the user's local credentials
               newUser.username = username;
               newUser.password = createHash(password);
               newUser.email = req.body.email;
               newUser.fname = req.body.forename;
               newUser.lname = req.body.surname;
+              newUser.dateJoined = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
               // save the user
               newUser.save(function(err) {
                 if (err) {
