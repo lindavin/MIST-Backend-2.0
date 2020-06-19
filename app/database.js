@@ -7,6 +7,8 @@ mongoose.connect("mongodb://localhost:27017/usersDB", {
     useUnifiedTopology: true
 });// make connection to database or create it if it does not yet exist
 
+mongoose.set('useFindAndModify', false);
+
 // Schemas
 const usersSchema = new mongoose.Schema({
     email: String,
@@ -37,6 +39,8 @@ usersSchema.plugin(passportLocal);
 // Models
 const User = mongoose.model("User", usersSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
+
+
 
 module.exports.User = User;
 module.exports.Challenge = Challenge;
