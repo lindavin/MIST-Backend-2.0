@@ -1,7 +1,7 @@
-module.exports = (router, database) => {
+module.exports = (app, database) => {
     const gallery = require('./functions/gallery');
 
-    router.get('/', (req,res) => {
+    app.get('/gallery', (req,res) => {
       res.render('gallery', {
           user : req,
           userData : req.user,
@@ -12,7 +12,7 @@ module.exports = (router, database) => {
       });
     })
 
-    router.get('/random', (req,res) => {
+    app.get('/random', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -23,7 +23,7 @@ module.exports = (router, database) => {
         }); //renders the gallery
       })
 
-      router.get('/featured', (req,res) => {
+      app.get('/featured', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -34,7 +34,7 @@ module.exports = (router, database) => {
         }); //renders the gallery
       })
 
-      router.get('/recent', (req,res) => {
+      app.get('/recent', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -45,7 +45,7 @@ module.exports = (router, database) => {
         }); //renders the gallery
       })
 
-      router.get('/toprated', (req,res) => {
+      app.get('/toprated', (req,res) => {
         res.render('gallery', {
             user : req,
             userData : req.user,
@@ -79,5 +79,5 @@ module.exports = (router, database) => {
 */ 
 
   
-    return router;
+    
 };

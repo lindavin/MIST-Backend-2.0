@@ -117,15 +117,10 @@ module.exports = (app, passport, database) => {
   app.post('/api', function (req, res) { api.run(req.body, req, res); });
   app.get('/api', function (req, res) { api.run(req.query, req, res); });
 
-  const express = require('express');
   require('./userRouter')(app, database);
-  const challengeRouter = require('./challengesRouter')(express.Router(), database);
-  const indexRouter = require('./indexRouter')(express.Router(), database);
-  const galleryRouter = require('./galleryRouter')(express.Router(), database);
-
-  app.use('/', indexRouter);
-  app.use('/challenges', challengeRouter);
-  app.use('/gallery', galleryRouter);
+  require('./challengesRouter')(app, database);
+  require('./indexRouter')(app, database);
+  require('./galleryRouter')(app, database);
 
 
   app.listen(5000, () => {
