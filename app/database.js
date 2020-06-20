@@ -38,6 +38,7 @@ const imagesSchema = new mongoose.Schema({
     flag: Boolean,
     publicity: Number,
     caption: String,
+    delete: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
