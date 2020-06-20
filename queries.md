@@ -41,4 +41,5 @@
 * Queries to the workspaces table only occur in two files: api.js and database.js
 * In database.wsExists, we make a SELECT query for rows where the workspace name and userid matches the checkstring and userid parameter.
 * In api.js we have the following functions:
-	*   
+	* in handlers.listws, we perform a SELECT query and return the name entry of each row where the userid matches the loggedin user's id (if unclear consult the code).
+	* in handlers.savews, we perform a SELECT query to retrieve the workspaces belonging to the logged-in user to ensure that the  name they want to save by does not already exist in the rows corresponding to their userid and respond according to whether or not they intended their current workspace to be a replacement or to be a new workspace that they owned: throw an error or perform an UPDATE query. Here we also perform an INSERT query.  
