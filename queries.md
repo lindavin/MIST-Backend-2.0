@@ -25,7 +25,7 @@
 
 ## Queries organized by tables with the exception of SELECT and JOIN
 
-## SELECT and JOIN queries
+## JOIN queries
 * In 404.js, the function getRandomImages needs to return 'n' random rows from the images table along with the username corresponding to the userid entry of each row.
 * In gallery.js, the functions get___Images needs to return 'n' rows from the images table along with the username corresponding to the userid of each row and then structure it further.
 	* 'Recent' orders by the rows in descending order by modifiedAt entry and then returns a specific portion of the rows depending on the page (page-number) and count parameters.
@@ -34,4 +34,11 @@
 	* 'Random' returns an array of 'n' random rows.
 * In index.js, the query is identical to the getFeatureImages function in gallery.js 
 
+## images table
+* 
 
+## workspaces table
+* Queries to the workspaces table only occur in two files: api.js and database.js
+* In database.wsExists, we make a SELECT query for rows where the workspace name and userid matches the checkstring and userid parameter.
+* In api.js we have the following functions:
+	*   
