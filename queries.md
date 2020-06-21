@@ -38,7 +38,7 @@
 * This relies soley on the challenges and challengecategories tables.
 * We only need to look at two files: api.js and challenge.js.
 
-## images table
+## images table (incomplete)
 * Queries to the images tables only occur in the api.js, database.js, and the singel-image.js files.
 * When we save an image, we do SELECT queries, we can handlers.saveimage and check if the user already owns an image by the same title: we throw an error or update the code entry for the row that already exists via an UPDATE query. 
 * When we view an images page, we call the buildPage function from the single-image.js file, which calls the database.imageInfo we retrieve the corresponding row from the image table.
@@ -56,3 +56,10 @@
 	* in handlers.listws, we perform a SELECT query and return the name entry of each row where the userid matches the loggedin user's id (if unclear consult the code).
 	* in handlers.savews, we perform a SELECT query to retrieve the workspaces belonging to the logged-in user to ensure that the  name they want to save by does not already exist in the rows corresponding to their userid and respond according to whether or not they intended their current workspace to be a replacement or to be a new workspace that they owned: throw an error or perform an UPDATE query. Here we also perform an INSERT query. 
 	* with handlers.deletews, we perform a DELETE FROM query to remove one of the user's workspaces by name
+
+## users table
+* Queries to the users table....
+
+## albums & albumContents
+
+## ratings
