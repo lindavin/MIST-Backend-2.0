@@ -62,5 +62,15 @@
 * Queries to the users table....
 
 ## albums & albumContents
+* Relevant files : database.js, albums.js, albumContents.js
+* In albums.js:
+	* buildPage() makes a SELECT query to the users table to retrieve the userid corresponding the to logged-in user's username
+	and then a SELECT query to the albums table to retrieve all the names of all the albums owned by user. 
+	* 
+* In albumContents.js:
+	* 
+* In database.js:
+	* 
+
 
 ## ratings
