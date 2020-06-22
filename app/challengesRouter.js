@@ -9,6 +9,17 @@ module.exports = (app, database) => {
         challenge.view(req, res, database);
     })
 
+    app.get('/challenges/:username/create', (req,res) => {
+        if(req.isAuthenticated()) {
+            res.render('create-challenge', {
+                user : req,
+                userData : req.user
+            });
+        } else {
+            res.redirect('/login');
+        }
+    })
+
     app.post('/add', (req, res) => {
         console.log('Trying to add a new challenge.');
         challenge.add(req, res, database, req.body);
