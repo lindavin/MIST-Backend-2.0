@@ -207,6 +207,7 @@ var loadWorkspace = function(wsname) {
  * Saves an image to the database.
  */
 var saveImage = function(title, code, isPublic, codeVisible, replace) {
+  alert('saving image');
   var request = new XMLHttpRequest();
   var title = encodeURIComponent(title);
   var data = "action=saveimage&title="+title+"&code="+code+ 
