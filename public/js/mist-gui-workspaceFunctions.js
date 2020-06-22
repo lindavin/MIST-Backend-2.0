@@ -207,7 +207,6 @@ var loadWorkspace = function(wsname) {
  * Saves an image to the database.
  */
 var saveImage = function(title, code, isPublic, codeVisible, replace) {
-  alert('saving image');
   var request = new XMLHttpRequest();
   var title = encodeURIComponent(title);
   var data = "action=saveimage&title="+title+"&code="+code+ 
@@ -218,7 +217,7 @@ var saveImage = function(title, code, isPublic, codeVisible, replace) {
   request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   request.send(data);
   try {
-    var id = JSON.parse(request.responseText).imageid;
+    var id = JSON.parse(request.responseText)._id;
     // console.log("id: " + id);
     return id;
   }

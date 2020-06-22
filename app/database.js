@@ -13,7 +13,7 @@ mongoose.set('useFindAndModify', false);
 // Schemas
 
 const imagesSchema = new mongoose.Schema({
-    imagesName: String,
+    title: String,
     userId: Object,
     code: String,
     ratings: Number,
@@ -143,3 +143,5 @@ module.exports.createAlbum = (userid, name, callback) => {
     });
 
 }; // createAlbum
+
+

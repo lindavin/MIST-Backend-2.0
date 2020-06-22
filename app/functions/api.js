@@ -93,17 +93,15 @@ handlers.imageexists = function (info, req, res) {
   } else {
     console.log("images under " + req.user.username + req.user.images);
     let exists = false;
-    for (image in req.user.images) {
+    const arr = req.user.images.slice();
+    arr.forEach((image) => {
       if (image.title === info.title) {
         exists = true;
-        break;
+        return;
       };
-    }
+    });
     res.send(exists);
 
-    // database.imageExists(req.session.user.userid, info.title, function(exists) {
-    //   res.send(exists);
-    // });
   }
 };
 
@@ -116,6 +114,7 @@ handlers.imageexists = function (info, req, res) {
  *   info.license: A license string
  *   info.public: is the image public (boolean)
  *   info.replace: Replace an existing image (boolean, optional)
+ * Precondition : THe user should not already own an image by the same name
  */
 handlers.saveimage = function (info, req, res) {
   if (!req.isAuthenticated()) {
@@ -127,7 +126,7 @@ handlers.saveimage = function (info, req, res) {
   else {
     // create the image object
     let image = new database.Image({
-      imagesName: database.sanitize(info.title),
+      title: database.sanitize(info.title),
       userId: req.user._id,
       code: database.sanitize(info.code),
       ratings: 0,
@@ -138,22 +137,17 @@ handlers.saveimage = function (info, req, res) {
       caption: "",
       delete: false,
     });
-
-    console.log(image);
-
-    // we still need check that the user does not already own an image by the same name
+    
     database.User.findOneAndUpdate(
       { _id: req.user._id },
       { $push: { images: image } },
-      (err, doc) => {
+      (err, writeUpResult) => {
         if (err) {
           console.log(err);
           fail(res, "Error: " + error);
         } else {
-          // this needs to look more like
-          //   //                 res.send(rows[0]);
-          alert(doc);
-          res.redirect("/create");
+          // this needs to be fixed. we need to send something so that the popup can load the single-image page
+          res.send(image);
         }
       }
     );
