@@ -1,5 +1,8 @@
 bCrypt = require('bcrypt');
 
+var createHash = function(password) {
+  return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+};
 
 var isValidPassword = function(user, password) {
   return bCrypt.compareSync(password, user.password);
@@ -66,6 +69,22 @@ module.exports = (app, database) => {
           } else {
             //If emails match and password is correct
             database.User.findOneAndUpdate({username : req.user.username}, {$set : {email : req.body.newEmail}}, {new : true}, (err,doc) => {
+              if(err) {
+                console.log(err);
+              } else {
+                console.log(doc);
+              }
+            })
+            res.redirect("/me");
+          }
+        } else if (req.body.newPassword) {
+          //If passwords do not match
+          if (req.body.newPassword !== req.body.newPassword2) {
+            console.log("Passwords do not match");
+            res.redirect("/me/:username/accountSettings");
+          } else {
+            //If emails match and password is correct
+            database.User.findOneAndUpdate({username : req.user.username}, {$set : {password : createHash(req.body.newPassword)}}, {new : true}, (err,doc) => {
               if(err) {
                 console.log(err);
               } else {
