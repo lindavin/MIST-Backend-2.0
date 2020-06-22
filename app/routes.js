@@ -56,22 +56,6 @@ module.exports = (app, passport, database) => {
 
   //------------------------------------------------
 
-  app.get("/albums", (req, res) => {
-    if (req.isAuthenticated()) {
-      res.render("albums", {
-        user: req,
-        userData: req.user,
-        username: req.user.username,
-        albums: "",
-      },
-      );
-    } else {
-      res.redirect("/login");
-    }
-  });
-
-  //------------------------------------------------
-
 
   //------------------------------------------------
 
@@ -114,6 +98,7 @@ module.exports = (app, passport, database) => {
   require('./challengesRouter')(app, database);
   require('./indexRouter')(app, database);
   require('./galleryRouter')(app, database);
+  require('./albumsRouter')(app, database);
 
   // --------------------------------------------------
   // Path: /create

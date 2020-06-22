@@ -45,7 +45,6 @@ const albumsSchema = new mongoose.Schema({
     caption: String,
 });
 
-
 const workspacesSchema = new mongoose.Schema({
     name: String,
     data: Object,
@@ -72,21 +71,18 @@ const usersSchema = new mongoose.Schema({
 });
 
 const challengeSchema = new mongoose.Schema({
-    userId: Object,   
-    name:String,
-    title:String,
-    code:String,
-    createdAt:String,
-    updatedAt:String,
-    flag:Boolean,
-    category:String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
-    position:String,
+    userId: Object,
+    name: String,
+    title: String,
+    code: String,
+    createdAt: String,
+    updatedAt: String,
+    flag: Boolean,
+    category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+    position: String,
     description: String,
 
 });
-
-
-
 
 // Configuring Schemas
 usersSchema.plugin(passportLocal);
@@ -101,6 +97,7 @@ const Workspace = mongoose.model("Workspace", workspacesSchema);
 
 
 
+
 module.exports.User = User;
 module.exports.Image = Image;
 module.exports.Comment = Comment;
@@ -109,3 +106,39 @@ module.exports.Challenge = Challenge;
 module.exports.Workspace = Workspace;
 
 module.exports.sanitize = sanitize; //sanitizes string
+
+// create Album
+// is there a way to store extra stuff within the req. 
+// I want to store the user Object _id
+module.exports.createAlbum = (userid, name, callback) => {
+    // find the user doc
+
+    // create an album object
+    let album = new Album({
+        name: name,
+        userid: userid,
+        publicity: 0,
+        createdAt: Date(),
+        updatedAt: Date(),
+        images: [],                      // (of Ids)
+        flag: false,
+        caption: '',
+    });
+
+    // embed the album object into the userdoc
+    const QUERY = User.updateOne(
+        { username: userid },
+        { $push: { albums: album } }
+    );
+
+    QUERY.exec((err, writeOpResult) => {
+        //we need to change this callack
+        if (err) {
+            console.log(err);                   //look into what todo with errors later
+        } else {
+            console.log('write result: ' + writeOpResult);
+        }
+        callback(writeOpResult, err);
+    });
+
+}; // createAlbum
