@@ -10,23 +10,6 @@ mongoose.connect("mongodb://localhost:27017/usersDB", {
 mongoose.set('useFindAndModify', false);
 
 // Schemas
-const usersSchema = new mongoose.Schema({
-    //objectId: String,                 //aka user id
-    forename: String,
-    surname: String,
-    email: String,
-    userName: String,
-    password: String,                //encrypted
-    createdAt: Date,
-    updatedAt: Date,
-    verified: Boolean,
-    images: Array,
-    albums: Array,
-    workspaces: Array,
-    flag: Boolean,
-    liked: Array,
-    comments: Array, //(of commentIds)
-});
 
 const imagesSchema = new mongoose.Schema({
     imagesName: String,
@@ -34,7 +17,7 @@ const imagesSchema = new mongoose.Schema({
     code: String,
     ratings: Number,
     createdAt: Date,
-    comments: Array, //CommentId
+    comments: Array, // of (of comment _ids)
     flag: Boolean,
     publicity: Number,
     caption: String,
@@ -62,6 +45,32 @@ const albumsSchema = new mongoose.Schema({
     caption: String,
 });
 
+
+const workspacesSchema = new mongoose.Schema({
+    name: String,
+    data: Object,
+    createdAt: Date,
+    updatedAt: Date,
+});
+
+const usersSchema = new mongoose.Schema({
+    //objectId: String,                 //aka user id
+    forename: String,
+    surname: String,
+    email: String,
+    userName: String,
+    password: String,                //encrypted
+    createdAt: Date,
+    updatedAt: Date,
+    verified: Boolean,
+    images: [imagesSchema],                   // of image schemas
+    albums: [albumsSchema],                   // of album schemas
+    workspaces: [workspacesSchema],               // of workspace objects
+    flag: Boolean,
+    liked: Array,                             // of image _ids
+    comments: Array,                 //(of comment _ids)
+});
+
 const challengeSchema = new mongoose.Schema({
     userId: Object,   
     name:String,
@@ -76,12 +85,7 @@ const challengeSchema = new mongoose.Schema({
 
 });
 
-const workspacesSchema = new mongoose.Schema({
-    name: String,
-    data: Object,
-    createdAt: Date,
-    updatedAt: Date,
-});
+
 
 
 // Configuring Schemas
