@@ -20,10 +20,10 @@ module.exports = (app, database) => {
         }
     })
 
-    app.post('/add', (req, res) => {
+    app.post('/challenges/add', (req, res) => {
         console.log('Trying to add a new challenge.');
         challenge.add(req, res, database, req.body);
-        res.redirect('/challenges/create');
+        res.redirect('/challenges/:username/create');
     });
 
     
