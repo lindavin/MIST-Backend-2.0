@@ -42,7 +42,7 @@ module.exports = (passport, User) => {
                   console.log("Error in Saving user: " + err);
                   throw err;
                 }
-                console.log("User Registration succesful");
+                console.log("User Registration successful");
                 return done(null, newUser);
               });
             }
