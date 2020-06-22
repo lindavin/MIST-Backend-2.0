@@ -29,6 +29,9 @@ var setLikes = function (imageArray, userID, database, callback) {
   }
 }
 
+/**
+ * This creates the user's albums page.
+ */
 module.exports.buildPage = (req, res, database) => {
   // find the user document from the users collection
   const QUERY = database.User.findOne({
@@ -49,44 +52,8 @@ module.exports.buildPage = (req, res, database) => {
       });
     };
   });
-
-  // // render the albums page using the albums array under the user document
-  // database.getIDforUsername(req.params.username,
-  //   function (userid, error) {
-  //     if (error)
-  //       res.end(JSON.stringify(error));
-  //     else
-  //       database.albumsInfo(userid, function (albums, error) {
-  //         if (error)
-  //           res.end(JSON.stringify(error));
-  //         else
-  //           res.render('albums', {
-  //             user: req.session.user,
-  //             username: req.params.username,
-  //             albums: albums
-  //           });
-  //       });
-  //   });
 };
 
-module.exports.buildPageOld = function (req, res, database) {
-  database.getIDforUsername(req.params.username,
-    function (userid, error) {
-      if (error)
-        res.end(JSON.stringify(error));
-      else
-        database.albumsInfo(userid, function (albums, error) {
-          if (error)
-            res.end(JSON.stringify(error));
-          else
-            res.render('albums', {
-              user: req.session.user,
-              username: req.params.username,
-              albums: albums
-            });
-        });
-    });
-};
 
 module.exports.allImagesinAlbum = function (req, res, database) {
   database.getIDforUsername(req.params.username,
