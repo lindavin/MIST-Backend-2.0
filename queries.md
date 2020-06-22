@@ -1,6 +1,7 @@
 
 # This is documentation over the queries made to/from the MySQL database.
 
+
 ## Files where MySQL queries occur (Ordered by CRUD)
 **INSERT INTO
 * functions/api.js
