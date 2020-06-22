@@ -3,6 +3,7 @@ const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
 
 mongoose.connect("mongodb://localhost:27017/usersDB", {
+    useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true
 });// make connection to database or create it if it does not yet exist

@@ -52,7 +52,7 @@ module.exports = (app, database) => {
             res.redirect("/me/:username/accountSettings");
           } else {
             //If usernames match and password is correct
-            database.User.findOneAndUpdate({username : req.user.username}, {$set : {username : req.body.newUsername}}, {new : true}, (err,doc) => {
+            database.User.findOneAndUpdate({_id : req.user._id}, {$set : {username : req.body.newUsername}}, {new : true}, (err,doc) => {
               if(err) {
                 console.log(err);
               } else {
@@ -68,7 +68,7 @@ module.exports = (app, database) => {
             res.redirect("/me/:username/accountSettings");
           } else {
             //If emails match and password is correct
-            database.User.findOneAndUpdate({username : req.user.username}, {$set : {email : req.body.newEmail}}, {new : true}, (err,doc) => {
+            database.User.findOneAndUpdate({_id : req.user._id}, {$set : {email : req.body.newEmail}}, {new : true}, (err,doc) => {
               if(err) {
                 console.log(err);
               } else {
@@ -84,7 +84,7 @@ module.exports = (app, database) => {
             res.redirect("/me/:username/accountSettings");
           } else {
             //If emails match and password is correct
-            database.User.findOneAndUpdate({username : req.user.username}, {$set : {password : createHash(req.body.newPassword)}}, {new : true}, (err,doc) => {
+            database.User.findOneAndUpdate({_id : req.user._id}, {$set : {password : createHash(req.body.newPassword)}}, {new : true}, (err,doc) => {
               if(err) {
                 console.log(err);
               } else {
