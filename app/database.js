@@ -143,44 +143,4 @@ module.exports.imageInfo = (function (imageid, callback) {
             callback(targetImage, null);
         }
     });
-
 });
-
-
-/**
- * Purpose:
- * To create embedd an album document into the user document corresponding to the
- * given 'userObjectId'
- * Preconditions:
- * 'userObjectId' is a string, 'name' is a string 
- */
-module.exports.createAlbum = (userObjectId, name, callback) => {
-    console.log('userObjectID ' + userObjectId);
-    // create an album object
-    let album = new Album({
-        name: name,
-        userid: mongoose.Types.ObjectId(userObjectId),
-        publicity: 0,
-        createdAt: Date(),
-        updatedAt: Date(),
-        images: [],                      // (of imageObjectIds)
-        flag: false,
-        caption: '',
-    });
-
-    // find the user doc and embed the album object into the userdoc
-    const QUERY = User.updateOne(
-        { _id: userObjectId },
-        { $push: { albums: album } }
-    );
-
-    QUERY.exec((err, writeOpResult) => {
-        //we need to change this callack
-        if (err) {
-            console.log(err);                   //look into what todo with errors later
-        } else {
-            console.log('write result: ' + writeOpResult);
-        }
-        callback(writeOpResult, err);
-    });
-}; // createAlbum
