@@ -1,6 +1,6 @@
 module.exports = (app, database) => {
     const albums = require('./functions/albums');
-    const albumContents = require('./functions/album-contents');
+    //const albumContents = require('./functions/album-contents');
 
     app.get("/me/:username/albums", (req, res) => {
         console.log('loading albums');
@@ -17,6 +17,4 @@ module.exports = (app, database) => {
         };
       });
     
-
-
 }

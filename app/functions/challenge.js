@@ -9,12 +9,7 @@ var utils = require('./utils.js');
 // | Utilities |
 // +-----------+
 
-/**
- * Put quotes around a string for MySQL.
- */
-var quote = function (str) {
-    return "'" + str + "'";
-}; // quote
+
 
 // +--------------------+--------------------------------------------
 // | Exported Functions |
@@ -60,19 +55,19 @@ module.exports.edit = function (req, res, database) {
 
 module.exports.gallery = function (req, res, database, info) {
 
-    const LEVEL = database.sanitize(info.level || "Beginning");
-    const COLOR = database.sanitize(info.color || "Greyscale");
-    const ANIMATION = database.sanitize(info.animation || "Static");
-    const CATEGORY = LEVEL + ", " + COLOR + ", " + ANIMATION;
+    let level = database.sanitize(info.level || "Beginning");
+    let color = database.sanitize(info.color || "Greyscale");
+    let animation = database.sanitize(info.animation || "Static");
+    let category = level + ", " + color + ", " + animation;
 
-    const QUERY = database.Challenge.find({
-        category: CATEGORY,
+    let query = database.Challenge.find({
+        category: category,
     });
 
     // since we only need the name title and code
-    QUERY.select("name title code")
+    query.select("name title code")
 
-    QUERY.exec((err, challenges) => {
+    query.exec((err, challenges) => {
         console.log(challenges);
         // Sanity check
         if (err) {
@@ -83,9 +78,9 @@ module.exports.gallery = function (req, res, database, info) {
         res.render('challenge-gallery', {
             user: req.session.user,
             challenge: {},
-            level: LEVEL,
-            color: COLOR,
-            animation: ANIMATION,
+            level: level,
+            color: color,
+            animation: animation,
             sample: [
                 { id: 1, name: "First", code: "x" },
                 { id: 9, name: "Second", code: "y" }
@@ -99,19 +94,19 @@ module.exports.gallery = function (req, res, database, info) {
  * The page for showing challenges.
  */
 module.exports.view = function (req, res, database) {
-    const NAME = database.sanitize(req.params.name);
-    console.log(NAME);
+    let name = database.sanitize(req.params.name);
+    console.log(name);
     // // First try to query by name
     // var query = "SELECT title,description,code FROM challenges WHERE name='"
     //     + TITLE + "';";
-    const QUERY = database.Challenge.find({
-        name: NAME
+    let query = database.Challenge.find({
+        name: name
     });
 
     // since we only need title description and code fields
-    QUERY.select("title description code");
+    query.select("title description code");
 
-    QUERY.exec((err, challenges) => {
+    query.exec((err, challenges) => {
         console.log(challenges);
         // Sanity check 1
         if (err) {
