@@ -30,16 +30,30 @@ var setFlags = function (commentArray, userID, database, callback) {
 // you can look at the original .ejs file to see where it belongs
 // * the login/signup slider isn't working properly on the ejs file. 
 // * we also need to pass in albums properly
-module.exports.buildPage = function (req, res, database) {
+module.exports.buildPage = (req, res, database) => {
 
-    // retrieve the image using the id
-    database.imageInfo(req.params.imageid, (image, err) => {
-        if (err)
-            res.end(JSON.stringify(error));
+    let imageid = req.params.imageid;
+    imageid = database.sanitize(imageid);
+
+    let query = database.User.findOne({
+        images:
+            { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
+    }) // iterate the users collection or User Model : look at each user document
+    // for a document whose images array contains an image whose ObjectId matches the 
+    // imageid under the request parameter
+
+    query.exec((err, user) => {
+        if (err) {
+            res.end(JSON.stringify(err));
+        }
+        else if (!user)
+            // image does not exist
+            res.end('ERROR: Image does not exist');
         else {
-            // image found
-
-            // determine if anyone is logged in 
+            // image exists
+            console.log(user.images.id(imageid));
+            let image = user.images.id(imageid);
+            image.username = user.username;
             if (req.isAuthenticated()) {
                 res.render('single-image', {
                     imageid: image._id,
@@ -60,5 +74,5 @@ module.exports.buildPage = function (req, res, database) {
                 });
             }// no one is not logged in
         }
-    })
+    }) // execute query
 };
