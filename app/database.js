@@ -39,7 +39,6 @@ const commentsSchema = new mongoose.Schema({
 const albumsSchema = new mongoose.Schema({
     name: String,
     userId: Object,
-    // albumId: String, automatically generating
     publicity: Number,
     createdAt: Date,
     updatedAt: Date,
@@ -100,7 +99,7 @@ const Workspace = mongoose.model("Workspace", workspacesSchema);
 
 
 
-
+// Export models
 module.exports.User = User;
 module.exports.Image = Image;
 module.exports.Comment = Comment;
@@ -108,43 +107,14 @@ module.exports.Album = Album;
 module.exports.Challenge = Challenge;
 module.exports.Workspace = Workspace;
 
+// Export Utilities
+module.exports.Types = mongoose.Types;
 module.exports.sanitize = sanitize; //sanitizes string
 
-// create Album
-// is there a way to store extra stuff within the req. 
-// I want to store the user Object _id
-module.exports.createAlbum = (userid, name, callback) => {
-    // find the user doc
+// +--------+----------------------------------------------------------
+// | Images |
+// +--------+
 
-    // create an album object
-    let album = new Album({
-        name: name,
-        userid: userid,
-        publicity: 0,
-        createdAt: Date(),
-        updatedAt: Date(),
-        images: [],                      // (of Ids)
-        flag: false,
-        caption: '',
-    });
-
-    // embed the album object into the userdoc
-    const QUERY = User.updateOne(
-        { username: userid },
-        { $push: { albums: album } }
-    );
-
-    QUERY.exec((err, writeOpResult) => {
-        //we need to change this callack
-        if (err) {
-            console.log(err);                   //look into what todo with errors later
-        } else {
-            console.log('write result: ' + writeOpResult);
-        }
-        callback(writeOpResult, err);
-    });
-
-}; // createAlbum
 
 /**
  * Find the desired image document. If it finds the document, calls `callback(info,null)`.
@@ -177,3 +147,40 @@ module.exports.imageInfo = (function (imageid, callback) {
 });
 
 
+/**
+ * Purpose:
+ * To create embedd an album document into the user document corresponding to the
+ * given 'userObjectId'
+ * Preconditions:
+ * 'userObjectId' is a string, 'name' is a string 
+ */
+module.exports.createAlbum = (userObjectId, name, callback) => {
+    console.log('userObjectID ' + userObjectId);
+    // create an album object
+    let album = new Album({
+        name: name,
+        userid: mongoose.Types.ObjectId(userObjectId),
+        publicity: 0,
+        createdAt: Date(),
+        updatedAt: Date(),
+        images: [],                      // (of imageObjectIds)
+        flag: false,
+        caption: '',
+    });
+
+    // find the user doc and embed the album object into the userdoc
+    const QUERY = User.updateOne(
+        { _id: userObjectId },
+        { $push: { albums: album } }
+    );
+
+    QUERY.exec((err, writeOpResult) => {
+        //we need to change this callack
+        if (err) {
+            console.log(err);                   //look into what todo with errors later
+        } else {
+            console.log('write result: ' + writeOpResult);
+        }
+        callback(writeOpResult, err);
+    });
+}; // createAlbum

@@ -3,89 +3,59 @@
  *   Functions related to the album.
  */
 
-
-var setLikes = function (imageArray, userID, database, callback) {
-  if (imageArray.length == 0)
-    callback([]);
-  else {
-    var imageArrayClone = imageArray.slice(0, imageArray.length);
-    var errorsArray = [];
-    var likes = { counter: 0, likes: [] };
-    for (var image = 0; image < imageArrayClone.length; image++) {
-      (function (currentIndex) {
-        database.hasLiked(userID, imageArrayClone[currentIndex].imageid, function (liked, error) {
-          likes.likes[currentIndex] = liked;
-          likes.counter++;
-          if (likes.counter >= imageArray.length) {
-            for (var i = 0; i < likes.likes.length; i++) {
-              imageArrayClone[i].liked = likes.likes[i];
-            }
-            callback(imageArrayClone, errorsArray);
-          }
-          errorsArray.push(error);
-        });
-      })(image);
-    }
-  }
-}
-
 /**
  * This creates the user's albums page.
  */
 module.exports.buildPage = (req, res, database) => {
-  // find the user document from the users collection
-  const QUERY = database.User.findOne({
-    username: req.user.username,
-  });
-
-  // retrieve that document
-  QUERY.exec((err, user) => {
-    if (err)
-      res.end(JSON.stringify(error));
-    else {
-      console.log(user);
-      res.render('albums', {
-        user: req,
-        userData: req.user,
-        username: req.user.username,
-        albums: user.albums,
-      });
-    };
-  });
-};
-
-
-module.exports.allImagesinAlbum = function (req, res, database) {
-  database.getIDforUsername(req.params.username,
-    function (userid, error) {
-      if (error)
-        res.end(JSON.stringify(error));
-      else
-        database.getAllImagesforUser(userid, function (images, error) {
-          if (error)
-            res.end(JSON.stringify(error));
-          else
-            setLikes(images, (req.session.user) ? req.session.user.userid : null, database, function (imageArray) {
-              res.render('full-gallery', {
-                user: req.session.user,
-                images: imageArray || images,
-                username: req.params.username
-              });
-            });
-        });
+  if (req.isAuthenticated()) {
+    res.render('albums', {
+      user: req,
+      userData: req.user,
+      username: req.user.username,
+      albums: req.user.albums,
     });
+  } else {
+    res.redirect('/login');
+  }
 };
 
+
+/**
+ * Purpose:
+ * To create embedd an album document into the user document corresponding to the
+ * given 'userObjectId'
+ * Preconditions:
+ * 'userObjectId' is a string, 'name' is a string 
+ */
 module.exports.createAlbum = function (req, res, database) {
-  // later change back to user_id
-  // for now we use username
-  database.createAlbum(req.user.username, req.body.newAlbum, function (success, error) {
-    if (!success) {
-      console.log("Failed to create album because", error);
+
+  let userObjectId = database.Types.ObjectId(req.user._id);
+
+  let album = new database.Album({
+    name: req.body.newAlbum,
+    userid: userObjectId,
+    publicity: 0,
+    createdAt: Date(),
+    updatedAt: Date(),
+    images: [],                      // (of imageObjectIds)
+    flag: false,
+    caption: '',
+  }) // create album document object
+
+  // find the user doc and embed the album object into the userdoc
+  let query = database.User.updateOne(
+    { _id: userObjectId },
+    { $push: { albums: album } }
+  )// create Mongoose query object
+
+  query.exec((err, writeOpResult) => {
+    //we need to change this callack
+    if (err) {
+      console.log("Failed to create album because", err);
       res.end(JSON.stringify(error));
-    }
-    else {
+    } else {
+      console.log('operation result ' + writeOpResult);
       res.redirect('back');
     }
-  });
+  })// execute query 
 };
