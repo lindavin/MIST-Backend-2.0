@@ -131,14 +131,14 @@ handlers.saveimage = function (info, req, res) {
       code: database.sanitize(info.code),
       ratings: 0,
       createdAt: Date(),
-      updatedAt : Date(),
+      updatedAt: Date(),
       comments: [], // of (of comment _ids)
       flag: false,
       publicity: 0,
       caption: "",
       delete: false,
     });
-    
+
     database.User.findOneAndUpdate(
       { _id: req.user._id },
       { $push: { images: image } },
@@ -159,8 +159,73 @@ handlers.saveimage = function (info, req, res) {
 // | Workspace Handlers |
 // +--------------------+
 
+/**
+ * Check if an image exists
+ *   info.action: wsexists
+ *   info.title: The title of the image
+ */
+handlers.wsexists = function (info, req, res) {
+  if (!req.isAuthenticated()) {
+    res.send("logged out");
+  }
+  else {
+    // check if the user already has a workspace by the same name that they're trying to save it as.
+    let workspaces = req.user.workspaces;
+    let exists = false;
+    workspaces.forEach(ws => {
+      if (ws.name === info.name) {
+        exists = true;
+        return;
+      }
+    });
+    res.send(exists);
+  } // else
+};
 
+/**
+* Save a workspace.
+*   action: savews
+*   name: the name of the workspace
+*   data: The information about the workspace
+*   replace: true or false [optional]
+* Precondition:
+* The user does not already own a workspace by the same name.
+*/
+handlers.savews = function (info, req, res) {
+  if (!req.isAuthenticated()) {
+    fail(res, "Could not save workspace because you're not logged in");
+  }
+  else if (!info.name) {
+    fail(res, "Could not save workspace because you didn't title it");
+  }
+  else {
 
+    // create the workspace object
+    let workspace = new database.Workspace({
+      name: database.sanitize(info.name),
+      data: info.data,
+      createdAt: Date(),
+      updatedAt: Date(),
+    }) // create workspace document object
+    // save it to their array
+    // find the user doc and embed the album object into the userdoc
+    let query = database.User.updateOne(
+      { _id: req.user._id },
+      { $push: { workspaces: workspace } }
+    )// create Mongoose query object
+
+    query.exec((err, writeOpResult) => {
+      //we need to change this callack
+      if (err) {
+        console.log("Failed to save workspace because", err);
+        res.end(JSON.stringify(error));
+      } else {
+        console.log('operation result ' + writeOpResult);
+        res.end();
+      }
+    })// execute query 
+  }
+} // handlers.savews
 
 
 
