@@ -18,11 +18,13 @@ const imagesSchema = new mongoose.Schema({
     code: String,
     ratings: Number,
     createdAt: Date,
+    updatedAt: Date,
     comments: Array, // of (of comment _ids)
     flag: Boolean,
     publicity: Number,
     caption: String,
     delete: Boolean,
+    featured: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
@@ -58,7 +60,7 @@ const usersSchema = new mongoose.Schema({
     forename: String,
     surname: String,
     email: String,
-    userName: String,
+    username: String,
     password: String,                //encrypted
     createdAt: Date,
     updatedAt: Date,
@@ -143,5 +145,35 @@ module.exports.createAlbum = (userid, name, callback) => {
     });
 
 }; // createAlbum
+
+/**
+ * Find the desired image document. If it finds the document, calls `callback(info,null)`.
+ * Otherwise, calls `callback(null,error)`.
+ */
+module.exports.imageInfo = (function (imageid, callback) {
+    imageid = sanitize(imageid);
+    // iterate the users collection or User Model : look at each user document
+    const QUERY = User.findOne({
+        images:
+            { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
+    });
+    // iterate the image array field : 
+    QUERY.exec((err, user) => {
+        if (err) {
+            callback(null, err);
+        }
+        else if (!user)
+            // image does not exist
+            callback(null, 'ERROR: Image does not exist');
+        else {
+            // image exists
+            console.log(user.images.id(imageid));
+            let targetImage = user.images.id(imageid);
+            targetImage.username = user.username;
+            callback(targetImage, null);
+        }
+    });
+
+});
 
 

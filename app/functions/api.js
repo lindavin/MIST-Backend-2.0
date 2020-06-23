@@ -131,6 +131,7 @@ handlers.saveimage = function (info, req, res) {
       code: database.sanitize(info.code),
       ratings: 0,
       createdAt: Date(),
+      updatedAt : Date(),
       comments: [], // of (of comment _ids)
       flag: false,
       publicity: 0,
