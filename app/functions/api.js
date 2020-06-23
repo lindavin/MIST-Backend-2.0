@@ -213,7 +213,7 @@ handlers.savews = function (info, req, res) {
       { _id: req.user._id },
       { $push: { workspaces: workspace } }
     )// create Mongoose query object
-
+      // we need to modify this query so that it replaces the document with the new one.
     query.exec((err, writeOpResult) => {
       //we need to change this callack
       if (err) {
@@ -226,6 +226,49 @@ handlers.savews = function (info, req, res) {
     })// execute query 
   }
 } // handlers.savews
+
+/**
+* List the workspaces.
+*   action: listws
+*/
+handlers.listws = function(info, req, res) {
+  if (!req.isAuthenticated()) {
+    fail(res, "Could not list workspaces because you're not logged in");
+  }
+  else {
+    var result = [];
+        for (var i = 0; i < req.user.workspaces.length; i++) {
+          result.push(req.user.workspaces[i].name);
+        } // for
+        res.send(result);
+  } // if logged in
+} // handlers.listws
+
+/**
+* Get a workspace
+*   action: getws
+*   name: string naming the workspace
+*/
+handlers.getws = function(info, req, res) {
+  if (!req.isAuthenticated()) {
+    fail(res, "You must be logged in to retrieve a workspace.");
+  } // if they are not logged in
+  else if (info.id) {
+    fail(res, "We currently do not support getting workspace by id");
+  }
+  else if (info.name) {
+    let workspace = req.user.workspaces.find(ws => ws.name === info.name);
+    if (workspace === undefined){
+      fail(res, "No workspace with name" + info.name);
+    }else{
+      res.setHeader("Content-type", "text/plain");
+      res.send(workspace.data);
+    }
+  } // if they've requested the workspace by name
+  else {
+    fail(res, "Insufficient info for getting the workspace");
+  }
+} // handlers.getws
 
 /**
  * Return the ws stored in the session.  See storews for more info.
@@ -271,6 +314,7 @@ handlers.submitchallenge = function (info, req, res) {
     }
   });
 };
+
 
 
 // +---------------+---------------------------------------------------
