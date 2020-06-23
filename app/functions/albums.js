@@ -7,18 +7,19 @@
  * This creates the user's albums page.
  */
 module.exports.buildPage = (req, res, database) => {
+  // check if user is logged in
   if (req.isAuthenticated()) {
     res.render('albums', {
       user: req,
       userData: req.user,
       username: req.user.username,
       albums: req.user.albums,
-    });
+    })
   } else {
+    // redirect otherwise
     res.redirect('/login');
   }
 };
-
 
 /**
  * Purpose:
