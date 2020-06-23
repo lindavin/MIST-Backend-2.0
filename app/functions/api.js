@@ -62,7 +62,7 @@ module.exports.run = function (info, req, res) {
  */
 fail = function (res, message) {
   console.log("FAILED!", message);
-  res.send(400, message);       // "Bad request"
+  res.status(400).send(message);       // "Bad request"
 } // fail
 
 // +----------+--------------------------------------------------------
@@ -227,7 +227,24 @@ handlers.savews = function (info, req, res) {
   }
 } // handlers.savews
 
+/**
+ * Return the ws stored in the session.  See storews for more info.
+ *  info.action: returnws
+ */
+handlers.returnws = function(info, req, res) {
+  res.send(req.session.workspaceCode);
+  res.end();
+};
 
+/**
+ * Store the ws in the session
+ *   info.action: storews
+ *   info.code: the code for the workspace
+ */
+handlers.storews = function(info, req, res) {
+  req.session.workspaceCode = info.code;
+  res.end();
+};
 
 // +------------+------------------------------------------------------
 // | Challenges |
