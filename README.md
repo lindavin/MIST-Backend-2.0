@@ -6,9 +6,8 @@ The backend of MIST.
 * npm start
 
 **Currently working on**
-* Routes
-* Images
-* List of Queries
+* comments
+* workspaces
 
 **Features for the future**
 * Challenges: Number Attempted vs Number Completed
