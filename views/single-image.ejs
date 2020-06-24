@@ -135,7 +135,7 @@
           <th class="user">
             <a href='<%= "/user/" + comments[i].username %>'><%- comments[i].username %></a>
           </th>
-          <td class="comment"><%- comments[i].comment %></td>
+          <td class="comment"><%- comments[i].body %></td>
           <td class="date"><script>document.write(describeDate("<%= comments[i].postedAt %>"))</script></td>
           <% if(user.isAuthenticated()) { %>
             <td class='flagComment <%= (comments[i].flagged) ? 'flaggedComment' : ''%>'>&#9873</td>

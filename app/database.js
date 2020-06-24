@@ -23,15 +23,15 @@ const imagesSchema = new mongoose.Schema({
     flag: Boolean,
     publicity: Number,
     caption: String,
-    delete: Boolean,
+    active: Boolean,
     featured: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
     userId: Object,
-    commentId: String,
     body: String,
     createdAt: Date,
+    active: Boolean,
     flagged: Boolean,
     imageId: Object,
 });
@@ -43,6 +43,7 @@ const albumsSchema = new mongoose.Schema({
     createdAt: Date,
     updatedAt: Date,
     images: Array,                      // (of Ids)
+    active: Boolean,
     flag: Boolean,
     caption: String,
 });
@@ -52,6 +53,7 @@ const workspacesSchema = new mongoose.Schema({
     data: Object,
     createdAt: Date,
     updatedAt: Date,
+    active: Boolean,
 });
 
 const usersSchema = new mongoose.Schema({
@@ -67,6 +69,7 @@ const usersSchema = new mongoose.Schema({
     images: [imagesSchema],                   // of image schemas
     albums: [albumsSchema],                   // of album schemas
     workspaces: [workspacesSchema],               // of workspace objects
+    active: Boolean,
     flag: Boolean,
     liked: Array,                             // of image _ids
     comments: Array,                 //(of comment _ids)
@@ -79,11 +82,11 @@ const challengeSchema = new mongoose.Schema({
     code: String,
     createdAt: String,
     updatedAt: String,
+    active: Boolean,
     flag: Boolean,
     category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
     position: String,
     description: String,
-
 });
 
 // Configuring Schemas
