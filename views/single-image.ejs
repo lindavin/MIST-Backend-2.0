@@ -133,7 +133,7 @@
       <% for (var i = 0; i < comments.length; i++) { %>
         <tr class="comment" id=<%- "'comment" + comments[i].commentId + "'" %>>
           <th class="user">
-            <a href='<%= "/user/" + comments[i].username %>'><%- comments[i].username %></a>
+            <a href='<%= "/user/" + comments[i].author.username %>'><%- comments[i].author.username %></a>
           </th>
           <td class="comment"><%- comments[i].body %></td>
           <td class="date"><script>document.write(describeDate("<%= comments[i].postedAt %>"))</script></td>

@@ -55,48 +55,54 @@ module.exports.buildPage = (req, res, database) => {
             let image = user.images.id(imageid);
             image.username = user.username;
 
+
             // search the comments collection for documents that with imageid that match image._id
             // add a sort feature
             // how to return five at time? because rn we are returning all comments
             // username!!!!!
             // look into aggregation
-            database.Comment.find({
-                imageId: image._id,
-                active : true,
-            }, (err, comments) => {
-                if (err){
-                    console.log(err);
-                    res.end(JSON.stringify(err));
-                }
-         /*       database.User.find({
-                    userId:
-                    { $elemMatch: { _id: database.Types.ObjectId(commentid) } }, 
-                }) */
-                // comments is an array of comment documents whose imageId is image._id
-                // comment documents are objects
-                // We wanted to add a username field to each comment object where username is the username of
-                // the user document whose ._id is comment.userId
-                
-                if (req.isAuthenticated()) {
-                    res.render('single-image', {
-                        imageid: image._id,
-                        comments: comments,
-                        user: req,
-                        userData: req.user,
-                        image: image,
-                        liked: false,
-                        albums: [],
-                    });
-                } else {
+            database.Comment.
+                find({
+                    imageId: image._id,
+                    active: true,
+                }).
+                populate('author').
+                exec((err, comments) => {
+                    if (err) {
+                        console.log(err);
+                        res.end(JSON.stringify(err));
+                    };
+                    // comments is an array of comment documents whose imageId is image._id
+                    // comment documents are objects
+                    // We wanted to add a username field to each comment object where username is the username of
+                    // the user document whose ._id is comment.userId
 
-                    res.render('single-image', {
-                        image: image,
-                        user: null,
-                        comments: comments,
-                        liked: null,
-                    });
-                }// no one is not logged in
-            });
+                    // this part will be for front-end to fill in or for us to 
+                    // write in ourselves when we understand MERN better (i.e how does react
+                    // work with req,res ?)
+                    if (req.isAuthenticated()) {
+                        // we made this work by hacking the single-image.ejs file
+                        res.render('single-image', {
+                            imageid: image._id,
+                            comments: comments,
+                            user: req,
+                            userData: req.user,
+                            image: image,
+                            liked: false,
+                            albums: [],
+                        });
+                    } else {
+                        // this needs to be fixed
+                        res.render('single-image', {
+                            image: image,
+                            user: req,
+                            userData: {},
+                            comments: comments,
+                            liked: null,
+                            albums: [],
+                        });
+                    }// no one is not logged in
+                });
 
         }
     }) // execute query
@@ -106,7 +112,7 @@ module.exports.buildPage = (req, res, database) => {
 module.exports.saveComment = function (req, res, database) {
     // build the comment
     let comment = new database.Comment({
-        userId: req.user._id,
+        author: req.user._id,
         body: database.sanitize(req.body.newComment),
         createdAt: Date(),
         active: true,

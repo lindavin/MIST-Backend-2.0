@@ -28,7 +28,7 @@ const imagesSchema = new mongoose.Schema({
 });
 
 const commentsSchema = new mongoose.Schema({
-    userId: Object,
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     body: String,
     createdAt: Date,
     active: Boolean,
