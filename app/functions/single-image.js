@@ -7,6 +7,7 @@
 // +---------+
 
 var utils = require('./utils.js');
+var database = require('../database')
 
 // +-----------+-------------------------------------------------------
 // | Functions |
@@ -14,7 +15,12 @@ var utils = require('./utils.js');
 
 // setFlags sets the flagged property of every comment in a given array
 var setFlags = function (commentArray, userID, database, callback) {
-    // STUB
+    if (commentArray.length == 0)
+        callback([]);
+    else {
+        callback(commentArray);
+        // STUB
+    }
 }
 
 // missing quick hacks:
@@ -30,49 +36,88 @@ var setFlags = function (commentArray, userID, database, callback) {
 // you can look at the original .ejs file to see where it belongs
 // * the login/signup slider isn't working properly on the ejs file. 
 // * we also need to pass in albums properly
-module.exports.buildPage = (req, res, database) => {
 
-    let imageid = req.params.imageid;
-    imageid = database.sanitize(imageid);
-
-    let query = database.User.findOne({
-        images:
-            { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
-    }) // iterate the users collection or User Model : look at each user document
-    // for a document whose images array contains an image whose ObjectId matches the 
-    // imageid under the request parameter
-
-    query.exec((err, user) => {
-        if (err) {
-            res.end(JSON.stringify(err));
-        }
-        else if (!user)
-            // image does not exist
-            res.end('ERROR: Image does not exist');
-        else {
-            // image exists
-            console.log(user.images.id(imageid));
-            let image = user.images.id(imageid);
-            image.username = user.username;
-            if (req.isAuthenticated()) {
-                res.render('single-image', {
-                    imageid: image._id,
-                    comments: image.comments,
-                    user: req,
-                    userData: req.user,
-                    image: image,
-                    liked: false,
-                    albums: [],
-                });
-            } else {
-
-                res.render('single-image', {
-                    image: image,
-                    user: null,
-                    comments: image.comments,
-                    liked: null,
-                });
-            }// no one is not logged in
-        }
-    }) // execute query
+// we have to fix set flags
+module.exports.buildPage = function (req, res, database) {
+    database.imageInfo(req.params.imageid, function (image, error) {
+        if (error)
+            res.end(JSON.stringify(error));
+        else
+            database.hasLiked((req.user) ? req.user._id : null, image._id, function (liked, error) {
+                if (error)
+                    res.end(JSON.stringify(error));
+                else {
+                    database.commentInfo(image._id, function (comment, error) {
+                        if (error)
+                            res.end(JSON.stringify(error));
+                        else if (req.user != null) {
+                            database.albumsInfo(req.user._id, function (albums, error) {
+                                if (error)
+                                    res.end(JSON.stringify(error));
+                                else {
+                                    var userid = (req.user) ? req.user._id : null;
+                                    setFlags(comment, userid, database, function (comments) {
+                                        res.render('single-image', {
+                                            comments: comments,
+                                            user: req.user,
+                                            image: image,
+                                            liked: liked,
+                                            albums: albums
+                                        }); // if user logged in, can comment
+                                    });
+                                } //
+                            });  // database.albumsInfo
+                        } // if there is a user
+                        else {
+                            console.log('we do not have a user');
+                            var userid = (req.user) ? req.user_id : null;
+                            setFlags(comment, userid, database, function (comments) {
+                                res.render('single-image', {
+                                    comments: comments,
+                                    user: req.user,
+                                    image: image,
+                                    liked: liked
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+    });
 };
+
+module.exports.saveComment = function (req, res, database) {
+  // build the comment
+  let userID = req.user._id; 
+  let comment = new database.Comment({
+    author: userID,
+    body: database.sanitize(req.body.newComment),
+    createdAt: Date(),
+    active: true,
+    flagged: false,
+    imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
+  });
+
+  // push commentId to the user's comments array
+  database.User.findById(userID, function(err, user) {
+    if (err) {
+        database.fail(res, "Error: " + error);
+      } else {
+        user.comments.push(comment._id);
+        user.save(function (err) {
+        if (err) console.log("unable to add comment to user"); })
+      }
+  })
+
+  // save the comment
+  // need to check if this is actually safe to do
+  comment.save()
+    .then(doc => {
+      console.log(doc);
+      res.redirect('back');
+    })
+    .catch(err => {
+      console.error(err)
+      res.end(JSON.stringify(error));
+    });
+}

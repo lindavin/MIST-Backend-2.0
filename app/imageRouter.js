@@ -5,4 +5,23 @@ module.exports = (app, database) => {
         image.buildPage(req, res, database);
     });
 
+    app.post('/image/:imageid', function(req,res) {
+        if(req.body.commentSubmit != null) {
+          image.saveComment(req, res, database);
+        }
+        else if(req.body.delete != null) {
+          image.deleteImage(req, res, database);
+        }
+        else if (req.body.add != null){
+          image.addtoAlbum(req, res, database);
+        }
+        else if (req.body.profile != null){
+          image.setProfilePicture(req, res, database);
+        };
+      });
+
+    app.get("/me/:username/images", (req,res) => {
+      image.allImagesinAlbum(req, res, database);
+    });
+
 }

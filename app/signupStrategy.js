@@ -30,12 +30,29 @@ module.exports = (passport, User) => {
               var newUser = new User();
               var dt = new Date();
               // set the user's local credentials
+
+              //newUser.fname = req.body.forename;
+              //newUser.lname = req.body.surname;
+
+              newUser.forename = req.body.forename;
+              newUser.surname = req.body.surname;
+              newUser.email = req.body.email;
               newUser.username = username;
               newUser.password = createHash(password);
-              newUser.email = req.body.email;
-              newUser.fname = req.body.forename;
-              newUser.lname = req.body.surname;
-              newUser.dateJoined = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+              newUser.createdAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+              newUser.updatedAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+              newUser.verified = false; // should be changed to true once email is verified
+              newUser.admin = false;
+              newUser.moderator = false;
+              newUser.images = [];
+              newUser.albums = [];
+              newUser.workspaces = [];
+              newUser.active = true;
+              newUser.flag = false;
+              newUser.liked = [];
+              newUser.comments = []
+              newUser.about = "";
+
               // save the user
               newUser.save(function(err) {
                 if (err) {
