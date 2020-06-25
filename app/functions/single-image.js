@@ -132,3 +132,18 @@ module.exports.saveComment = function (req, res, database) {
             res.end(JSON.stringify(error));
         });
 }
+
+module.exports.allImagesinAlbum = function(req, res, database) {
+
+    // retrieve the images that the user has made
+    let images = req.user.images;
+
+    // render full-gallery
+    res.render('full-gallery', {
+        user:req.user,
+        images: images,
+        username:req.params.username,
+       
+    });
+    
+};
