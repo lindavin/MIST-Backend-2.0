@@ -32,7 +32,8 @@ const commentsSchema = new mongoose.Schema({
     body: String,
     createdAt: Date,
     active: Boolean,
-    flagged: Boolean,
+    flagged: Number,
+    flaggedBy: Array,
     imageId: Object,
 });
 

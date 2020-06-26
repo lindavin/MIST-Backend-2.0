@@ -23,13 +23,8 @@ module.exports = (app, database) => {
           user: req,
           userData : req.user
         })
-      })
-
-     
-
-      app.get("/me/:username/images", (req,res) => {
-        
       });
+      
 
       app.get("/me/:username/accountSettings", (req,res) => {
         res.render('accountSettings', {

@@ -39,6 +39,7 @@ module.exports.createAlbum = function (req, res, database) {
     createdAt: Date(),
     updatedAt: Date(),
     images: [],                      // (of imageObjectIds)
+    active: true,
     flag: false,
     caption: '',
   }) // create album document object

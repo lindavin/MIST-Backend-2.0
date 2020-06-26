@@ -20,4 +20,8 @@ module.exports = (app, database) => {
         };
       });
 
+    app.get("/me/:username/images", (req,res) => {
+      image.allImagesinAlbum(req, res, database);
+    });
+
 }

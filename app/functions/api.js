@@ -294,3 +294,31 @@ handlers.deleteComment = function (info, req, res) {
       fail(res, "Unknown error");
   });
 };
+
+// +------+------------------------------------------------------------
+// | Flag |
+// +------+
+
+// when comments are rendered, use the objectId to send back to us
+handlers.flagComment = (info, req, res) => {
+  if (!req.isAuthenticated()) {
+    res.send("logged out");
+  }  
+  else { 
+    console.log(req.user);
+      database.Comment.findByIdAndUpdate(info.commentId, 
+        { $inc: {
+          flagged : 1 }
+        })
+        .exec((err, result) => {
+          if (err) {
+            fail(res, "Error: " + err);
+            console.log(err);
+          } else {
+            res.end("Comment " + info.commentId + " flagged.");
+            console.log(result);
+          }
+      });
+    }
+}
+
