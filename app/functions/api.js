@@ -25,6 +25,7 @@ handler.
 // +--------------------+
 
 var database = require('../database.js');
+var image = require("./single-image");
 
 // +--------------------+--------------------------------------------
 // | Exported Functions |
@@ -62,7 +63,7 @@ module.exports.run = function (info, req, res) {
  */
 fail = function (res, message) {
   console.log("FAILED!", message);
-  res.send(400, message);       // "Bad request"
+  res.status(400).send(message);       // "Bad request"
 } // fail
 
 // +----------+--------------------------------------------------------
@@ -263,3 +264,33 @@ handlers.submitchallenge = function (info, req, res) {
 // +----------+--------------------------------------------------------
 // | Comments |
 // +----------+
+
+// Why isn't this is in single-image.js?
+
+/**
+ * Delete a comment from the database.
+ *   action: deleteComment
+ *   commentId, the comment to delete
+ */
+handlers.deleteComment = function (info, req, res) {
+  if (!req.isAuthenticated())
+    fail(res, "User Not logged in")
+  //console.log("commentID:", info.commentId)
+  console.log("commentID:", req.params._id)
+
+  // what is the second parameter? I have tried multiple things 
+  // it is supposed to be the comment object id. how do we get it?
+  // right now it is undefined and causing errors
+  // there are console logs to figure out where the problem came from 
+  image.deleteComment(req.user._id, req.params._id, function (success, error) {
+    if (error) {
+      console.log("canDeleteHandler 4");
+      fail(res, JSON.stringify(error));
+      console.log("canDeleteHandler 5");
+    }
+    else if (success)
+      res.end("Comment " + info.commentId + " deleted.");
+    else
+      fail(res, "Unknown error");
+  });
+};

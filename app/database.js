@@ -66,6 +66,8 @@ const usersSchema = new mongoose.Schema({
     createdAt: Date,
     updatedAt: Date,
     verified: Boolean,
+    admin: Boolean,
+    moderator: Boolean,
     images: [imagesSchema],                   // of image schemas
     albums: [albumsSchema],                   // of album schemas
     workspaces: [workspacesSchema],               // of workspace objects

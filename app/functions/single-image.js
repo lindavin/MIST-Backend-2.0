@@ -7,6 +7,7 @@
 // +---------+
 
 var utils = require('./utils.js');
+var database = require('../database')
 
 // +-----------+-------------------------------------------------------
 // | Functions |
@@ -132,3 +133,88 @@ module.exports.saveComment = function (req, res, database) {
             res.end(JSON.stringify(error));
         });
 }
+
+
+
+// delete comments
+// User is an admin or moderator
+// User is the owner of the image
+// User is the Commenter
+// callback(success, error)
+module.exports.canDeleteComment = (userid, commentId, callback) => {
+    console.log("canDeleteComment1");
+    // check if the logged-in user is authorized to delete
+    userid = database.sanitize(userid);
+    commentId = database.sanitize(commentId);
+    let userQuery = database.User.findById(userid);
+    
+    userQuery.exec((err, user) => {
+      if (err) {
+        callback(false, err);
+      } else {
+        //is the user an admin or moderator?
+        if (user.admin || user.moderator) {
+          callback(true, null)
+        }
+        else {
+          // does the user own the comment?
+          database.Comment.findById(commentId, (err, comment) => {
+            if (comment.author.equals(user._id)) {
+              callback(true, null);
+            } else {
+              // does the user own the image?
+              let imageId = commentDoc.imageId;
+              let isImageOwner = false;
+  
+              // loop through user's images and compare to imageID
+              user.images.forEach((image) => {
+                if (image._id.equals(imageId)) {
+                  isImageOwner = false;
+                  return;
+                }
+              });
+  
+              if (isImageOwner) {
+                callback(true, null)
+              } else {
+                callback(false, null)
+              }
+  
+            }
+          })
+        }
+      };
+    })
+  }
+  
+  
+  
+  module.exports.deleteComment = (userid, commentId, callback) => {
+
+    userid = database.sanitize(userid);
+    commentId = database.sanitize(commentId);
+  
+    let commentQuery = database.Comment.findById(commentId);
+  
+    // this fails, maybe it couldn't find anything
+    commentQuery.exec((err, comment) => {
+      if (err) {
+        callback(false, err);
+        console.log("are we here? 2");
+      } else {
+        module.exports.canDeleteComment(userid, commentId, function (authorized, error) {
+          if (error) {
+            callback(false, error);
+          }
+          // does the user have permission to delete the comment?
+          else if (!authorized)
+            callback(false, "User is not authorized to delete this comment.");
+          else {
+            // set active == false
+            comment.active(false);
+          }
+        });
+      }
+    })
+  }
+  
