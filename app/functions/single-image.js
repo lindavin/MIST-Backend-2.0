@@ -15,7 +15,7 @@ var database = require('../database')
 
 // setFlags sets the flagged property of every comment in a given array
 var setFlags = function (commentArray, userID, database, callback) {
-    // STUB
+  // STUB
 }
 
 // missing quick hacks:
@@ -33,202 +33,119 @@ var setFlags = function (commentArray, userID, database, callback) {
 // * we also need to pass in albums properly
 module.exports.buildPage = (req, res, database) => {
 
-    let imageid = req.params.imageid;
-    imageid = database.sanitize(imageid);
+  let imageid = req.params.imageid;
+  imageid = database.sanitize(imageid);
 
-    let query = database.User.findOne({
-        images:
-            { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
-    }) // iterate the users collection or User Model : look at each user document
-    // for a document whose images array contains an image whose ObjectId matches the 
-    // imageid under the request parameter
+  let query = database.User.findOne({
+    images:
+      { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
+  }) // iterate the users collection or User Model : look at each user document
+  // for a document whose images array contains an image whose ObjectId matches the 
+  // imageid under the request parameter
 
-    query.exec((err, user) => {
-        if (err) {
+  query.exec((err, user) => {
+    if (err) {
+      res.end(JSON.stringify(err));
+    }
+    else if (!user)
+      // image does not exist
+      res.end('ERROR: Image does not exist');
+    else {
+      // image exists
+      console.log(user.images.id(imageid));
+      let image = user.images.id(imageid);
+      image.username = user.username;
+
+
+      // search the comments collection for documents that with imageid that match image._id
+      // add a sort feature
+      // how to return five at time? because rn we are returning all comments
+      // username!!!!!
+      // look into aggregation
+      database.Comment.
+        find({
+          imageId: image._id,
+          active: true,
+        }).
+        populate('author').
+        exec((err, comments) => {
+          if (err) {
+            console.log(err);
             res.end(JSON.stringify(err));
-        }
-        else if (!user)
-            // image does not exist
-            res.end('ERROR: Image does not exist');
-        else {
-            // image exists
-            console.log(user.images.id(imageid));
-            let image = user.images.id(imageid);
-            image.username = user.username;
+          };
+          // comments is an array of comment documents whose imageId is image._id
+          // comment documents are objects
+          // We wanted to add a username field to each comment object where username is the username of
+          // the user document whose ._id is comment.userId
 
+          // this part will be for front-end to fill in or for us to 
+          // write in ourselves when we understand MERN better (i.e how does react
+          // work with req,res ?)
+          if (req.isAuthenticated()) {
+            // we made this work by hacking the single-image.ejs file
+            res.render('single-image', {
+              imageid: image._id,
+              comments: comments,
+              user: req,
+              userData: req.user,
+              image: image,
+              liked: false,
+              albums: [],
+            });
+          } else {
+            // this needs to be fixed
+            res.render('single-image', {
+              image: image,
+              user: req,
+              userData: {},
+              comments: comments,
+              liked: null,
+              albums: [],
+            });
+          }// no one is not logged in
+        });
 
-            // search the comments collection for documents that with imageid that match image._id
-            // add a sort feature
-            // how to return five at time? because rn we are returning all comments
-            // username!!!!!
-            // look into aggregation
-            database.Comment.
-                find({
-                    imageId: image._id,
-                    active: true,
-                }).
-                populate('author').
-                exec((err, comments) => {
-                    if (err) {
-                        console.log(err);
-                        res.end(JSON.stringify(err));
-                    };
-                    // comments is an array of comment documents whose imageId is image._id
-                    // comment documents are objects
-                    // We wanted to add a username field to each comment object where username is the username of
-                    // the user document whose ._id is comment.userId
-
-                    // this part will be for front-end to fill in or for us to 
-                    // write in ourselves when we understand MERN better (i.e how does react
-                    // work with req,res ?)
-                    if (req.isAuthenticated()) {
-                        // we made this work by hacking the single-image.ejs file
-                        res.render('single-image', {
-                            imageid: image._id,
-                            comments: comments,
-                            user: req,
-                            userData: req.user,
-                            image: image,
-                            liked: false,
-                            albums: [],
-                        });
-                    } else {
-                        // this needs to be fixed
-                        res.render('single-image', {
-                            image: image,
-                            user: req,
-                            userData: {},
-                            comments: comments,
-                            liked: null,
-                            albums: [],
-                        });
-                    }// no one is not logged in
-                });
-
-        }
-    }) // execute query
+    }
+  }) // execute query
 };
 
 
 module.exports.saveComment = function (req, res, database) {
-    // build the comment
-    let comment = new database.Comment({
-        author: req.user._id,
-        body: database.sanitize(req.body.newComment),
-        createdAt: Date(),
-        active: true,
-        flagged: false,
-        imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
-    });
+  // build the comment
+  let comment = new database.Comment({
+    author: req.user._id,
+    body: database.sanitize(req.body.newComment),
+    createdAt: Date(),
+    active: true,
+    flagged: false,
+    imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
+  });
 
-    // save the comment
-    // need to check if this is actually safe to do
-    comment.save()
-        .then(doc => {
-            console.log(doc);
-            res.redirect('back');
-        })
-        .catch(err => {
-            console.error(err)
-            res.end(JSON.stringify(error));
-        });
+  // save the comment
+  // need to check if this is actually safe to do
+  comment.save()
+    .then(doc => {
+      console.log(doc);
+      res.redirect('back');
+    })
+    .catch(err => {
+      console.error(err)
+      res.end(JSON.stringify(error));
+    });
 }
 
 
+module.exports.allImagesinAlbum = function (req, res, database) {
 
-// delete comments
-// User is an admin or moderator
-// User is the owner of the image
-// User is the Commenter
-// callback(success, error)
-module.exports.canDeleteComment = (userid, commentId, callback) => {
-    console.log("canDeleteComment1");
-    // check if the logged-in user is authorized to delete
-    userid = database.sanitize(userid);
-    commentId = database.sanitize(commentId);
-    let userQuery = database.User.findById(userid);
-    
-    userQuery.exec((err, user) => {
-      if (err) {
-        callback(false, err);
-      } else {
-        //is the user an admin or moderator?
-        if (user.admin || user.moderator) {
-          callback(true, null)
-        }
-        else {
-          // does the user own the comment?
-          database.Comment.findById(commentId, (err, comment) => {
-            if (comment.author.equals(user._id)) {
-              callback(true, null);
-            } else {
-              // does the user own the image?
-              let imageId = commentDoc.imageId;
-              let isImageOwner = false;
-  
-              // loop through user's images and compare to imageID
-              user.images.forEach((image) => {
-                if (image._id.equals(imageId)) {
-                  isImageOwner = false;
-                  return;
-                }
-              });
-  
-              if (isImageOwner) {
-                callback(true, null)
-              } else {
-                callback(false, null)
-              }
-  
-            }
-          })
-        }
-      };
-    })
-  }
-  
-  
-  
-  module.exports.deleteComment = (userid, commentId, callback) => {
+  // retrieve the images that the user has made
+  let images = req.user.images;
 
-    userid = database.sanitize(userid);
-    commentId = database.sanitize(commentId);
-  
-    let commentQuery = database.Comment.findById(commentId);
-  
-    // this fails, maybe it couldn't find anything
-    commentQuery.exec((err, comment) => {
-      if (err) {
-        callback(false, err);
-        console.log("are we here? 2");
-      } else {
-        module.exports.canDeleteComment(userid, commentId, function (authorized, error) {
-          if (error) {
-            callback(false, error);
-          }
-          // does the user have permission to delete the comment?
-          else if (!authorized)
-            callback(false, "User is not authorized to delete this comment.");
-          else {
-            // set active == false
-            comment.active(false);
-          }
-        });
-      }
-    })
-  }
-  
-module.exports.allImagesinAlbum = function(req, res, database) {
+  // render full-gallery
+  res.render('full-gallery', {
+    user: req.user,
+    images: images,
+    username: req.params.username,
 
-    // retrieve the images that the user has made
-    let images = req.user.images;
+  });
 
-    // render full-gallery
-    res.render('full-gallery', {
-        user:req.user,
-        images: images,
-        username:req.params.username,
-       
-    });
-    
 };

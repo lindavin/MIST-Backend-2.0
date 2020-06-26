@@ -273,23 +273,19 @@ handlers.submitchallenge = function (info, req, res) {
  *   commentId, the comment to delete
  */
 handlers.deleteComment = function (info, req, res) {
+
+  // check if the user is logged in
   if (!req.isAuthenticated())
     fail(res, "User Not logged in")
-  //console.log("commentID:", info.commentId)
-  console.log("commentID:", req.params._id)
-
-  // what is the second parameter? I have tried multiple things 
-  // it is supposed to be the comment object id. how do we get it?
-  // right now it is undefined and causing errors
-  // there are console logs to figure out where the problem came from 
-  image.deleteComment(req.user._id, req.params._id, function (success, error) {
+  
+  // delete comment (set active to false)
+  database.deleteComment(req.user._id, info.commentId, function (success, error) {
     if (error) {
-      console.log("canDeleteHandler 4");
       fail(res, JSON.stringify(error));
-      console.log("canDeleteHandler 5");
     }
-    else if (success)
+    else if (success) {
       res.end("Comment " + info.commentId + " deleted.");
+    }
     else
       fail(res, "Unknown error");
   });

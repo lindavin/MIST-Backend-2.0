@@ -118,3 +118,92 @@ module.exports.Types = mongoose.Types;
 module.exports.sanitize = sanitize; //sanitizes string
 
 
+// +----------------+--------------------------------------------------
+// | Image Comments |
+// +----------------+
+
+/**
+ * @param userid: the object ID for the user
+ * @param commentId: the object ID for the comment
+ * @param callback: the callback to be excecuted if true
+ * checks if the user has the authortity to delete a comment:
+ * user must own the comment or image, or be a moderator or admin
+ */
+module.exports.canDeleteComment = (userid, commentId, callback) => {
+
+    userid = sanitize(userid);
+    commentId = sanitize(commentId);
+    let userQuery = User.findById(userid);
+
+    userQuery.exec((err, user) => {
+        if (err) {
+            callback(false, err);
+        } else {
+            //is the user an admin or moderator?
+            if (user.admin || user.moderator) {
+                callback(true, null)
+            }
+            else {
+                // does the user own the comment?
+                Comment.findById(commentId, (err, comment) => {
+                    if (comment.author.equals(user._id)) {
+                        callback(true, null);
+                    } else {
+                        // does the user own the image?
+                        let imageId = commentDoc.imageId;
+                        let isImageOwner = false;
+
+                        // loop through user's images and compare to imageID
+                        user.images.forEach((image) => {
+                            if (image._id.equals(imageId)) {
+                                isImageOwner = false;
+                                return;
+                            }
+                        });
+
+                        if (isImageOwner) {
+                            callback(true, null)
+                        } else {
+                            callback(false, null)
+                        }
+
+                    }
+                })
+            }
+        };
+    })
+}
+
+/**
+ * deletes the comment if the user has authorization
+ * @param userid: the object ID for the user
+ * @param commentId: the object ID for the comment
+ * @param callback: the callback to be excecuted if true
+ */
+module.exports.deleteComment = (userid, commentId, callback) => {
+
+    // sanitize ID's
+    userid = sanitize(userid);
+    commentId = sanitize(commentId);
+
+    // checks if the user can delete the comment
+    module.exports.canDeleteComment(userid, commentId, function (authorized, error) {
+        if (error)
+            callback(false, error);
+        else if (!authorized)
+            callback(false, "User is not authorized to delete this comment.");
+        // if authorized then set active status to false
+        else {
+            //locate comment and update status
+            Comment.findById(commentId, function (err, comment) {
+                if (err) {
+                    callback(false, error);
+                } else {
+                    comment.active = false;
+                    comment.save(callback(true, null));
+                }
+            });
+        }
+    })
+}
+
