@@ -56,6 +56,7 @@ const workspacesSchema = new mongoose.Schema({
 
 const usersSchema = new mongoose.Schema({
     //objectId: String,                 //aka user id
+    about: String,
     forename: String,
     surname: String,
     email: String,
@@ -122,7 +123,7 @@ module.exports.sanitize = sanitize; //sanitizes string
   Purpose:
     To allow a user to change their About Section
   Parameters:
-    userid, the userid of the use who wants to change their password
+    userid, the userid of the user who wants to change their password
     newAbout, a new about section to display
     callback, a typical callback
   Produces (for Callback):
@@ -133,17 +134,31 @@ module.exports.sanitize = sanitize; //sanitizes string
   Post-conditions:
     about section has to be changed
 */
+// this still needs to be tested
 module.exports.changeAboutSection = (function (userid, newAbout, callback) {
     newAbout = sanitize(newAbout);
     userid = sanitize(userid);
-    module.exports.query("UPDATE users SET about='" + newAbout + "' WHERE userid= '" + userid + "';", function (rows, error) {
-        if (error)
-            callback(false, error);
+
+    User.findByIdAndUpdate(userid, {
+        about: newAbout,
+    }).exec((err, writeOpResult) => {
+        if (err)
+            callback(false, err);
         else
-            callback(true, error);
+            callback(true, err);
     });
 
-});//database.changeAboutSection(userid, newAbout);
+    // alternative traditional approach
+    // User.findById(userid, function (err, doc) {
+    //     if (err)
+    //         callback(false, err);
+    //     else {
+    //         doc.name = 'jason bourne';
+    //         doc.save(callback);
+    //     }
+    // });
+
+});//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
 /*
@@ -178,14 +193,18 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   Preferences:
     Use database.getIDforUsername to get the id to pass to this function
 */
+// needs testing
 module.exports.getUser = (function (userid, callback) {
-    module.exports.query("SELECT * FROM users WHERE userid='" + userid + "';", function (rows, error) {
+
+    userid = sanitize(userid);
+
+    User.findById(userid).exec((error, user) => {
         if (error)
             callback(null, error);
-        else if (!rows[0])
+        else if (!user)
             callback(null, "ERROR: User does not exist.");
         else
-            callback(rows[0], null);
+            callback(user, null);
     });
 }); // database.getUser(userid, callback(userObject, error));
 
@@ -209,14 +228,30 @@ module.exports.getUser = (function (userid, callback) {
     Use in conjunction with database.getUser() to retrieve information on 
       a user
 */
+// need testing 
 module.exports.getIDforUsername = (function (username, callback) {
     username = sanitize(username);
-    module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
-        if (error)
+    // projection : modifies the fields that get returned as the user parameter
+    User.findOne({ 'username': username }).exec((err, user) => {
+        if (err)
             callback(null, error);
-        else if (!rows[0])
+        else if (!user)
             callback(null, "ERROR: User does not exist.");
         else
-            callback(rows[0].userid, null);
+            // user._id is a mongoose type ObjectId; the callback seems to be expecting a string
+            // let's use the toString() method that the object apparently has
+            // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
+            callback(user._id.toString(), null);
     });
+
+
+
+    // module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
+    //     if (error)
+    //         callback(null, error);
+    //     else if (!rows[0])
+    //         callback(null, "ERROR: User does not exist.");
+    //     else
+    //         callback(rows[0].userid, null);
+    // });
 });
