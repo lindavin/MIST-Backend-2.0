@@ -112,3 +112,111 @@ module.exports.Types = mongoose.Types;
 module.exports.sanitize = sanitize; //sanitizes string
 
 
+// +-----------------+-------------------------------------------------
+// | User Procedures |
+// +-----------------+
+
+/*
+  Procedure:
+    database.changeAboutSection(userid, newAbout, Callback(success, error));
+  Purpose:
+    To allow a user to change their About Section
+  Parameters:
+    userid, the userid of the use who wants to change their password
+    newAbout, a new about section to display
+    callback, a typical callback
+  Produces (for Callback):
+    success, a boolean success indicator
+    error, any error occurred along the way
+  Pre-conditions:
+    user has logged in, and therefore has access to their about section
+  Post-conditions:
+    about section has to be changed
+*/
+module.exports.changeAboutSection = (function (userid, newAbout, callback) {
+    newAbout = sanitize(newAbout);
+    userid = sanitize(userid);
+    module.exports.query("UPDATE users SET about='" + newAbout + "' WHERE userid= '" + userid + "';", function (rows, error) {
+        if (error)
+            callback(false, error);
+        else
+            callback(true, error);
+    });
+
+});//database.changeAboutSection(userid, newAbout);
+
+
+/*
+  Procedure:
+    database.getUser(userid, callback(userObject, error));
+  Parameters:
+    userid, the id of the user to retrieve
+    callback(userObject,error), a function describing what to do with the data
+  Produces:
+    userObject, an object containing the following properties:
+      forename
+      surname
+      hashedPassword
+      email
+      emailVisible
+      pgpPublic
+      username
+      type
+      signupTime
+      lastLoginTime
+      userid
+      about
+      featuredImage
+      token
+      error, if there is one
+  Purpose:
+    To retrieve information on an user
+  Pre-conditions:
+    userid corresponds to a user in the database
+  Post-conditions:
+    All information from the database will be retrieved
+  Preferences:
+    Use database.getIDforUsername to get the id to pass to this function
+*/
+module.exports.getUser = (function (userid, callback) {
+    module.exports.query("SELECT * FROM users WHERE userid='" + userid + "';", function (rows, error) {
+        if (error)
+            callback(null, error);
+        else if (!rows[0])
+            callback(null, "ERROR: User does not exist.");
+        else
+            callback(rows[0], null);
+    });
+}); // database.getUser(userid, callback(userObject, error));
+
+
+/*
+  Procedure:
+    database.getIDforUsername(username, callback(userid, error));
+  Parameters:
+    username, a string
+    callback, a function describing what to do with the data
+  Produces:
+    userid, the userid associated with the username
+    error, if there is one
+  Purpose:
+    To get the primary key for a username for faster information retrieval in the future
+  Pre-conditions:
+    [None]
+  Post-conditions:
+    The userid will correspond with a row in the database
+  Preferences:
+    Use in conjunction with database.getUser() to retrieve information on 
+      a user
+*/
+module.exports.getIDforUsername = (function (username, callback) {
+    username = sanitize(username);
+    module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
+        if (error)
+            callback(null, error);
+        else if (!rows[0])
+            callback(null, "ERROR: User does not exist.");
+        else
+            callback(rows[0].userid, null);
+    });
+});
