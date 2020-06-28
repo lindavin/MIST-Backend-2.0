@@ -35,7 +35,7 @@ module.exports = (passport, User) => {
               newUser.email = req.body.email;
               newUser.fname = req.body.forename;
               newUser.lname = req.body.surname;
-              newUser.dateJoined = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+              newUser.createdAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
               // save the user
               newUser.save(function(err) {
                 if (err) {

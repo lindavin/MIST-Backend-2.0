@@ -3,9 +3,9 @@ const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
 
 mongoose.connect("mongodb://localhost:27017/usersDB", {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });// make connection to database or create it if it does not yet exist
 
 mongoose.set('useFindAndModify', false);
@@ -13,77 +13,77 @@ mongoose.set('useFindAndModify', false);
 // Schemas
 
 const imagesSchema = new mongoose.Schema({
-    title: String,
-    userId: Object,
-    code: String,
-    ratings: Number,
-    createdAt: Date,
-    updatedAt: Date,
-    comments: Array, // of (of comment _ids)
-    flag: Boolean,
-    publicity: Number,
-    caption: String,
-    delete: Boolean,
-    featured: Boolean,
+  title: String,
+  userId: Object,
+  code: String,
+  ratings: Number,
+  createdAt: Date,
+  updatedAt: Date,
+  comments: Array, // of (of comment _ids)
+  flag: Boolean,
+  publicity: Number,
+  caption: String,
+  delete: Boolean,
+  featured: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
-    userId: Object,
-    commentId: String,
-    body: String,
-    createdAt: Date,
-    flagged: Boolean,
-    imageId: Object,
+  userId: Object,
+  commentId: String,
+  body: String,
+  createdAt: Date,
+  flagged: Boolean,
+  imageId: Object,
 });
 
 const albumsSchema = new mongoose.Schema({
-    name: String,
-    userId: Object,
-    publicity: Number,
-    createdAt: Date,
-    updatedAt: Date,
-    images: Array,                      // (of Ids)
-    flag: Boolean,
-    caption: String,
+  name: String,
+  userId: Object,
+  publicity: Number,
+  createdAt: Date,
+  updatedAt: Date,
+  images: Array,                      // (of Ids)
+  flag: Boolean,
+  caption: String,
 });
 
 const workspacesSchema = new mongoose.Schema({
-    name: String,
-    data: Object,
-    createdAt: Date,
-    updatedAt: Date,
+  name: String,
+  data: Object,
+  createdAt: Date,
+  updatedAt: Date,
 });
 
 const usersSchema = new mongoose.Schema({
-    //objectId: String,                 //aka user id
-    about: String,
-    forename: String,
-    surname: String,
-    email: String,
-    username: String,
-    password: String,                //encrypted
-    createdAt: Date,
-    updatedAt: Date,
-    verified: Boolean,
-    images: [imagesSchema],                   // of image schemas
-    albums: [albumsSchema],                   // of album schemas
-    workspaces: [workspacesSchema],               // of workspace objects
-    flag: Boolean,
-    liked: Array,                             // of image _ids
-    comments: Array,                 //(of comment _ids)
+  //objectId: String,                 //aka user id
+  about: String,
+  forename: String,
+  surname: String,
+  email: String,
+  username: String,
+  password: String,                //encrypted
+  createdAt: Date,
+  updatedAt: Date,
+  verified: Boolean,
+  images: [imagesSchema],                   // of image schemas
+  albums: [albumsSchema],                   // of album schemas
+  workspaces: [workspacesSchema],               // of workspace objects
+  flag: Boolean,
+  liked: Array,                             // of image _ids
+  comments: Array,                 //(of comment _ids)
 });
 
 const challengeSchema = new mongoose.Schema({
-    userId: Object,
-    name: String,
-    title: String,
-    code: String,
-    createdAt: String,
-    updatedAt: String,
-    flag: Boolean,
-    category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
-    position: String,
-    description: String,
+  userId: Object,
+  name: String,
+  title: String,
+  code: String,
+  createdAt: String,
+  updatedAt: String,
+  flag: Boolean,
+  category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+  position: String,
+  description: String,
 
 });
 
@@ -134,29 +134,31 @@ module.exports.sanitize = sanitize; //sanitizes string
   Post-conditions:
     about section has to be changed
 */
-// this still needs to be tested
 module.exports.changeAboutSection = (function (userid, newAbout, callback) {
-    newAbout = sanitize(newAbout);
-    userid = sanitize(userid);
+  newAbout = sanitize(newAbout);
+  userid = sanitize(userid);
+  console.log('userid ' + userid);
+  User.findByIdAndUpdate(userid, {
+    about: newAbout,
+  }).exec((err, userBeforeChange) => {
+    if (err) {
+      callback(false, err);
+    }
+    else {
+      console.log(userBeforeChange);
+      callback(true, err);
+    }
+  });
 
-    User.findByIdAndUpdate(userid, {
-        about: newAbout,
-    }).exec((err, writeOpResult) => {
-        if (err)
-            callback(false, err);
-        else
-            callback(true, err);
-    });
-
-    // alternative traditional approach
-    // User.findById(userid, function (err, doc) {
-    //     if (err)
-    //         callback(false, err);
-    //     else {
-    //         doc.name = 'jason bourne';
-    //         doc.save(callback);
-    //     }
-    // });
+  // alternative traditional approach
+  // User.findById(userid, function (err, doc) {
+  //     if (err)
+  //         callback(false, err);
+  //     else {
+  //         doc.name = 'jason bourne';
+  //         doc.save(callback);
+  //     }
+  // });
 
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
@@ -193,19 +195,18 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   Preferences:
     Use database.getIDforUsername to get the id to pass to this function
 */
-// needs testing
 module.exports.getUser = (function (userid, callback) {
 
-    userid = sanitize(userid);
+  userid = sanitize(userid);
 
-    User.findById(userid).exec((error, user) => {
-        if (error)
-            callback(null, error);
-        else if (!user)
-            callback(null, "ERROR: User does not exist.");
-        else
-            callback(user, null);
-    });
+  User.findById(userid).exec((error, user) => {
+    if (error)
+      callback(null, error);
+    else if (!user)
+      callback(null, "ERROR: User does not exist.");
+    else
+      callback(user, null);
+  });
 }); // database.getUser(userid, callback(userObject, error));
 
 
@@ -230,28 +231,88 @@ module.exports.getUser = (function (userid, callback) {
 */
 // need testing 
 module.exports.getIDforUsername = (function (username, callback) {
-    username = sanitize(username);
-    // projection : modifies the fields that get returned as the user parameter
-    User.findOne({ 'username': username }).exec((err, user) => {
+  username = sanitize(username);
+  // projection : modifies the fields that get returned as the user parameter
+  User.findOne({ 'username': username }).exec((err, user) => {
+    if (err)
+      callback(null, error);
+    else if (!user)
+      callback(null, "ERROR: User does not exist.");
+    else
+      // user._id is a mongoose type ObjectId; the callback seems to be expecting a string
+      // let's use the toString() method that the object apparently has
+      // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
+      callback(user._id.toString(), null);
+  });
+
+
+
+  // module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
+  //     if (error)
+  //         callback(null, error);
+  //     else if (!rows[0])
+  //         callback(null, "ERROR: User does not exist.");
+  //     else
+  //         callback(rows[0].userid, null);
+  // });
+});
+
+// +--------+----------------------------------------------------------
+// | Images |
+// +--------+
+
+/**
+ * Get the title, code, username, modification date, rating, and more
+ * for an image.  If it finds the information, calls `callback(info,null)`.
+ * Otherwise, calls `callback(null,error)`.
+ */
+// needs testing
+module.exports.imageInfo = (function (imageid, callback) {
+  imageid = sanitize(imageid);
+
+  // two methods
+
+  // method one
+
+  // find the user who owns an image with this id and that this imageid is active
+
+  // then return the user document
+
+  // then search for this image again
+
+  // and send return the document
+
+  // method two
+
+  // use the positional operator to retrieve the image document
+
+  // if nothing happens, then callback(null, "ERRO: Images does not exist")
+
+  User.
+    findOne(
+      {
+        'images._id': mongoose.Types.ObjectId(imageid)
+      },
+      {
+        'images.$': 1
+      }).
+    exec(
+      (err, image) => {
         if (err)
-            callback(null, error);
-        else if (!user)
-            callback(null, "ERROR: User does not exist.");
+          callback(null, err);
+        else if (!image)
+          callback(null, 'ERROR: Image does not exist.');
         else
-            // user._id is a mongoose type ObjectId; the callback seems to be expecting a string
-            // let's use the toString() method that the object apparently has
-            // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
-            callback(user._id.toString(), null);
-    });
+          callback(image, null);
+      }
+    );
 
-
-
-    // module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
-    //     if (error)
-    //         callback(null, error);
-    //     else if (!rows[0])
-    //         callback(null, "ERROR: User does not exist.");
-    //     else
-    //         callback(rows[0].userid, null);
-    // });
+  // module.exports.query("SELECT images.title, images.code, users.username, images.modifiedAt, images.rating, images.imageid, images.userid, images.featured FROM images, users WHERE images.imageid= '" + imageid + "' and images.userid = users.userid;", function (rows, error) {
+  //   if (error)
+  //     callback(null, error);
+  //   else if (!rows[0])
+  //     callback(null, "ERROR: Image does not exist.");
+  //   else
+  //     callback(rows[0], null);
+  // });
 });
