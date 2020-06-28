@@ -149,17 +149,6 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
       callback(true, err);
     }
   });
-
-  // alternative traditional approach
-  // User.findById(userid, function (err, doc) {
-  //     if (err)
-  //         callback(false, err);
-  //     else {
-  //         doc.name = 'jason bourne';
-  //         doc.save(callback);
-  //     }
-  // });
-
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
@@ -243,15 +232,6 @@ module.exports.getIDforUsername = (function (username, callback) {
       // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
       callback(user._id.toString(), null);
   });
-
-  // module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
-  //     if (error)
-  //         callback(null, error);
-  //     else if (!rows[0])
-  //         callback(null, "ERROR: User does not exist.");
-  //     else
-  //         callback(rows[0].userid, null);
-  // });
 });
 
 // +--------+----------------------------------------------------------
@@ -303,13 +283,4 @@ module.exports.imageInfo = (function (imageid, callback) {
           callback(image, null);
       }
     );
-
-  // module.exports.query("SELECT images.title, images.code, users.username, images.modifiedAt, images.rating, images.imageid, images.userid, images.featured FROM images, users WHERE images.imageid= '" + imageid + "' and images.userid = users.userid;", function (rows, error) {
-  //   if (error)
-  //     callback(null, error);
-  //   else if (!rows[0])
-  //     callback(null, "ERROR: Image does not exist.");
-  //   else
-  //     callback(rows[0], null);
-  // });
 });
