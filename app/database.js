@@ -229,7 +229,6 @@ module.exports.getUser = (function (userid, callback) {
     Use in conjunction with database.getUser() to retrieve information on 
       a user
 */
-// need testing 
 module.exports.getIDforUsername = (function (username, callback) {
   username = sanitize(username);
   // projection : modifies the fields that get returned as the user parameter
@@ -244,8 +243,6 @@ module.exports.getIDforUsername = (function (username, callback) {
       // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
       callback(user._id.toString(), null);
   });
-
-
 
   // module.exports.query("SELECT userid FROM users WHERE username= '" + username + "';", function (rows, error) {
   //     if (error)
