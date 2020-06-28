@@ -284,3 +284,61 @@ module.exports.imageInfo = (function (imageid, callback) {
       }
     );
 });
+
+
+
+// +--------+----------------------------------------------------------
+// | Albums |
+// +--------+
+
+/**
+ * Get information on an album.
+ */
+module.exports.albumsInfo = (function (userid, callback) {
+  userid = sanitize(userid);
+
+  User.findById(userid, { 'albums': 1 }, (err, albums) => {
+    if (err)
+      callback(null, err);
+    else
+      callback(albums, null);
+  });
+
+});
+
+// create Album
+module.exports.createAlbum = (function (userid, name, callback) {
+  userid = sanitize(userid);
+  name = sanitize(name);
+
+  User.
+    findByIdAndUpdate(
+      userid,
+      {
+        $push: {
+          albums: new Album({
+            name: name,
+            userid: userid,
+            publicity: 0,
+            createdAt: Date(),
+            updatedAt: Date(),
+            images: [],                      // (of imageObjectIds)
+            flag: false,
+            caption: '',
+          }) // create album document object 
+        }
+      },
+      (err, user) => {
+        if (err) {
+          console.log("Failed to create album");
+          callback(null, err);
+        } else {
+          callback(user, null);
+        }
+
+      }
+
+
+    )// create Mongoose query object
+
+}); // createAlbum
