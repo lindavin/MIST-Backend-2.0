@@ -3,12 +3,7 @@ module.exports = (app, database) => {
     //const albumContents = require('./functions/album-contents');
 
     app.get("/user/:username/albums", (req, res) => {
-        console.log('loading albums');
-        if (req.isAuthenticated()) {
-            albums.buildPage(req, res, database);
-        } else {
-            res.redirect("/login");
-        }
+        albums.buildPage(req, res, database);
     });
 
     app.post('/user/:username/albums', function (req,res) {

@@ -69,7 +69,7 @@ const usersSchema = new mongoose.Schema({
   albums: [albumsSchema],                   // of album schemas
   workspaces: [workspacesSchema],               // of workspace objects
   flag: Boolean,
-  liked: Array,                             // of image _ids
+  liked: [{ type: mongoose.Schema.ObjectId }],                             // of image _ids
   comments: Array,                 //(of comment _ids)
 });
 
@@ -285,6 +285,36 @@ module.exports.imageInfo = (function (imageid, callback) {
     );
 });
 
+// +----------------+--------------------------------------------------
+// | Image Comments |
+// +----------------+
+
+/**
+ * Get commenter information for a single image.
+ */
+module.exports.commentInfo = (function (imageid, callback) {
+  imageid = sanitize(imageid);
+
+  // search the comments collection for documents that with imageid that match image._id
+  // add a sort feature
+  // how to return five at time? because rn we are returning all comments
+  // username!!!!!
+  // look into aggregation
+  Comment.
+    find({
+      imageId: image._id,
+      active: true,
+    }).
+    populate('author').
+    exec((err, comments) => {
+      if (err) {
+        console.log(err);
+        callback(null, err);
+      } else {
+        callback(comments, null);
+      }
+    });
+});
 
 
 // +--------+----------------------------------------------------------
@@ -342,3 +372,43 @@ module.exports.createAlbum = (function (userid, name, callback) {
     )// create Mongoose query object
 
 }); // createAlbum
+
+/*
+  Procedure:
+  database.hasLiked(userid, imageid, callback(liked, error));
+  Parameters:
+  userid, the user to check likes
+  imageid, the image to check likes
+  Purpose:
+  To check to see if a user has rated an image
+  Pre-conditions:
+  Image exists
+  User exists
+  Post-conditions:
+  liked will be a boolean
+  Preferences:
+  Automatically sanitizes.
+*/
+// needs testing
+module.exports.hasLiked = (function (userid, imageid, callback) {
+  imageid = sanitize(imageid);
+  userid = sanitize(userid);
+
+  // STUB
+  callback(true, null);
+  // User.findOne({
+  //   _id: userid,
+  //   images:
+  //     { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
+  // }, (err, user) => {
+  //   if (err)
+  //     callback(null, err);
+  //   else if (user)
+  //     callback(true, null);
+  //   else
+  //     callback(false, null);
+  // }); // iterate the users collection or User Model : look at each user document
+  // // for a document whose images array contains an image whose ObjectId matches the 
+  // // imageid under the request parameter
+
+});
