@@ -139,7 +139,7 @@
           <td class="date"><script>document.write(describeDate("<%= comments[i].postedAt %>"))</script></td>
           <% if(user) { %>
             <td class='flagComment <%= (comments[i].flagged) ? 'flaggedComment' : ''%>'>&#9873</td>
-            <% if(user.type == "A" || user.type == "M" || user._id.equals(comments[i].userId) || user._id.equals(image.userId)) { %>
+            <% if(user.type == "A" || user.type == "M" || user._id.equals(comments[i].author._id) || user._id.equals(image.userId)) { %>
               <td class='deleteComment'>X</td>
             <% } %>
           <% } %>
