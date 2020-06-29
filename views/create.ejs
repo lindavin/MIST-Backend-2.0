@@ -90,7 +90,7 @@
           <li><a href="/gallery">gallery</a></li>
           <li><a href="/about">about</a></li>
           <li><a href="/help">help</a></li>
-          <% if (!user.isAuthenticated()) { %>
+          <% if (!user) { %>
             <li id="slider">login/signup</li>
         </span>
           <form method="POST" action="/login" class="hidden" style="display: none; opacity: 0;"><input type="text" placeholder="username" name="username" required="required"><input type="password" placeholder="password" name="password" require="required">
@@ -100,7 +100,7 @@
             <li id="cancel">cancel</li>
           </form>
           <% } else {%>
-            <li><a href='/me'><%= userData.username %></a></li>
+            <li><a href='/me'><%= user.username %></a></li>
             <li><a href='/logout'>logout</a></li>
         </span>
           <% } %>
@@ -237,7 +237,7 @@
      <li><a href="/challenges">challenges</a></li>
      <li><a href="/gallery">gallery</a></li>
      <li><a href="/about">about</a></li>
-     <% if(user.isAuthenticated()) {%>
+     <% if(user) {%>
      <li><a href="/me">my account</a></li>
 <% } else { %>
      <li><a href="/login">login</a></li>

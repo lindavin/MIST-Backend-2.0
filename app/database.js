@@ -123,6 +123,7 @@ module.exports.sanitize = sanitize; //sanitizes string
 // | User Procedures |
 // +-----------------+
 
+<<<<<<< HEAD
 
 // update the updatedAt property of a user to current date
 module.exports.updateUpdatedAt = function (userID) {
@@ -139,6 +140,8 @@ module.exports.updateUpdatedAt = function (userID) {
   })
 }
 
+=======
+>>>>>>> 3cb24f9539630b82c3b914778fa460d380ef3d62
 /*
   Procedure:
     database.changeAboutSection(userid, newAbout, Callback(success, error));
@@ -164,6 +167,10 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   User.findByIdAndUpdate(userid,
     {
       about: newAbout,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3cb24f9539630b82c3b914778fa460d380ef3d62
     }).exec((err, userBeforeChange) => {
       if (err) {
         callback(false, err);
@@ -173,7 +180,10 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
         callback(true, err);
       }
     });
+<<<<<<< HEAD
   module.exports.updateUpdatedAt(userid);
+=======
+>>>>>>> 3cb24f9539630b82c3b914778fa460d380ef3d62
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
