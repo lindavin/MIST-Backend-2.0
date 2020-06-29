@@ -57,8 +57,7 @@ module.exports = (app, passport, database) => {
 
   app.get('/privacypolicy', (req,res) => {
     res.render('privacy-policy', {
-      user : req,
-      userData : req.user
+      user : req.user,
     })
   })
 
