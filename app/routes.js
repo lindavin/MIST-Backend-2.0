@@ -106,6 +106,8 @@ module.exports = (app, passport, database) => {
   require('./galleryRouter')(app, database);
   require('./albumsRouter')(app, database);
   require('./imageRouter')(app, database);
+  require('./searchRouter')(app, database);
+
 
   // --------------------------------------------------
   // Path: /create

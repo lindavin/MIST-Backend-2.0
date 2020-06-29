@@ -261,6 +261,20 @@ handlers.submitchallenge = function (info, req, res) {
 // | Miscellaneous |
 // +---------------+
 
+/**
+ * Search for names and values in the database.
+ *   info.action: omnisearch
+ *   info.search, the search string
+ */
+handlers.omnisearch = (function (info, req, res) {
+  database.omnisearch (info.search, function(resultObject, error){
+    if (error)
+      fail(res, JSON.stringify(resultObject));
+    else
+      res.end(JSON.stringify(resultObject));
+  });
+});
+
 // +----------+--------------------------------------------------------
 // | Comments |
 // +----------+
