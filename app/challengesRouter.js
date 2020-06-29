@@ -12,8 +12,7 @@ module.exports = (app, database) => {
     app.get('/challenges/:username/create', (req,res) => {
         if(req.isAuthenticated()) {
             res.render('create-challenge', {
-                user : req,
-                userData : req.user
+                user : req.user,
             });
         } else {
             res.redirect('/login');
@@ -21,9 +20,10 @@ module.exports = (app, database) => {
     })
 
     app.post('/challenges/add', (req, res) => {
+        // you should only be on this page if you have been authenticated
         console.log('Trying to add a new challenge.');
         challenge.add(req, res, database, req.body);
-        res.redirect('/challenges/:username/create');
+        res.redirect('/challenges/'+ req.user.username + '/create');
     });
 
     
