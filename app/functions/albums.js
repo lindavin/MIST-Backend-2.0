@@ -1,3 +1,17 @@
+/**
+ * albums.js
+ *   Functions related to the album.
+ */
+
+
+var setLikes = function (imageArray, userID, database, callback) {
+    if (imageArray.length == 0)
+        callback([]);
+    else {
+        callback(imageArray);
+    }
+    //STUB
+}
 
 module.exports.buildPage = function (req, res, database) {
     database.getIDforUsername(req.params.username,
@@ -29,4 +43,25 @@ module.exports.createAlbum = function (req, res, database) {
             res.redirect('back');
         }
     });
+};
+
+module.exports.allImagesinAlbum = function (req, res, database) {
+    database.getIDforUsername(req.params.username,
+        function (userid, error) {
+            if (error)
+                res.end(JSON.stringify(error));
+            else
+                database.getAllImagesforUser(userid, function (images, error) {
+                    if (error)
+                        res.end(JSON.stringify(error));
+                    else
+                        setLikes(images, (req.user) ? req.user.userid : null, database, function (imageArray) {
+                            res.render('full-gallery', {
+                                user: req.user,
+                                images: imageArray || images,
+                                username: req.params.username
+                            });
+                        });
+                });
+        });
 };

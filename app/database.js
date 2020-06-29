@@ -375,6 +375,28 @@ module.exports.createAlbum = (function (userid, name, callback) {
 
 }); // createAlbum
 
+module.exports.getAllImagesforUser = (function (userid, callback) {
+  userid = sanitize(userid);
+
+  User.
+    findById(
+      userid,
+      {
+        _id: 0,
+        'images': 1,
+      }).
+    exec(
+      (err, user) => {
+        if (err)
+          callback(null, err);
+        else
+          callback(user.images, null);
+      }
+    );
+});
+
+
+
 /*
   Procedure:
   database.hasLiked(userid, imageid, callback(liked, error));
