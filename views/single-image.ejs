@@ -87,7 +87,7 @@
              <li id="cancel">cancel</li>
            </form>
            <% } else {%>
-             <li><a href='/me'><%= userData.username %></a></li>
+             <li><a href='/me'><%= user.username %></a></li>
              <li><a href='/logout'>logout</a></li>
          </span>
            <% } %>
@@ -133,13 +133,13 @@
       <% for (var i = 0; i < comments.length; i++) { %>
         <tr class="comment" id=<%- "'comment" + comments[i].commentId + "'" %>>
           <th class="user">
-            <a href='<%= "/user/" + comments[i].username %>'><%- comments[i].username %></a>
+            <a href='<%= "/user/" + comments[i].author.username %>'><%- comments[i].author.username %></a>
           </th>
-          <td class="comment"><%- comments[i].comment %></td>
+          <td class="comment"><%- comments[i].body %></td>
           <td class="date"><script>document.write(describeDate("<%= comments[i].postedAt %>"))</script></td>
-          <% if(user.isAuthenticated()) { %>
+          <% if(user) { %>
             <td class='flagComment <%= (comments[i].flagged) ? 'flaggedComment' : ''%>'>&#9873</td>
-            <% if(userData.type == "A" || userData.type == "M" || userData._id.equals(comments[i].userId) || userData._id.equals(image.userId)) { %>
+            <% if(user.type == "A" || user.type == "M" || user._id.equals(comments[i].userId) || user._id.equals(image.userId)) { %>
               <td class='deleteComment'>X</td>
             <% } %>
           <% } %>
@@ -148,7 +148,7 @@
       <% if (user) { %>
         <div id="menu">
           <ul>
-            <% if (image.userId.equals(userData._id)) { %>
+            <% if (image.userId.equals(user._id)) { %>
               <!-- Option: make profile image -->
               <li>
                 <form id='profile-image' method='POST'>
@@ -167,7 +167,7 @@
               </li>
             <% } // if it's the user's image %>
             <!-- Option: Feature Image -->
-            <% if(userData.type == "A" || userData.type == "M") { %>
+            <% if(user.type == "A" || user.type == "M") { %>
               <% if(image.featured) { %>
                 <li id="featureImage" data-featureStatus="false" data-imageid='<%=image.imageid%>'>unfeature image</li>
               <% } else { %>
@@ -193,7 +193,7 @@
                 <ul>
                   <% for (var i=0; i < albums.length; i++) { %>
                     <li>
-                      <a href=<%- '/user/' + userData.username + '/albums/' + albums[i].albumid %>
+                      <a href=<%- '/user/' + user.username + '/albums/' + albums[i].albumid %>
                          onClick='addToAlbum(<%- albums[i].albumid %>)'>
                           <%= albums[i].name %>
                         </a>
@@ -207,7 +207,7 @@
      
         <tr id="leaveComment" class="comment">
           <th class="user">
-            <a href=<%="/user/" + userData.username %>><%-userData.username%></a>
+            <a href=<%="/user/" + user.username %>><%-user.username%></a>
           </th>
           <td class="comment"><form method="POST"><textarea name="newComment" required="required" placeholder="leave a comment"></textarea><input type="submit" value="submit" name="commentSubmit"></form></td>
         </tr>

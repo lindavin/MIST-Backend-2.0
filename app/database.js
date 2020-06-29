@@ -23,15 +23,15 @@ const imagesSchema = new mongoose.Schema({
   flag: Boolean,
   publicity: Number,
   caption: String,
-  delete: Boolean,
+  active: Boolean,
   featured: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
-  userId: Object,
-  commentId: String,
+  author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   body: String,
   createdAt: Date,
+  active: Boolean,
   flagged: Boolean,
   imageId: Object,
 });
@@ -43,6 +43,7 @@ const albumsSchema = new mongoose.Schema({
   createdAt: Date,
   updatedAt: Date,
   images: Array,                      // (of Ids)
+  active: Boolean,
   flag: Boolean,
   caption: String,
 });
@@ -52,11 +53,11 @@ const workspacesSchema = new mongoose.Schema({
   data: Object,
   createdAt: Date,
   updatedAt: Date,
+  active: Boolean,
 });
 
 const usersSchema = new mongoose.Schema({
   //objectId: String,                 //aka user id
-  about: String,
   forename: String,
   surname: String,
   email: String,
@@ -68,6 +69,7 @@ const usersSchema = new mongoose.Schema({
   images: [imagesSchema],                   // of image schemas
   albums: [albumsSchema],                   // of album schemas
   workspaces: [workspacesSchema],               // of workspace objects
+  active: Boolean,
   flag: Boolean,
   liked: [{ type: mongoose.Schema.ObjectId }],                             // of image _ids
   comments: Array,                 //(of comment _ids)
@@ -80,11 +82,11 @@ const challengeSchema = new mongoose.Schema({
   code: String,
   createdAt: String,
   updatedAt: String,
+  active: Boolean,
   flag: Boolean,
   category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
   position: String,
   description: String,
-
 });
 
 // Configuring Schemas
@@ -274,13 +276,13 @@ module.exports.imageInfo = (function (imageid, callback) {
         'images.$': 1
       }).
     exec(
-      (err, image) => {
+      (err, user) => {
         if (err)
           callback(null, err);
-        else if (!image)
+        else if (!user)
           callback(null, 'ERROR: Image does not exist.');
         else
-          callback(image, null);
+          callback(user.images[0], null);
       }
     );
 });
@@ -302,7 +304,7 @@ module.exports.commentInfo = (function (imageid, callback) {
   // look into aggregation
   Comment.
     find({
-      imageId: image._id,
+      imageId: mongoose.Types.ObjectId(imageid),
       active: true,
     }).
     populate('author').
@@ -327,11 +329,11 @@ module.exports.commentInfo = (function (imageid, callback) {
 module.exports.albumsInfo = (function (userid, callback) {
   userid = sanitize(userid);
 
-  User.findById(userid, { 'albums': 1 }, (err, albums) => {
+  User.findById(userid, { 'albums': 1 }, (err, user) => {
     if (err)
       callback(null, err);
     else
-      callback(albums, null);
+      callback(user.albums, null);
   });
 
 });
