@@ -73,6 +73,7 @@ const usersSchema = new mongoose.Schema({
   flag: Boolean,
   liked: [{ type: mongoose.Schema.ObjectId }],                             // of image _ids
   comments: Array,                 //(of comment _ids)
+  about: String,
 });
 
 const challengeSchema = new mongoose.Schema({
@@ -140,17 +141,20 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   newAbout = sanitize(newAbout);
   userid = sanitize(userid);
   console.log('userid ' + userid);
-  User.findByIdAndUpdate(userid, {
-    about: newAbout,
-  }).exec((err, userBeforeChange) => {
-    if (err) {
-      callback(false, err);
-    }
-    else {
-      console.log(userBeforeChange);
-      callback(true, err);
-    }
-  });
+  console.log('new about ' + newAbout);
+  User.findByIdAndUpdate(userid,
+    {
+      about: newAbout,
+
+    }).exec((err, userBeforeChange) => {
+      if (err) {
+        callback(false, err);
+      }
+      else {
+        console.log(userBeforeChange);
+        callback(true, err);
+      }
+    });
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
