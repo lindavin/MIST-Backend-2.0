@@ -74,7 +74,7 @@ const usersSchema = new mongoose.Schema({
   workspaces: [workspacesSchema],               // of workspace objects
   active: Boolean,
   flag: Boolean,
-  liked: [{ type: mongoose.Schema.ObjectId }],                             // of image _ids
+  liked: [{ type: mongoose.Schema.ObjectId }],   // of image _ids
   comments: Array,                 //(of comment _ids)
   about: String,
 });
@@ -609,35 +609,34 @@ module.exports.omnisearch = (function (searchString, callback) {
     if (error)
       callback(null, error);
     else
-
-      // module.exports.imageSearch(searchString, function (imageArray, error) {
-      //         result.images = imageArray;
-      //         if (error)
-      //             callback(null, error);
-      //         else
-      module.exports.commentSearch(searchString, function (commentArray, error) {
-        result.comments = commentArray;
+      module.exports.imageSearch(searchString, function (imageArray, error) {
+        result.images = imageArray;
         if (error)
           callback(null, error);
         else
-          callback(result, null);
+          module.exports.commentSearch(searchString, function (commentArray, error) {
+            result.comments = commentArray;
+            if (error)
+              callback(null, error);
+            else
+              callback(result, null);
 
-        //                     module.exports.albumSearch(searchString, function (albumArray, error) {
-        //                         result.albums = albumArray;
-        //                         if (error)
-        //                             callback(null, error);
-        //                         else
-        //                         callback(result, null); 
+            // module.exports.albumSearch(searchString, function (albumArray, error) {
+            //     result.albums = albumArray;
+            //     if (error)
+            //         callback(null, error);
+            //     else
+            //     callback(result, null); 
 
-        /* module.exports.functionSearch(searchString, function (functionArray, error) {
-             result.functions = functionArray;
-             if (error)
-                 callback(null, error);
-             else
-                 callback(result, null); 
-         });*/
-        //                 });
-        //         });
+            /* module.exports.functionSearch(searchString, function (functionArray, error) {
+                 result.functions = functionArray;
+                 if (error)
+                     callback(null, error);
+                 else
+                     callback(result, null); 
+             });*/
+            //                 });
+          });
       });
   });
 });
@@ -660,9 +659,10 @@ module.exports.userSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
   User.find({
-    username: new RegExp(searchString, 'i')
+    username: new RegExp(searchString, 'i'),
+    //active: true
   }, { username: 1 }, (err, users) => {
-    console.log('We are searching for ' + searchString + ' and we have found: ' + users);
+    console.log('Users - We are searching for ' + searchString + ' and we have found: ' + users);
     if (err)
       callback(null, err);
     else
@@ -687,13 +687,42 @@ Automatically sanitizes.
 module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
-  database.User.findAll({ "images.name": '/.*' + searchString + '.*/' }, (err, images) => {
-    if (error)
+  User.find(
+    {
+      'images.title': new RegExp(searchString, 'i')
+    }, { 'images.title.$': 1 }, (error, images) => {
+      // rename images -> users
+      // we are getting back the user documents when I
+      // return everything from the images field from all users
+
+   
+      console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
+      if (error) {
+        callback(null, error);
+      }
+      else {
+        callback(images, null);
+      }
+    });
+
+
+  /*
+  User.find(
+    {
+      'images.title': new RegExp(searchString, 'i')
+    }, { 'images.title': 1 }, (error, images) => {
+    console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
+    if (error){
       callback(null, error);
-    else
-      callback(images, null);
+    }
+    else{
+    callback(images, null);
+  }
   });
+  */
 });
+
+//User.findById(userid, { 'albums': 1 }, 
 
 /*
 Procedure:
@@ -715,17 +744,19 @@ module.exports.commentSearch = (function (searchString, callback) {
   // find usernames which contiain the searchString
   Comment.find(
     {
-      body: new RegExp(searchString, 'i')
+      body: new RegExp(searchString, 'i'),
+      active: true,
     },
     {
       body: 1,
       imageId: 1,
-    }, (err, comment) => {
-      console.log('We are searching for ' + searchString + ' and we have found: ' + comment);
-      if (err)
-        callback(null, err);
-      else
+    }, (error, comment) => {
+      if (error) {
+        callback(null, error);
+      }
+      else {
         callback(comment, null);
+      }
     });
 });
 
@@ -746,11 +777,18 @@ module.exports.commentSearch = (function (searchString, callback) {
 module.exports.albumSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
-  database.User.findAll({ "albums.name": '/.*' + searchString + '.*/' }, (err, albums) => {
-    if (error)
+  User.find({
+    username: new RegExp(searchString, 'i')
+  }, { username: 1 }, (error, albums) => {
+    console.log('Albums - We are searching for ' + searchString + ' and we have found: ' + albums);
+    if (error) {
+      console.log('err');
       callback(null, error);
-    else
+    }
+    else {
+      console.log('true');
       callback(albums, null);
+    }
   });
 });
 /*
