@@ -39,7 +39,6 @@ module.exports = (passport, User) => {
               newUser.email = req.body.email;
               newUser.username = username;
               newUser.password = createHash(password);
-<<<<<<< HEAD
               newUser.createdAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
               newUser.updatedAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
               newUser.verified = false; // should be changed to true once email is verified
@@ -54,12 +53,10 @@ module.exports = (passport, User) => {
               newUser.comments = []
               newUser.about = "";
 
-=======
               newUser.email = req.body.email;
               newUser.fname = req.body.forename;
               newUser.lname = req.body.surname;
               newUser.createdAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
->>>>>>> 3cb24f9539630b82c3b914778fa460d380ef3d62
               // save the user
               newUser.save(function(err) {
                 if (err) {
