@@ -139,7 +139,7 @@
           <td class="date"><script>document.write(describeDate("<%= comments[i].postedAt %>"))</script></td>
           <% if(user.isAuthenticated()) { %>
             <td class='flagComment <%= (comments[i].flagged) ? 'flaggedComment' : ''%>'>&#9873</td>
-            <% if(userData.type == "A" || userData.type == "M" || userData._id.equals(comments[i].userId) || userData._id.equals(image.userId)) { %>
+            <% if(userData.type == "A" || userData.type == "M" || userData._id.equals(comments[i].author._id) || userData._id.equals(image.userId)) { %>
               <td class='deleteComment'>X</td>
             <% } %>
           <% } %>
