@@ -131,7 +131,7 @@
       </div>
       <table id="comments">
       <% for (var i = 0; i < comments.length; i++) { %>
-        <tr class="comment" id=<%- "'comment" + comments[i].commentId + "'" %>>
+        <tr class="comment" id=<%- "'comment" + comments[i]._id + "'" %>>
           <th class="user">
             <a href='<%= "/user/" + comments[i].author.username %>'><%- comments[i].author.username %></a>
           </th>

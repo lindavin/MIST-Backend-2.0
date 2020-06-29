@@ -2,7 +2,6 @@ module.exports = (app, database) => {
 
     const image = require('./functions/single-image');
     app.get('/image/:imageid', function (req, res) {
-      console.log('building image page for ' + req.params.imageid);
         image.buildPage(req, res, database);
     });
 
@@ -20,5 +19,9 @@ module.exports = (app, database) => {
           image.setProfilePicture(req, res, database);
         };
       });
+
+    app.get("/me/:username/images", (req,res) => {
+      image.allImagesinAlbum(req, res, database);
+    });
 
 }

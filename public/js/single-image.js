@@ -136,6 +136,7 @@ $("#recorder").click(function() {
   for (var i=0; i<flags.length; i++) {
     flags[i].onclick = function() {
       var id = this.parentNode.id.replace("comment", "");
+      alert(id);
       (function(clickedFlag) {
         flagComment(id, function(res) {
           if (res.indexOf("flagged") != -1) {

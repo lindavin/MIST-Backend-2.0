@@ -7,6 +7,7 @@
 // +---------+
 
 var utils = require('./utils.js');
+var database = require('../database')
 
 // +-----------+-------------------------------------------------------
 // | Functions |
@@ -38,7 +39,6 @@ var setFlags = function (commentArray, userID, database, callback) {
 
 // we have to fix set flags
 module.exports.buildPage = function (req, res, database) {
-    console.log('loading page')
     database.imageInfo(req.params.imageid, function (image, error) {
         if (error)
             res.end(JSON.stringify(error));
@@ -87,25 +87,25 @@ module.exports.buildPage = function (req, res, database) {
 };
 
 module.exports.saveComment = function (req, res, database) {
-    // build the comment
-    let comment = new database.Comment({
-        author: req.user._id,
-        body: database.sanitize(req.body.newComment),
-        createdAt: Date(),
-        active: true,
-        flagged: false,
-        imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
-    });
+  // build the comment
+  let comment = new database.Comment({
+    author: req.user._id,
+    body: database.sanitize(req.body.newComment),
+    createdAt: Date(),
+    active: true,
+    flagged: false,
+    imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
+  });
 
-    // save the comment
-    // need to check if this is actually safe to do
-    comment.save()
-        .then(doc => {
-            console.log(doc);
-            res.redirect('back');
-        })
-        .catch(err => {
-            console.error(err)
-            res.end(JSON.stringify(error));
-        });
+  // save the comment
+  // need to check if this is actually safe to do
+  comment.save()
+    .then(doc => {
+      console.log(doc);
+      res.redirect('back');
+    })
+    .catch(err => {
+      console.error(err)
+      res.end(JSON.stringify(error));
+    });
 }
