@@ -43,7 +43,7 @@ const albumsSchema = new mongoose.Schema({
   publicity: Number,
   createdAt: Date,
   updatedAt: Date,
-  images: Array,                      // (of Ids)
+  images: [{ type: Object }],                      // (of Ids)
   active: Boolean,
   flag: Boolean,
   caption: String,
@@ -511,21 +511,96 @@ module.exports.hasLiked = (function (userid, imageid, callback) {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
 
+  // STUB - Might be done
+  User.findOne({
+    _id: userid,
+    liked:
+      { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
+  }, (err, user) => {
+    if (err)
+      callback(null, err);
+    else if (user)
+      callback(true, null);
+    else
+      callback(false, null);
+  }); // iterate the users collection or User Model : look at each user document
+  // for a document whose images array contains an image whose ObjectId matches the 
+  // imageid under the request parameter
+});
+
+/**
+ * Get all of the contents of an album.
+ */
+
+// this returns the albums document
+module.exports.albumContentsInfo = (function (userid, albumid, callback) {
+  albumid = sanitize(albumid);
+  console.log('retrieving album document for ' + albumid);
+
+  User.findOne(
+    {
+      'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
+    }).
+    exec((err, user) => {
+      console.log('This is the user that we found ' + user);
+      console.log('This is the albums that were requested ' + user.albums);
+
+      if (err)
+        callback(null, error);
+      else
+        callback(user.albums[0], null);
+    });
+});
+
+module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
+
+  module.exports.albumContentsInfo(userid, albumid, function (album, err) {
+    if (err) {
+      console.log("no album found");
+    } else {
+      console.log('This is the album that we found: ' + album);
+    
+      let imagesIds = album.images;
+      let images = [];
+
+      // search through every user's images array
+      // and if it matches, grab the image, and push to
+      // images array
+      for (let i = 0; i < imagesIds.length; i++) {
+        module.exports.imageInfo(imagesIds[i], function (image, err) {
+          if (err) {
+            console.log("no image found");
+            callback(null, null, err);
+          } else {
+            console.log('image we have found : ' + image);
+            images.push(image);
+          }
+        })
+      }
+      await console.log('images we have found : ' + images);
+      callback(album, images, null);
+    }
+  })
+
+}
+
+/**
+ * Get some basic information about an album.
+ */
+module.exports.getAlbumInfo = (function (albumid, callback) {
+  albumid = sanitize(albumid);
+  callback([], null);
   // STUB
-  callback(true, null);
-  // User.findOne({
-  //   _id: userid,
-  //   images:
-  //     { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
-  // }, (err, user) => {
-  //   if (err)
-  //     callback(null, err);
-  //   else if (user)
-  //     callback(true, null);
-  //   else
-  //     callback(false, null);
-  // }); // iterate the users collection or User Model : look at each user document
-  // // for a document whose images array contains an image whose ObjectId matches the 
-  // // imageid under the request parameter
+  // module.exports.query("SELECT albums.name, albums.userid, albums.albumid, users.username FROM albums, users WHERE albumid='" + albumid + "' and users.userid=albums.userid;", function (rows, error) {
+  //   if (error) {
+  //     callback(null, error);
+  //   }
+  //   else if (rows.length == 0) {
+  //     callback(null, "no such album: " + albumid);
+  //   }
+  //   else {
+  //     callback(rows[0], null);
+  //   }
+  // });
 
 });
