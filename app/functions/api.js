@@ -25,6 +25,7 @@ handler.
 // +--------------------+
 
 var database = require('../database.js');
+var image = require("./single-image");
 
 // +--------------------+--------------------------------------------
 // | Exported Functions |
@@ -356,3 +357,57 @@ handlers.submitchallenge = function (info, req, res) {
 // +----------+--------------------------------------------------------
 // | Comments |
 // +----------+
+
+// Why isn't this is in single-image.js?
+
+/**
+ * Delete a comment from the database.
+ *   action: deleteComment
+ *   commentId, the comment to delete
+ */
+handlers.deleteComment = function (info, req, res) {
+
+  // check if the user is logged in
+  if (!req.isAuthenticated())
+    fail(res, "User Not logged in")
+  
+  // delete comment (set active to false)
+  database.deleteComment(req.user._id, info.commentId, function (success, error) {
+    if (error) {
+      fail(res, JSON.stringify(error));
+    }
+    else if (success) {
+      res.end("Comment " + info.commentId + " deleted.");
+    }
+    else
+      fail(res, "Unknown error");
+  });
+};
+
+// +------+------------------------------------------------------------
+// | Flag |
+// +------+
+
+// when comments are rendered, use the objectId to send back to us
+handlers.flagComment = (info, req, res) => {
+  if (!req.isAuthenticated()) {
+    res.send("logged out");
+  }  
+  else { 
+    console.log(req.user);
+      database.Comment.findByIdAndUpdate(info.commentId, 
+        { $inc: {
+          flagged : 1 }
+        })
+        .exec((err, result) => {
+          if (err) {
+            fail(res, "Error: " + err);
+            console.log(err);
+          } else {
+            res.end("Comment " + info.commentId + " flagged.");
+            console.log(result);
+          }
+      });
+    }
+}
+
