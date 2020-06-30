@@ -540,6 +540,8 @@ module.exports.albumContentsInfo = (function (userid, albumid, callback) {
   User.findOne(
     {
       'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
+    },{
+      'albums.$' : 1,
     }).
     exec((err, user) => {
       console.log('This is the user that we found ' + user);
@@ -559,26 +561,37 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
       console.log("no album found");
     } else {
       console.log('This is the album that we found: ' + album);
-    
+
       let imagesIds = album.images;
       let images = [];
-
+      let imagePromises = [];
+      const resolve = (image) => {
+        console.log('image we have found : ' + image);
+        images.push(image);
+      };
+      const reject = (err) => {
+        console.log(err);
+      }
       // search through every user's images array
       // and if it matches, grab the image, and push to
       // images array
       for (let i = 0; i < imagesIds.length; i++) {
-        module.exports.imageInfo(imagesIds[i], function (image, err) {
-          if (err) {
-            console.log("no image found");
-            callback(null, null, err);
-          } else {
-            console.log('image we have found : ' + image);
-            images.push(image);
-          }
-        })
+        imagePromises.push(new Promise((resolve, reject) => {
+          module.exports.imageInfo(imagesIds[i], (image, err) => {
+            if (err)
+              reject(err);
+            else
+              resolve(image);
+          })
+        }));
       }
-      await console.log('images we have found : ' + images);
-      callback(album, images, null);
+      Promise.allSettled(imagePromises)
+        .then((results) => results.forEach((result) => resolve(result.value)))
+        .then(()=>{
+          callback(album, images, null);
+        })
+        
+      // we will need to sort
     }
   })
 
