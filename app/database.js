@@ -123,6 +123,22 @@ module.exports.sanitize = sanitize; //sanitizes string
 // | User Procedures |
 // +-----------------+
 
+
+// update the updatedAt property of a user to current date
+module.exports.updateUpdatedAt = function (userID) {
+  User.findById(userID, function (err, user) {
+    if (err) {
+      fail(res, "Error: " + error);
+    } else {
+      var dt = new Date();
+      user.updatedAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+      user.save(function (err) {
+        if (err) console.log("unable to update updatedAt for user");
+      })
+    }
+  })
+}
+
 /*
   Procedure:
     database.changeAboutSection(userid, newAbout, Callback(success, error));
@@ -148,7 +164,6 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   User.findByIdAndUpdate(userid,
     {
       about: newAbout,
-
     }).exec((err, userBeforeChange) => {
       if (err) {
         callback(false, err);
@@ -158,6 +173,7 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
         callback(true, err);
       }
     });
+  module.exports.updateUpdatedAt(userid);
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 

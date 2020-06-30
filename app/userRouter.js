@@ -66,6 +66,7 @@ module.exports = (app, database) => {
   })
 
   app.post("/accountSettings", (req, res) => {
+    let userid = req.user._id;
     //If password entered is wrong
     if (!isValidPassword(req.user, req.body.password1)) {
       console.log("Wrong password");
@@ -78,14 +79,16 @@ module.exports = (app, database) => {
         console.log("Usernames do not match");
         res.redirect("/accountSettings");
       } else {
-        //If usernames match and password is correct
-        database.User.findOneAndUpdate({ _id: req.user._id }, { $set: { username: req.body.newUsername } }, { new: true }, (err, doc) => {
+        //If usernames match and password is correct, update username
+        database.User.findOneAndUpdate({ _id: userid }, { $set: { username: req.body.newUsername } }, { new: true }, (err, doc) => {
           if (err) {
             console.log(err);
           } else {
             console.log(doc);
           }
         })
+        //update updatedAt
+        database.updateUpdatedAt(userid);
         res.redirect("/me");
       }
     } else if (req.body.newEmail) {
@@ -94,14 +97,16 @@ module.exports = (app, database) => {
         console.log("Emails do not match");
         res.redirect("/accountSettings");
       } else {
-        //If emails match and password is correct
-        database.User.findOneAndUpdate({ _id: req.user._id }, { $set: { email: req.body.newEmail } }, { new: true }, (err, doc) => {
+        //If emails match and password is correct, update email
+        database.User.findOneAndUpdate({ _id: userid }, { $set: { email: req.body.newEmail } }, { new: true }, (err, doc) => {
           if (err) {
             console.log(err);
           } else {
             console.log(doc);
           }
         })
+        //update updatedAt
+        database.updateUpdatedAt(userid);
         res.redirect("/me");
       }
     } else if (req.body.newPassword) {
@@ -110,14 +115,16 @@ module.exports = (app, database) => {
         console.log("Passwords do not match");
         res.redirect("/accountSettings");
       } else {
-        //If emails match and password is correct
-        database.User.findOneAndUpdate({ _id: req.user._id }, { $set: { password: createHash(req.body.newPassword) } }, { new: true }, (err, doc) => {
+        //If emails match and password is correct, set new password
+        database.User.findOneAndUpdate({ _id: userid }, { $set: { password: createHash(req.body.newPassword) } }, { new: true }, (err, doc) => {
           if (err) {
             console.log(err);
           } else {
             console.log(doc);
           }
         })
+        //update updatedAt
+        database.updateUpdatedAt(userid);
         res.redirect("/me");
       }
     }
