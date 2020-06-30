@@ -3,7 +3,6 @@
  *   Functions related to the album.
  */
 
-
 var setLikes = function (imageArray, userID, database, callback) {
     if (imageArray.length == 0)
         callback([]);
