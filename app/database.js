@@ -662,21 +662,29 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult)=>{
-    if(err)
-    callback(null, err);
-    else{
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
       callback(writeOpResult.nModified, null);
     }
-
   })
 
-  // module.exports.query("DELETE FROM albumContents WHERE albumid='" + albumid + "' AND imageid='" + imageid + "' LIMIT 1;", function (success, error) {
-  //   if (error)
-  //     callback(null, error);
-  //   else
-  //     callback(success, null);
-  // });
+});
 
-
+module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
+  // removes album completely from the array
+  albumid = sanitize(albumid);
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumid) } } }
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
+      console.log(writeOpResult.nModified);
+      callback(writeOpResult.nModified, null);
+    }
+  })
 });
