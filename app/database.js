@@ -688,14 +688,17 @@ module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
   User.find(
-    {
-      'images.title': new RegExp(searchString, 'i')
-    }, { 'images.title.$': 1 }, (error, images) => {
+    // {'images.title': new RegExp(searchString, 'i')}, 
+    //  'images.title', (error, images) => {
+
+    // User.findOne({id: req.body.myId}).select({ Friends: {$elemMatch: {id: req.body.id}}}),
+      {'images.title': new RegExp(searchString, 'i')})
+      .select({ images: { $elemMatch: { title: new RegExp(searchString, 'i')}}})
+        .exec( (error, images) => {
+
       // rename images -> users
       // we are getting back the user documents when I
       // return everything from the images field from all users
-
-   
       console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
       if (error) {
         callback(null, error);
