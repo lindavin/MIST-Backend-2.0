@@ -85,7 +85,7 @@ database.getIDforUsername(req.params.username,
 
 
 module.exports.deleteAlbum = function (req, res, database) {
-  database.deleteAlbum(req.session.user.userid, req.params.albumid, function (success, error) {
+  database.deleteAlbum(req.user._id, req.params.albumid, function (success, error) {
     if (!success)
       res.end(JSON.stringify(error));
     else

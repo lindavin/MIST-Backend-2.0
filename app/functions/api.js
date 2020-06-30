@@ -135,7 +135,7 @@ handlers.saveimage = function (info, req, res) {
       updatedAt: Date(),
       comments: [], // of (of comment _ids)
       flag: false,
-      publicity: 0,
+      public: true,
       caption: "",
       delete: false,
     });

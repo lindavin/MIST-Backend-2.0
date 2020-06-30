@@ -21,7 +21,7 @@ const imagesSchema = new mongoose.Schema({
   updatedAt: Date,
   comments: Array, // of (of comment _ids)
   flag: Boolean,
-  publicity: Number,
+  public: Boolean, //true = public, false = private
   caption: String,
   active: Boolean,
   featured: Boolean,
@@ -40,7 +40,7 @@ const commentsSchema = new mongoose.Schema({
 const albumsSchema = new mongoose.Schema({
   name: String,
   userId: Object,
-  publicity: Number,
+  public: Boolean, // true = public, false = private
   createdAt: Date,
   updatedAt: Date,
   images: [{ type: mongoose.Schema.ObjectId }],                      // (of Ids)
@@ -443,11 +443,12 @@ module.exports.createAlbum = (function (userid, name, callback) {
         $push: {
           albums: new Album({
             name: name,
-            userid: userid,
-            publicity: 0,
+            userId: userid,
+            public: false,
             createdAt: Date(),
             updatedAt: Date(),
             images: [],                      // (of imageObjectIds)
+            active: true,
             flag: false,
             caption: '',
           }) // create album document object 
@@ -478,11 +479,11 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult)=>{
-    if(err){
+  ).exec((err, writeOpResult) => {
+    if (err) {
       console.log('Failed because of ERROR: ' + err);
       callback(null, err);
-    }else{
+    } else {
       console.log('This is the result ' + writeOpResult);
       callback(true, null);
     }
@@ -578,8 +579,6 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
     if (err) {
       console.log("no album found");
     } else {
-      console.log('This is the album that we found: ' + album);
-
       let imagesIds = album.images;
       let images = [];
       let imagePromises = [];
@@ -618,20 +617,147 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
 /**
  * Get some basic information about an album.
  */
-module.exports.getAlbumInfo = (function (albumid, callback) {
-  albumid = sanitize(albumid);
-  callback([], null);
-  // STUB
-  // module.exports.query("SELECT albums.name, albums.userid, albums.albumid, users.username FROM albums, users WHERE albumid='" + albumid + "' and users.userid=albums.userid;", function (rows, error) {
-  //   if (error) {
-  //     callback(null, error);
-  //   }
-  //   else if (rows.length == 0) {
-  //     callback(null, "no such album: " + albumid);
-  //   }
-  //   else {
-  //     callback(rows[0], null);
-  //   }
-  // });
+// module.exports.getAlbumInfo = (function (albumid, callback) {
+//   albumid = sanitize(albumid);
+//   callback([], null);
+// STUB
+// module.exports.query("SELECT albums.name, albums.userid, albums.albumid, users.username FROM albums, users WHERE albumid='" + albumid + "' and users.userid=albums.userid;", function (rows, error) {
+//   if (error) {
+//     callback(null, error);
+//   }
+//   else if (rows.length == 0) {
+//     callback(null, "no such album: " + albumid);
+//   }
+//   else {
+//     callback(rows[0], null);
+//   }
+// });
 
-});
+
+
+/**
+ * Get some basic information about an album.
+ * Nina version to test
+ */
+module.exports.getAlbumInfo = (albumid, callback) => {
+  User.findOne(
+    {
+      'albums._id': mongoose.Types.ObjectId(albumid)
+    },
+    {
+      'albums.$': 1
+    }).
+    exec(
+      (err, user) => {
+        if (err)
+          callback(null, err);
+        else if (!user)
+          callback(null, 'ERROR: Album does not exist.');
+        else
+          callback(user.albums[0], null);
+      }
+    );
+};
+
+
+/** 
+ * @param userId: the object ID for the user
+ * @param albumId: the object ID for the album
+ * @param callback: the callback to be excecuted if true
+ * checks if the user has the authortity to delete an album:
+ * user must own the album or be a moderator or admin
+ */
+module.exports.canDeleteAlbum = (userId, albumId, callback) => {
+
+  userId = sanitize(userId);
+  albumId = sanitize(albumId);
+  let userQuery = User.findById(userId);
+
+  userQuery.exec((err, user) => {
+    if (err) {
+      callback(false, err);
+    } else {
+      //is the user an admin or moderator?
+      if (user.admin || user.moderator) {
+        callback(true, null)
+      } else {
+        // does the user own the album?
+        module.exports.getAlbumInfo(albumId, (album, error) => {
+          if (error) {
+            callback(false, error);
+          }
+          else if (album.userId.equals(userId)) {
+            callback(true, null);
+          }
+        })
+      }
+    };
+  })
+}
+
+/**
+* deletes the comment if the user has authorization
+* @param userId: the object ID for the user
+* @param albumId: the object ID for the album
+* @param callback: the callback to be excecuted if true
+*/
+module.exports.deleteAlbum = (userId, albumId, callback) => {
+
+  // sanitize ID's
+  userId = sanitize(userId);
+  albumId = sanitize(albumId);
+
+  // checks if the user can delete the albums
+  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
+    if (error) {
+      callback(false, error);
+    }
+    else if (!authorized)
+      callback(false, "User is not authorized to delete this album.");
+    // if authorized then set active status to false
+    else {
+      User.updateOne(
+        {
+          'albums._id': { _id: mongoose.Types.ObjectId(albumId) }
+        },
+        /*{
+          $set: {
+            active: false
+          }
+        }, */
+        { $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
+        function (err, doc) {
+          if (err) {
+            console.log("could not delete album");
+            callback(false, error);
+          } else {
+            console.log("album deleted");
+            callback(true, null);
+          }
+        })
+      /* User.findOneAndUpdate(
+         {
+           "_id": userId,
+           "albums._id": albumId
+         },
+         {
+           "$set": {
+             "album.$.active": false
+           }
+         },
+         function (err, doc) {
+           console.log("doc: ", doc);
+ 
+           if (err) {
+             console.log("could not delete album");
+             callback(false, error);
+           } else {
+             console.log("album.active: ", doc.active);
+             console.log("album deleted");
+             callback(true, null);
+           }
+         }
+       ); */
+    }
+  })
+}
