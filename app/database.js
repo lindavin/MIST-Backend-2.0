@@ -598,7 +598,6 @@ module.exports.getAlbumInfo = (function (albumid, callback) {
   None
 */
 module.exports.omnisearch = (function (searchString, callback) {
-  console.log("omnisearch");
   var result = {
     users: [],
     images: [],
@@ -688,13 +687,14 @@ module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
   User.find(
-    // {'images.title': new RegExp(searchString, 'i')}, 
-    //  'images.title', (error, images) => {
+    //original concise version - works-ish
+    {'images.title': new RegExp(searchString, 'i')}, 
+     {'images.title': 1}, (error, images) => {
 
-    // User.findOne({id: req.body.myId}).select({ Friends: {$elemMatch: {id: req.body.id}}}),
-      {'images.title': new RegExp(searchString, 'i')})
-      .select({ images: { $elemMatch: { title: new RegExp(searchString, 'i')}}})
-        .exec( (error, images) => {
+    //chaining version - works the same as above but less concise
+    // {'images.title': new RegExp(searchString, 'i')})
+    //   .select({ 'images.title': new RegExp(searchString, 'i')})
+    //     .exec( (error, images) => {
 
       // rename images -> users
       // we are getting back the user documents when I
@@ -707,25 +707,8 @@ module.exports.imageSearch = (function (searchString, callback) {
         callback(images, null);
       }
     });
-
-
-  /*
-  User.find(
-    {
-      'images.title': new RegExp(searchString, 'i')
-    }, { 'images.title': 1 }, (error, images) => {
-    console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
-    if (error){
-      callback(null, error);
-    }
-    else{
-    callback(images, null);
-  }
-  });
-  */
 });
 
-//User.findById(userid, { 'albums': 1 }, 
 
 /*
 Procedure:
