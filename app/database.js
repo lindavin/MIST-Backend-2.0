@@ -598,7 +598,6 @@ module.exports.getAlbumInfo = (function (albumid, callback) {
   None
 */
 module.exports.omnisearch = (function (searchString, callback) {
-  console.log("omnisearch");
   var result = {
     users: [],
     images: [],
@@ -662,13 +661,16 @@ module.exports.userSearch = (function (searchString, callback) {
     username: new RegExp(searchString, 'i'),
     //active: true
   }, { username: 1 }, (err, users) => {
-    console.log('Users - We are searching for ' + searchString + ' and we have found: ' + users);
+    //console.log('Users - We are searching for ' + searchString + ' and we have found: ' + users);
     if (err)
       callback(null, err);
     else
       callback(users, null);
   });
 });
+
+// user:  {_id: 2345678654, username: first}
+
 
 /*
 Procedure:
@@ -688,49 +690,49 @@ module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
   User.find(
-    // original / most concise version: 
-     {'images.title': new RegExp(searchString, 'i')}, 
-     'images.title', (error, images) => {
+    {'images.title': new RegExp(searchString, 'i')}) // get array of User objects
+    .select('images') // select images field
+    .exec( (error, arrOfObj) => { // execute the query
 
-      /*
-
-      Attempts at using chaining -- not yet an improvement:
-
-      {'images.title': new RegExp(searchString, 'i')})
-      .select({ images: { $elemMatch: { title: new RegExp(searchString, 'i')}}})
-        .exec( (error, images) => {
-      */
-
-      // rename images -> users
-      // we are getting back the user documents when I
-      // return everything from the images field from all users
-      console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
       if (error) {
         callback(null, error);
       }
       else {
-        callback(images, null);
+
+        // Documentation for simplObj :
+        // function that takes an object with an id field and an images field
+        // returns the value assigned to the images key
+        // ex. input : { _id: 5efb83ab3f178f00eea8a495,
+        //        images: [ [Object], [Object] ] },  <--- this part right here
+        //     output: [ [Object], [Object] ] 
+        // map this function over object array (line 719)
+        function simplObj(obj) {
+          return obj.images;
+        }
+
+        // reduce from array of user objects to 
+        // array of images arrays
+        arrOfArr = arrOfObj.map(simplObj); 
+
+        function filterImages(image) {
+          var imageTitle = image.title;
+          // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
+          if (imageTitle.includes(searchString)) return true; 
+          return false;
+        }
+
+        //filter out so only images fitting the search remain
+        arrMapped = arrOfArr.map((img) => img.filter(filterImages));
+
+        //combine arrays into one array
+        result = [].concat.apply([], arrMapped);
+       
+        callback(result, null);
       }
     });
-
-
-  /*
-  User.find(
-    {
-      'images.title': new RegExp(searchString, 'i')
-    }, { 'images.title': 1 }, (error, images) => {
-    console.log('Images - We are searching for ' + searchString + ' and we have found: ' + images);
-    if (error){
-      callback(null, error);
-    }
-    else{
-    callback(images, null);
-  }
-  });
-  */
 });
+ 
 
-//User.findById(userid, { 'albums': 1 }, 
 
 /*
 Procedure:
