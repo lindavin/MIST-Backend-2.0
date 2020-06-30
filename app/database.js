@@ -688,13 +688,18 @@ module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
   User.find(
-    // {'images.title': new RegExp(searchString, 'i')}, 
-    //  'images.title', (error, images) => {
+    // original / most concise version: 
+     {'images.title': new RegExp(searchString, 'i')}, 
+     'images.title', (error, images) => {
 
-    // User.findOne({id: req.body.myId}).select({ Friends: {$elemMatch: {id: req.body.id}}}),
+      /*
+
+      Attempts at using chaining -- not yet an improvement:
+
       {'images.title': new RegExp(searchString, 'i')})
       .select({ images: { $elemMatch: { title: new RegExp(searchString, 'i')}}})
         .exec( (error, images) => {
+      */
 
       // rename images -> users
       // we are getting back the user documents when I
