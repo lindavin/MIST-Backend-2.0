@@ -499,7 +499,6 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
       console.log('Failed because of ERROR: ' + err);
       callback(null, err);
     } else {
-      console.log('This is the result ' + writeOpResult);
       callback(true, null);
     }
   });
@@ -592,9 +591,9 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
 
   module.exports.albumContentsInfo(userid, albumid, function (album, err) {
     if (err) {
+      // uhhh this is not how we should have an error
       console.log("no album found");
     } else {
-      console.log('This is the album that we found: ' + album);
 
       let imagesIds = album.images;
       let images = [];
