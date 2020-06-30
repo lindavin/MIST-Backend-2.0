@@ -11,10 +11,7 @@ module.exports = (app, database) => {
         }
         else if(req.body.delete != null) {
           image.deleteImage(req, res, database);
-        }
-        else if (req.body.add != null){
-          image.addtoAlbum(req, res, database);
-        }
+        } 
         else if (req.body.profile != null){
           image.setProfilePicture(req, res, database);
         };

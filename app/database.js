@@ -43,7 +43,7 @@ const albumsSchema = new mongoose.Schema({
   publicity: Number,
   createdAt: Date,
   updatedAt: Date,
-  images: [{ type: Object }],                      // (of Ids)
+  images: [{ type: mongoose.Schema.ObjectId }],                      // (of Ids)
   active: Boolean,
   flag: Boolean,
   caption: String,
@@ -468,6 +468,28 @@ module.exports.createAlbum = (function (userid, name, callback) {
 
 }); // createAlbum
 
+module.exports.addToAlbum = function (albumid, imageid, callback) {
+  // Sanitize inputs.  Yay!
+  albumid = sanitize(albumid);
+  imageid = sanitize(imageid);
+
+  // different way
+
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
+  ).exec((err, writeOpResult)=>{
+    if(err){
+      console.log('Failed because of ERROR: ' + err);
+      callback(null, err);
+    }else{
+      console.log('This is the result ' + writeOpResult);
+      callback(true, null);
+    }
+  });
+};
+
+// do we use this?
 module.exports.getAllImagesforUser = (function (userid, callback) {
   userid = sanitize(userid);
 
@@ -535,17 +557,13 @@ module.exports.hasLiked = (function (userid, imageid, callback) {
 // this returns the albums document
 module.exports.albumContentsInfo = (function (userid, albumid, callback) {
   albumid = sanitize(albumid);
-  console.log('retrieving album document for ' + albumid);
-
   User.findOne(
     {
       'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
-    },{
-      'albums.$' : 1,
-    }).
+    }, {
+    'albums.$': 1,
+  }).
     exec((err, user) => {
-      console.log('This is the user that we found ' + user);
-      console.log('This is the albums that were requested ' + user.albums);
 
       if (err)
         callback(null, error);
@@ -587,10 +605,10 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
       }
       Promise.allSettled(imagePromises)
         .then((results) => results.forEach((result) => resolve(result.value)))
-        .then(()=>{
+        .then(() => {
           callback(album, images, null);
         })
-        
+
       // we will need to sort
     }
   })

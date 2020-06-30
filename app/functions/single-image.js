@@ -86,6 +86,7 @@ module.exports.buildPage = function (req, res, database) {
     });
 };
 
+
 module.exports.saveComment = function (req, res, database) {
   // build the comment
   let comment = new database.Comment({

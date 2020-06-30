@@ -256,11 +256,6 @@ handlers.submitchallenge = function (info, req, res) {
   });
 };
 
-
-// +---------------+---------------------------------------------------
-// | Miscellaneous |
-// +---------------+
-
 // +----------+--------------------------------------------------------
 // | Comments |
 // +----------+
@@ -318,3 +313,41 @@ handlers.flagComment = (info, req, res) => {
     }
 }
 
+
+// +--------+---------------------------------------------------
+// | Albums |
+// +--------+
+
+
+/**
+ * Add an image to an album.
+ *   info.action: addToAlbum
+ *   info.albumid: the id of the album (an integer)
+ *   info.imageid: the id of the image (an integer)
+ */
+handlers.addToAlbum = function(info, req, res) {
+  
+  if (!info.albumid) {
+    fail(res, "missing required albumid field");
+    return;
+  }
+  if (!info.imageid) {
+    fail(res, "missing required imageid field");
+    return;
+  }
+  database.addToAlbum(info.albumid, info.imageid, 
+      function(success,err) {
+    if (!success) {
+      fail(res,err);
+      return;
+    }
+    else {
+      res.end("true");
+    }
+  });
+}; // handlers.addToAlbum
+
+
+// +---------------+---------------------------------------------------
+// | Miscellaneous |
+// +---------------+
