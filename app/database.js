@@ -494,11 +494,11 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult)=>{
-    if(err){
+  ).exec((err, writeOpResult) => {
+    if (err) {
       console.log('Failed because of ERROR: ' + err);
       callback(null, err);
-    }else{
+    } else {
       console.log('This is the result ' + writeOpResult);
       callback(true, null);
     }
@@ -600,7 +600,7 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
       let images = [];
       let imagePromises = [];
       const resolve = (image) => {
-        console.log('image we have found : ' + image);
+        //console.log('image we have found : ' + image);
         images.push(image);
       };
       const reject = (err) => {
@@ -649,5 +649,35 @@ module.exports.getAlbumInfo = (function (albumid, callback) {
   //     callback(rows[0], null);
   //   }
   // });
+
+});
+
+
+//delete from album (not image database)
+module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
+  albumid = sanitize(albumid);
+  imageid = sanitize(imageid);
+  // we can also look into the local passport......
+
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
+  ).exec((err, writeOpResult)=>{
+    if(err)
+    callback(null, err);
+    else{
+      callback(writeOpResult.nModified, null);
+    }
+
+  })
+
+  // module.exports.query("DELETE FROM albumContents WHERE albumid='" + albumid + "' AND imageid='" + imageid + "' LIMIT 1;", function (success, error) {
+  //   if (error)
+  //     callback(null, error);
+  //   else
+  //     callback(success, null);
+  // });
+
 
 });

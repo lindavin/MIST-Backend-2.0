@@ -92,7 +92,6 @@ handlers.imageexists = function (info, req, res) {
   if (!req.isAuthenticated()) {
     res.send("logged out");
   } else {
-    console.log("images under " + req.user.username + req.user.images);
     let exists = false;
     const arr = req.user.images.slice();
     arr.forEach((image) => {
