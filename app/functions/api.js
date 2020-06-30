@@ -92,7 +92,6 @@ handlers.imageexists = function (info, req, res) {
   if (!req.isAuthenticated()) {
     res.send("logged out");
   } else {
-    console.log("images under " + req.user.username + req.user.images);
     let exists = false;
     const arr = req.user.images.slice();
     arr.forEach((image) => {
@@ -200,7 +199,6 @@ handlers.savews = function (info, req, res) {
     fail(res, "Could not save workspace because you didn't title it");
   }
   else {
-
     // create the workspace object
     let workspace = new database.Workspace({
       name: database.sanitize(info.name),
@@ -210,25 +208,118 @@ handlers.savews = function (info, req, res) {
     }) // create workspace document object
     // save it to their array
     // find the user doc and embed the album object into the userdoc
-    let query = database.User.updateOne(
-      { _id: req.user._id },
-      { $push: { workspaces: workspace } }
-    )// create Mongoose query object
-
-    query.exec((err, writeOpResult) => {
-      //we need to change this callack
-      if (err) {
-        console.log("Failed to save workspace because", err);
-        res.end(JSON.stringify(error));
-      } else {
-        console.log('operation result ' + writeOpResult);
-        res.end();
-      }
-    })// execute query 
+    database.User.
+      updateOne(
+        {
+          _id: req.user._id,
+          'workspaces.name': database.sanitize(info.name),
+        },
+        {
+          $set: {
+            'workspaces.$.data': workspace.data,
+            'workspaces.$.name': workspace.name,
+            'workspaces.$.updatedAt': workspace.updatedAt,
+          },
+        }).// create Mongoose query object
+      // we need to modify this query so that it replaces the document with the new one.
+      exec((err, writeOpResult) => {
+        //we need to change this callack
+        if (err) {
+          console.log("Failed to save workspace because", err);
+          res.end(JSON.stringify(error));
+        } else {
+          console.log('operation result ' + writeOpResult.toString());
+          // check the writeOpResult
+          if (!writeOpResult.nModified) {
+            // if the document has not been modified
+            database.User.
+              updateOne(
+                {
+                  _id: req.user._id,
+                },
+                {
+                  $push: {
+                    workspaces: workspace,
+                  },
+                }
+              ).
+              exec((err, writeOpResult) => {
+                if (err) {
+                  console.log("Failed to save workspace because", err);
+                  res.end(JSON.stringify(error));
+                } else {
+                  res.end();
+                }
+              });
+          } else {
+            res.end();
+          }// otherwise just end the request
+        }
+      })// execute query 
   }
 } // handlers.savews
 
+/**
+* List the workspaces.
+*   action: listws
+*/
+handlers.listws = function (info, req, res) {
+  if (!req.isAuthenticated()) {
+    fail(res, "Could not list workspaces because you're not logged in");
+  }
+  else {
+    var result = [];
+    for (var i = 0; i < req.user.workspaces.length; i++) {
+      result.push(req.user.workspaces[i].name);
+    } // for
+    res.send(result);
+  } // if logged in
+} // handlers.listws
 
+/**
+* Get a workspace
+*   action: getws
+*   name: string naming the workspace
+*/
+handlers.getws = function (info, req, res) {
+  if (!req.isAuthenticated()) {
+    fail(res, "You must be logged in to retrieve a workspace.");
+  } // if they are not logged in
+  else if (info.id) {
+    fail(res, "We currently do not support getting workspace by id");
+  }
+  else if (info.name) {
+    let workspace = req.user.workspaces.find(ws => ws.name === info.name);
+    if (workspace === undefined) {
+      fail(res, "No workspace with name" + info.name);
+    } else {
+      res.setHeader("Content-type", "text/plain");
+      res.send(workspace.data);
+    }
+  } // if they've requested the workspace by name
+  else {
+    fail(res, "Insufficient info for getting the workspace");
+  }
+} // handlers.getws
+
+/**
+ * Return the ws stored in the session.  See storews for more info.
+ *  info.action: returnws
+ */
+handlers.returnws = function (info, req, res) {
+  res.send(req.session.workspaceCode);
+  res.end();
+};
+
+/**
+ * Store the ws in the session
+ *   info.action: storews
+ *   info.code: the code for the workspace
+ */
+handlers.storews = function (info, req, res) {
+  req.session.workspaceCode = info.code;
+  res.end();
+};
 
 // +------------+------------------------------------------------------
 // | Challenges |
