@@ -618,14 +618,12 @@ module.exports.omnisearch = (function (searchString, callback) {
             if (error)
               callback(null, error);
             else
-              callback(result, null);
-
-            // module.exports.albumSearch(searchString, function (albumArray, error) {
-            //     result.albums = albumArray;
-            //     if (error)
-            //         callback(null, error);
-            //     else
-            //     callback(result, null); 
+              module.exports.albumSearch(searchString, function (albumArray, error) {
+                result.albums = albumArray;
+                if (error)
+                    callback(null, error);
+                else
+                  callback(result, null); 
 
             /* module.exports.functionSearch(searchString, function (functionArray, error) {
                  result.functions = functionArray;
@@ -634,7 +632,7 @@ module.exports.omnisearch = (function (searchString, callback) {
                  else
                      callback(result, null); 
              });*/
-            //                 });
+             });
           });
       });
   });
@@ -785,22 +783,50 @@ module.exports.commentSearch = (function (searchString, callback) {
   Automatically sanitizes.
 */
 module.exports.albumSearch = (function (searchString, callback) {
-  searchString = sanitize(searchString);
+    searchString = sanitize(searchString);
+  
+    User.find(
+      {'albums.name': new RegExp(searchString, 'i')}) // get array of User objects
+      .select('albums') // select albums field
+      .exec( (error, arrOfObj) => { // execute the query
+  
+        if (error) {
+          callback(null, error);
+        }
+        else {
 
-  User.find({
-    username: new RegExp(searchString, 'i')
-  }, { username: 1 }, (error, albums) => {
-    console.log('Albums - We are searching for ' + searchString + ' and we have found: ' + albums);
-    if (error) {
-      console.log('err');
-      callback(null, error);
-    }
-    else {
-      console.log('true');
-      callback(albums, null);
-    }
+          // Documentation for simplObj :
+          // function that takes an object with an id field and an albums field
+          // returns the value assigned to the albums key
+          // ex. input : { _id: 5efb83ab3f178f00eea8a495,
+          //        albums: [ [Object], [Object] ] },  <--- this part right here
+          //     output: [ [Object], [Object] ] 
+          // map this function over object array (line 719)
+          function simplObj(obj) {
+            return obj.albums;
+          }
+  
+          // reduce from array of user objects to 
+          // array of album arrays
+          arrOfArr = arrOfObj.map(simplObj); 
+  
+          function filterAlbum(album) {
+            var albumName = album.name;
+            // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
+            if (albumName.includes(searchString)) return true; 
+            return false;
+          }
+  
+          //filter out so only album fitting the search remain
+          arrMapped = arrOfArr.map((alb) => alb.filter(filterAlbum));
+  
+          //combine arrays into one array
+          result = [].concat.apply([], arrMapped);
+         
+          callback(result, null);
+        }
+      });
   });
-});
 /*
   Procedure:
   database.functionSearch(searchString, callback(resultArray, error));
