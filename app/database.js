@@ -82,7 +82,6 @@ const albumsSchema = new mongoose.Schema({
   images: [{
     type: mongoose.Schema.ObjectId,
     ref: "Image",
-    required: true,
   }],                      // (of Ids)
   createdAt: {
     type: Date,
@@ -570,36 +569,31 @@ module.exports.albumsInfo = (function (userid, callback) {
 module.exports.createAlbum = (function (userid, name, callback) {
   userid = sanitize(userid);
   name = sanitize(name);
-
-  User.
-    findByIdAndUpdate(
-      userid,
-      {
-        $push: {
-          albums: new Album({
-            name: name,
-            userId: userid,
-            public: false,
-            images: [],                      // (of imageObjectIds)
-            active: true,
-            flag: false,
-            caption: '',
-          }) // create album document object 
-        }
-      },
-      (err, user) => {
-        if (err) {
-          console.log("Failed to create album");
-          callback(null, err);
-        } else {
-          callback(user, null);
-        }
-
-      }
-
-
-    )// create Mongoose query object
-
+  let album = new Album({
+    name: name,
+    userId: userid,
+    public: false,
+    active: true,
+    flag: false,
+    caption: '',
+  }) // create album document object 
+  album.save()
+    .then(album => {
+      User.updateOne({ _id: userid }, { $push: { albums: album._id } })
+        .exec()
+        .then((writeOpResult) => {
+          // if this query fails what do we do about the albums collection
+          // this does not disallow owning two albums by the same name
+          if (writeOpResult.nModified === 0) {
+            console.log("Failed to insert album");
+            callback(false, "Failed to insert album");
+          }
+          else
+            callback(true, null);
+        })
+        .catch(err => callback(false, err))
+    })
+    .catch(err => callback(false, err));
 }); // createAlbum
 
 module.exports.addToAlbum = function (albumid, imageid, callback) {
