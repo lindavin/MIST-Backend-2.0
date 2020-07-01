@@ -42,14 +42,12 @@ module.exports = (passport, User) => {
               newUser.verified = false; // should be changed to true once email is verified
               newUser.admin = false;
               newUser.moderator = false;
-              newUser.images = [];
-              newUser.albums = [];
               newUser.workspaces = [];
               newUser.active = true;
               newUser.flag = false;
               newUser.liked = [];
               newUser.comments = []
-              newUser.about = "";
+              //newUser.about = "";
 
               newUser.email = req.body.email;
               newUser.fname = req.body.forename;
