@@ -13,84 +13,210 @@ mongoose.set('useFindAndModify', false);
 // Schemas
 
 const imagesSchema = new mongoose.Schema({
-  title: String,
-  userId: Object,
-  code: String,
-  ratings: Number,
-  createdAt: Date,
-  updatedAt: Date,
-  comments: Array, // of (of comment _ids)
-  flag: Boolean,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment", }], // of (of comment _ids)
+  title: { type: String, required: true, },
+  code: { type: String, required: true, },
+  ratings: { type: Number, default: 0, },
+  createdAt: { type: Date, default: Date.now, },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
   public: Boolean, //true = public, false = private
   caption: String,
-  active: Boolean,
   featured: Boolean,
 });
 
 const commentsSchema = new mongoose.Schema({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  imageId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Image",
+  },
   body: String,
-  createdAt: Date,
-  active: Boolean,
-  flagged: Number,
-  flaggedBy: Array,
-  imageId: Object,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+});
+
+const flagSchema = new mongoose.Schema({
+  body: String,
+  flaggedAt: Date,
 });
 
 const albumsSchema = new mongoose.Schema({
   name: String,
-  userId: Object,
+  userId: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    require: true,
+  },
+  images: [{
+    type: mongoose.Schema.ObjectId,
+    ref: "Image",
+    required: true,
+  }],                      // (of Ids)
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+
   public: Boolean, // true = public, false = private
-  createdAt: Date,
-  updatedAt: Date,
-  images: [{ type: mongoose.Schema.ObjectId }],                      // (of Ids)
   active: Boolean,
-  flag: Boolean,
   caption: String,
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
 });
 
 const workspacesSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   data: Object,
-  createdAt: Date,
-  updatedAt: Date,
-  active: Boolean,
 });
 
 const usersSchema = new mongoose.Schema({
-  //objectId: String,                 //aka user id
-  forename: String,
-  surname: String,
-  email: String,
-  username: String,
-  password: String,                //encrypted
-  createdAt: Date,
-  updatedAt: Date,
+  forename: {
+    type: String,
+    required: true,
+  },
+  surname: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },              //hashed
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
   verified: Boolean,
   admin: Boolean,
   moderator: Boolean,
-  images: [imagesSchema],                   // of image schemas
-  albums: [albumsSchema],                   // of album schemas
+  images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],                   // of image ids
+  albums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],                   // of album ids
   workspaces: [workspacesSchema],               // of workspace objects
-  active: Boolean,
-  flag: Boolean,
-  liked: [{ type: mongoose.Schema.ObjectId }],                             // of image _ids
-  comments: Array,                 //(of comment _ids)
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+  liked: [{ type: mongoose.Schema.Types.ObjectId }],   // of image _ids
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],                 //(of comment _ids)
   about: String,
 });
 
 const challengeSchema = new mongoose.Schema({
-  userId: Object,
-  name: String,
-  title: String,
-  code: String,
-  createdAt: String,
-  updatedAt: String,
-  active: Boolean,
-  flag: Boolean,
-  category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
-  position: String,
-  description: String,
+  userId: {
+    type: mongoose.Schema.ObjectId,
+    require: true,
+  },
+  name: {
+    type: String,
+    require: true,
+  },
+  title: {
+    type: String,
+    require: true,
+  },
+  category: {
+    type: String,
+    require: true,
+  }, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+
+  code: {
+    type: String,
+    require: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+  code: {
+    type: String,
+    require: true,
+  }, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+  position: {
+    type: String,
+    require: true,
+  },
+  description: {
+    type: String,
+    require: true,
+  },
 });
 
 // Configuring Schemas
@@ -437,12 +563,12 @@ module.exports.deleteComment = (userid, commentId, callback) => {
  */
 module.exports.albumsInfo = (function (userid, callback) {
   userid = sanitize(userid);
-  User.findById(userid, { 'albums': 1,}, (err, user) => {
+  User.findById(userid, { 'albums': 1, }, (err, user) => {
     if (err)
       callback(null, err);
-    else{
+    else {
       // consider using aggregation pipepline and $filter
-      const albums = user.albums.filter((album)=> album.active);
+      const albums = user.albums.filter((album) => album.active);
       callback(albums, null);
     }
   });
@@ -715,9 +841,9 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
     else {
       User.updateOne(
         {
-          "albums._id": { _id: mongoose.Types.ObjectId(albumId) } 
+          "albums._id": { _id: mongoose.Types.ObjectId(albumId) }
         },
-        { "$set": { "albums.$.active": false }}, 
+        { "$set": { "albums.$.active": false } },
         // use this line if we want to delete it entirely
         //{ $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
         function (err, doc) {
@@ -760,10 +886,10 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult)=>{
-    if(err)
-    callback(null, err);
-    else{
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
       callback(writeOpResult.nModified, null);
     }
 
