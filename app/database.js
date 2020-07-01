@@ -37,7 +37,10 @@ const imagesSchema = new mongoose.Schema({
   }], // of (of flag_ids)
   public: Boolean, //true = public, false = private
   caption: String,
-  featured: Boolean,
+  featured: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const commentsSchema = new mongoose.Schema({
@@ -232,7 +235,6 @@ const Workspace = mongoose.model("Workspace", workspacesSchema);
 const Flag = mongoose.model("Flag", flagSchema);
 
 
-
 // Export models
 module.exports.User = User;
 module.exports.Image = Image;
@@ -402,21 +404,13 @@ module.exports.imageInfo = (function (imageid, callback) {
   imageid = sanitize(imageid);
 
   // two methods
-
-  // method one
-
+  // method one:
   // find the user who owns an image with this id and that this imageid is active
-
   // then return the user document
-
   // then search for this image again
-
   // and send return the document
-
   // method two
-
   // use the positional operator to retrieve the image document
-
   // if nothing happens, then callback(null, "ERRO: Images does not exist")
 
   Image.
