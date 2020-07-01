@@ -734,14 +734,11 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
     else {
       User.updateOne(
         {
-          'albums._id': { _id: mongoose.Types.ObjectId(albumId) }
+          "albums._id": { _id: mongoose.Types.ObjectId(albumId) } 
         },
-        /*{
-          $set: {
-            active: false
-          }
-        }, */
-        { $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
+        { "$set": { "albums.$.active": false }}, 
+        // use this line if we want to delete it entirely
+        //{ $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
         function (err, doc) {
           if (err) {
             console.log("could not delete album");
@@ -751,29 +748,6 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
             callback(true, null);
           }
         })
-      /* User.findOneAndUpdate(
-         {
-           "_id": userId,
-           "albums._id": albumId
-         },
-         {
-           "$set": {
-             "album.$.active": false
-           }
-         },
-         function (err, doc) {
-           console.log("doc: ", doc);
- 
-           if (err) {
-             console.log("could not delete album");
-             callback(false, error);
-           } else {
-             console.log("album.active: ", doc.active);
-             console.log("album deleted");
-             callback(true, null);
-           }
-         }
-       ); */
     }
   })
 }
