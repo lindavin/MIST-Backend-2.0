@@ -419,7 +419,7 @@ module.exports.imageInfo = (function (imageid, callback) {
       (err, image) => {
         if (err)
           callback(null, err);
-        else if (!user)
+        else if (!image)
           callback(null, 'ERROR: Image does not exist.');
         else
           callback(image, null);
