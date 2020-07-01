@@ -93,7 +93,6 @@ module.exports.saveComment = function (req, res, database) {
   let comment = new database.Comment({
     author: userID,
     body: database.sanitize(req.body.newComment),
-    createdAt: Date(),
     active: true,
     flagged: false,
     imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),

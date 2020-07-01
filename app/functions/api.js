@@ -130,8 +130,6 @@ handlers.saveimage = function (info, req, res) {
       userId: req.user._id,
       code: database.sanitize(info.code),
       ratings: 0,
-      createdAt: Date(),
-      updatedAt: Date(),
       comments: [], // of (of comment _ids)
       flag: false,
       public: true,
@@ -203,8 +201,6 @@ handlers.savews = function (info, req, res) {
     let workspace = new database.Workspace({
       name: database.sanitize(info.name),
       data: info.data,
-      createdAt: Date(),
-      updatedAt: Date(),
     }) // create workspace document object
     // save it to their array
     // find the user doc and embed the album object into the userdoc

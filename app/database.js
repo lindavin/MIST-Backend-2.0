@@ -229,6 +229,7 @@ const Comment = mongoose.model("Comment", commentsSchema);
 const Album = mongoose.model("Album", albumsSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
 const Workspace = mongoose.model("Workspace", workspacesSchema);
+const Flag = mongoose.model("Workspace", flagSchema);
 
 
 
@@ -239,6 +240,8 @@ module.exports.Comment = Comment;
 module.exports.Album = Album;
 module.exports.Challenge = Challenge;
 module.exports.Workspace = Workspace;
+module.exports.Flag = Flag;
+
 
 // Export Utilities
 module.exports.Types = mongoose.Types;
@@ -589,8 +592,6 @@ module.exports.createAlbum = (function (userid, name, callback) {
             name: name,
             userId: userid,
             public: false,
-            createdAt: Date(),
-            updatedAt: Date(),
             images: [],                      // (of imageObjectIds)
             active: true,
             flag: false,
