@@ -137,19 +137,25 @@ handlers.saveimage = function (info, req, res) {
       delete: false,
     });
 
-    database.User.findOneAndUpdate(
-      { _id: req.user._id },
-      { $push: { images: image } },
-      (err, writeUpResult) => {
-        if (err) {
-          console.log(err);
-          fail(res, "Error: " + error);
-        } else {
-          // this needs to be fixed. we need to send something so that the popup can load the single-image page
-          res.send(image);
-        }
-      }
-    );
+    image.save()
+      .then(image => {
+        database.User.findOneAndUpdate(
+          { _id: req.user._id },
+          { $push: { images: image._id } },
+          (err, writeUpResult) => {
+            if (err) {
+              console.log(err);
+              fail(res, "Error: " + error);
+            } else {
+              // this needs to be fixed. we need to send something so that the popup can load the single-image page
+              res.send(image);
+            }
+          }
+        );
+      })
+      .catch(err => fail(res, "Error: " + error));
+
+
   }
 }; // handlers.saveimage
 
@@ -359,7 +365,7 @@ handlers.deleteComment = function (info, req, res) {
   // check if the user is logged in
   if (!req.isAuthenticated())
     fail(res, "User Not logged in")
-  
+
   // delete comment (set active to false)
   database.deleteComment(req.user._id, info.commentId, function (success, error) {
     if (error) {
@@ -381,23 +387,25 @@ handlers.deleteComment = function (info, req, res) {
 handlers.flagComment = (info, req, res) => {
   if (!req.isAuthenticated()) {
     res.send("logged out");
-  }  
-  else { 
+  }
+  else {
     console.log(req.user);
-      database.Comment.findByIdAndUpdate(info.commentId, 
-        { $inc: {
-          flagged : 1 }
-        })
-        .exec((err, result) => {
-          if (err) {
-            fail(res, "Error: " + err);
-            console.log(err);
-          } else {
-            res.end("Comment " + info.commentId + " flagged.");
-            console.log(result);
-          }
+    database.Comment.findByIdAndUpdate(info.commentId,
+      {
+        $inc: {
+          flagged: 1
+        }
+      })
+      .exec((err, result) => {
+        if (err) {
+          fail(res, "Error: " + err);
+          console.log(err);
+        } else {
+          res.end("Comment " + info.commentId + " flagged.");
+          console.log(result);
+        }
       });
-    }
+  }
 }
 
 
@@ -412,8 +420,8 @@ handlers.flagComment = (info, req, res) => {
  *   info.albumid: the id of the album (an integer)
  *   info.imageid: the id of the image (an integer)
  */
-handlers.addToAlbum = function(info, req, res) {
-  
+handlers.addToAlbum = function (info, req, res) {
+
   if (!info.albumid) {
     fail(res, "missing required albumid field");
     return;
@@ -422,16 +430,16 @@ handlers.addToAlbum = function(info, req, res) {
     fail(res, "missing required imageid field");
     return;
   }
-  database.addToAlbum(info.albumid, info.imageid, 
-      function(success,err) {
-    if (!success) {
-      fail(res,err);
-      return;
-    }
-    else {
-      res.end("true");
-    }
-  });
+  database.addToAlbum(info.albumid, info.imageid,
+    function (success, err) {
+      if (!success) {
+        fail(res, err);
+        return;
+      }
+      else {
+        res.end("true");
+      }
+    });
 }; // handlers.addToAlbum
 
 
