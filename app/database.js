@@ -21,7 +21,7 @@ const imagesSchema = new mongoose.Schema({
   updatedAt: Date,
   comments: Array, // of (of comment _ids)
   flag: Boolean,
-  publicity: Number,
+  public: Boolean, //true = public, false = private
   caption: String,
   active: Boolean,
   featured: Boolean,
@@ -40,7 +40,7 @@ const commentsSchema = new mongoose.Schema({
 const albumsSchema = new mongoose.Schema({
   name: String,
   userId: Object,
-  publicity: Number,
+  public: Boolean, // true = public, false = private
   createdAt: Date,
   updatedAt: Date,
   images: [{ type: mongoose.Schema.Types.ObjectId }],                      // (of Ids)
@@ -123,6 +123,22 @@ module.exports.sanitize = sanitize; //sanitizes string
 // | User Procedures |
 // +-----------------+
 
+
+// update the updatedAt property of a user to current date
+module.exports.updateUpdatedAt = function (userID) {
+  User.findById(userID, function (err, user) {
+    if (err) {
+      fail(res, "Error: " + error);
+    } else {
+      var dt = new Date();
+      user.updatedAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+      user.save(function (err) {
+        if (err) console.log("unable to update updatedAt for user");
+      })
+    }
+  })
+}
+
 /*
   Procedure:
     database.changeAboutSection(userid, newAbout, Callback(success, error));
@@ -148,7 +164,6 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   User.findByIdAndUpdate(userid,
     {
       about: newAbout,
-
     }).exec((err, userBeforeChange) => {
       if (err) {
         callback(false, err);
@@ -158,6 +173,7 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
         callback(true, err);
       }
     });
+  module.exports.updateUpdatedAt(userid);
 });//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
@@ -243,6 +259,9 @@ module.exports.getIDforUsername = (function (username, callback) {
   });
 });
 
+
+
+
 // +--------+----------------------------------------------------------
 // | Images |
 // +--------+
@@ -292,6 +311,68 @@ module.exports.imageInfo = (function (imageid, callback) {
           callback(user.images[0], null);
       }
     );
+});
+
+
+// do we use this?
+module.exports.getAllImagesforUser = (function (userid, callback) {
+  userid = sanitize(userid);
+
+  User.
+    findById(
+      userid,
+      {
+        _id: 0,
+        'images': 1,
+      }).
+    exec(
+      (err, user) => {
+        if (err)
+          callback(null, err);
+        else
+          callback(user.images, null);
+      }
+    );
+});
+
+
+
+/*
+  Procedure:
+  database.hasLiked(userid, imageid, callback(liked, error));
+  Parameters:
+  userid, the user to check likes
+  imageid, the image to check likes
+  Purpose:
+  To check to see if a user has rated an image
+  Pre-conditions:
+  Image exists
+  User exists
+  Post-conditions:
+  liked will be a boolean
+  Preferences:
+  Automatically sanitizes.
+*/
+// needs testing
+module.exports.hasLiked = (function (userid, imageid, callback) {
+  imageid = sanitize(imageid);
+  userid = sanitize(userid);
+
+  // STUB - Might be done
+  User.findOne({
+    _id: userid,
+    liked:
+      { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
+  }, (err, user) => {
+    if (err)
+      callback(null, err);
+    else if (user)
+      callback(true, null);
+    else
+      callback(false, null);
+  }); // iterate the users collection or User Model : look at each user document
+  // for a document whose images array contains an image whose ObjectId matches the 
+  // imageid under the request parameter
 });
 
 // +----------------+--------------------------------------------------
@@ -412,171 +493,6 @@ module.exports.deleteComment = (userid, commentId, callback) => {
 }
 
 
-// +--------+----------------------------------------------------------
-// | Albums |
-// +--------+
-
-/**
- * Get information on an album.
- */
-module.exports.albumsInfo = (function (userid, callback) {
-  userid = sanitize(userid);
-
-  User.findById(userid, { 'albums': 1 }, (err, user) => {
-    if (err)
-      callback(null, err);
-    else
-      callback(user.albums, null);
-  });
-
-});
-
-// create Album
-module.exports.createAlbum = (function (userid, name, callback) {
-  userid = sanitize(userid);
-  name = sanitize(name);
-
-  User.
-    findByIdAndUpdate(
-      userid,
-      {
-        $push: {
-          albums: new Album({
-            name: name,
-            userid: userid,
-            publicity: 0,
-            createdAt: Date(),
-            updatedAt: Date(),
-            images: [],                      // (of imageObjectIds)
-            flag: false,
-            caption: '',
-          }) // create album document object 
-        }
-      },
-      (err, user) => {
-        if (err) {
-          console.log("Failed to create album");
-          callback(null, err);
-        } else {
-          callback(user, null);
-        }
-
-      }
-
-
-    )// create Mongoose query object
-
-}); // createAlbum
-
-module.exports.getAllImagesforUser = (function (userid, callback) {
-  userid = sanitize(userid);
-
-  User.
-    findById(
-      userid,
-      {
-        _id: 0,
-        'images': 1,
-      }).
-    exec(
-      (err, user) => {
-        if (err)
-          callback(null, err);
-        else
-          callback(user.images, null);
-      }
-    );
-});
-
-
-
-/*
-  Procedure:
-  database.hasLiked(userid, imageid, callback(liked, error));
-  Parameters:
-  userid, the user to check likes
-  imageid, the image to check likes
-  Purpose:
-  To check to see if a user has rated an image
-  Pre-conditions:
-  Image exists
-  User exists
-  Post-conditions:
-  liked will be a boolean
-  Preferences:
-  Automatically sanitizes.
-*/
-// needs testing
-module.exports.hasLiked = (function (userid, imageid, callback) {
-  imageid = sanitize(imageid);
-  userid = sanitize(userid);
-
-  // STUB
-  callback(true, null);
-  // User.findOne({
-  //   _id: userid,
-  //   images:
-  //     { $elemMatch: { _id: database.Types.ObjectId(imageid) } },
-  // }, (err, user) => {
-  //   if (err)
-  //     callback(null, err);
-  //   else if (user)
-  //     callback(true, null);
-  //   else
-  //     callback(false, null);
-  // }); // iterate the users collection or User Model : look at each user document
-  // // for a document whose images array contains an image whose ObjectId matches the 
-  // // imageid under the request parameter
-
-});
-
-
-/**
- * Get all of the contents of an album.
- */
-module.exports.albumContentsInfo = (function (userid, albumid, callback) {
-  albumid = sanitize(albumid);
-  // get the user document
-  //console.log(albumid);
-  User.findOne(
-    {
-      'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
-    },
-    {
-      _id: 0,
-      "albums.$": 1,
-    }, (err, user) => {
-      //console.log(user);
-      if (err)
-        callback(null, error);
-      else
-        callback(user.albums, null)
-    });
-});
-
-
-
-/**
- * Get some basic information about an album.
- */
-module.exports.getAlbumInfo = (function (albumid, callback) {
-  albumid = sanitize(albumid);
-  callback([], null);
-  // STUB
-  // module.exports.query("SELECT albums.name, albums.userid, albums.albumid, users.username FROM albums, users WHERE albumid='" + albumid + "' and users.userid=albums.userid;", function (rows, error) {
-  //   if (error) {
-  //     callback(null, error);
-  //   }
-  //   else if (rows.length == 0) {
-  //     callback(null, "no such album: " + albumid);
-  //   }
-  //   else {
-  //     callback(rows[0], null);
-  //   }
-  // });
-
-});
-
 // +-----------+-------------------------------------------------------
 // | Searching |
 // +-----------+
@@ -621,18 +537,18 @@ module.exports.omnisearch = (function (searchString, callback) {
               module.exports.albumSearch(searchString, function (albumArray, error) {
                 result.albums = albumArray;
                 if (error)
-                    callback(null, error);
+                  callback(null, error);
                 else
-                  callback(result, null); 
+                  callback(result, null);
 
-            /* module.exports.functionSearch(searchString, function (functionArray, error) {
-                 result.functions = functionArray;
-                 if (error)
-                     callback(null, error);
-                 else
-                     callback(result, null); 
-             });*/
-             });
+                /* module.exports.functionSearch(searchString, function (functionArray, error) {
+                     result.functions = functionArray;
+                     if (error)
+                         callback(null, error);
+                     else
+                         callback(result, null); 
+                 });*/
+              });
           });
       });
   });
@@ -688,9 +604,9 @@ module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
 
   User.find(
-    {'images.title': new RegExp(searchString, 'i')}) // get array of User objects
+    { 'images.title': new RegExp(searchString, 'i') }) // get array of User objects
     .select('images') // select images field
-    .exec( (error, arrOfObj) => { // execute the query
+    .exec((error, arrOfObj) => { // execute the query
 
       if (error) {
         callback(null, error);
@@ -710,12 +626,12 @@ module.exports.imageSearch = (function (searchString, callback) {
 
         // reduce from array of user objects to 
         // array of images arrays
-        arrOfArr = arrOfObj.map(simplObj); 
+        arrOfArr = arrOfObj.map(simplObj);
 
         function filterImages(image) {
           var imageTitle = image.title;
           // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
-          if (imageTitle.includes(searchString)) return true; 
+          if (imageTitle.includes(searchString)) return true;
           return false;
         }
 
@@ -724,12 +640,12 @@ module.exports.imageSearch = (function (searchString, callback) {
 
         //combine arrays into one array
         result = [].concat.apply([], arrMapped);
-       
+
         callback(result, null);
       }
     });
 });
- 
+
 
 
 /*
@@ -768,6 +684,7 @@ module.exports.commentSearch = (function (searchString, callback) {
     });
 });
 
+
 /*
   Procedure:
   database.albumSearch(searchString, callback(resultArray, error));
@@ -783,50 +700,130 @@ module.exports.commentSearch = (function (searchString, callback) {
   Automatically sanitizes.
 */
 module.exports.albumSearch = (function (searchString, callback) {
-    searchString = sanitize(searchString);
-  
-    User.find(
-      {'albums.name': new RegExp(searchString, 'i')}) // get array of User objects
-      .select('albums') // select albums field
-      .exec( (error, arrOfObj) => { // execute the query
-  
-        if (error) {
-          callback(null, error);
-        }
-        else {
+  searchString = sanitize(searchString);
 
-          // Documentation for simplObj :
-          // function that takes an object with an id field and an albums field
-          // returns the value assigned to the albums key
-          // ex. input : { _id: 5efb83ab3f178f00eea8a495,
-          //        albums: [ [Object], [Object] ] },  <--- this part right here
-          //     output: [ [Object], [Object] ] 
-          // map this function over object array (line 719)
-          function simplObj(obj) {
-            return obj.albums;
-          }
-  
-          // reduce from array of user objects to 
-          // array of album arrays
-          arrOfArr = arrOfObj.map(simplObj); 
-  
-          function filterAlbum(album) {
-            var albumName = album.name;
-            // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
-            if (albumName.includes(searchString)) return true; 
-            return false;
-          }
-  
-          //filter out so only album fitting the search remain
-          arrMapped = arrOfArr.map((alb) => alb.filter(filterAlbum));
-  
-          //combine arrays into one array
-          result = [].concat.apply([], arrMapped);
-         
-          callback(result, null);
+  User.find(
+    { 'albums.name': new RegExp(searchString, 'i') }) // get array of User objects
+    .select('albums') // select albums field
+    .exec((error, arrOfObj) => { // execute the query
+
+      if (error) {
+        callback(null, error);
+      }
+      else {
+
+        // Documentation for simplObj :
+        // function that takes an object with an id field and an albums field
+        // returns the value assigned to the albums key
+        // ex. input : { _id: 5efb83ab3f178f00eea8a495,
+        //        albums: [ [Object], [Object] ] },  <--- this part right here
+        //     output: [ [Object], [Object] ] 
+        // map this function over object array (line 719)
+        function simplObj(obj) {
+          return obj.albums;
         }
-      });
+
+        // reduce from array of user objects to 
+        // array of album arrays
+        arrOfArr = arrOfObj.map(simplObj);
+
+        function filterAlbum(album) {
+          var albumName = album.name;
+          // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
+          if (albumName.includes(searchString)) return true;
+          return false;
+        }
+
+        //filter out so only album fitting the search remain
+        arrMapped = arrOfArr.map((alb) => alb.filter(filterAlbum));
+
+        //combine arrays into one array
+        result = [].concat.apply([], arrMapped);
+
+        callback(result, null);
+      }
+    });
+});
+
+
+// +--------+----------------------------------------------------------
+// | Albums |
+// +--------+
+
+/**
+ * Get information on an album.
+ */
+module.exports.albumsInfo = (function (userid, callback) {
+  userid = sanitize(userid);
+  User.findById(userid, { 'albums': 1, }, (err, user) => {
+    if (err)
+      callback(null, err);
+    else {
+      // consider using aggregation pipepline and $filter
+      const albums = user.albums.filter((album) => album.active);
+      callback(albums, null);
+    }
   });
+
+});
+
+// create Album
+module.exports.createAlbum = (function (userid, name, callback) {
+  userid = sanitize(userid);
+  name = sanitize(name);
+
+  User.
+    findByIdAndUpdate(
+      userid,
+      {
+        $push: {
+          albums: new Album({
+            name: name,
+            userId: userid,
+            public: false,
+            createdAt: Date(),
+            updatedAt: Date(),
+            images: [],                      // (of imageObjectIds)
+            active: true,
+            flag: false,
+            caption: '',
+          }) // create album document object 
+        }
+      },
+      (err, user) => {
+        if (err) {
+          console.log("Failed to create album");
+          callback(null, err);
+        } else {
+          callback(user, null);
+        }
+
+      }
+
+
+    )// create Mongoose query object
+
+}); // createAlbum
+
+module.exports.addToAlbum = function (albumid, imageid, callback) {
+  // Sanitize inputs.  Yay!
+  albumid = sanitize(albumid);
+  imageid = sanitize(imageid);
+
+  // different way
+
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
+  ).exec((err, writeOpResult) => {
+    if (err) {
+      console.log('Failed because of ERROR: ' + err);
+      callback(null, err);
+    } else {
+      callback(true, null);
+    }
+  });
+};
 /*
   Procedure:
   database.functionSearch(searchString, callback(resultArray, error));
@@ -851,3 +848,205 @@ module.exports.albumSearch = (function (searchString, callback) {
 //         callback(results, null);
 //     });
 //   });
+module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
+
+  module.exports.albumContentsInfo(userid, albumid, function (album, err) {
+    if (err) {
+      // uhhh this is not how we should have an error
+      console.log("no album found");
+    } else {
+      let imagesIds = album.images;
+      let images = [];
+      let imagePromises = [];
+      const resolve = (image) => {
+        //console.log('image we have found : ' + image);
+        images.push(image);
+      };
+      const reject = (err) => {
+        console.log(err);
+      }
+      // search through every user's images array
+      // and if it matches, grab the image, and push to
+      // images array
+      for (let i = 0; i < imagesIds.length; i++) {
+        imagePromises.push(new Promise((resolve, reject) => {
+          module.exports.imageInfo(imagesIds[i], (image, err) => {
+            if (err)
+              reject(err);
+            else
+              resolve(image);
+          })
+        }));
+      }
+      Promise.allSettled(imagePromises)
+        .then((results) => results.forEach((result) => resolve(result.value)))
+        .then(() => {
+          callback(album, images, null);
+        })
+
+      // we will need to sort
+    }
+  })
+
+}
+
+/**
+ * Get some basic information about an album.
+ * Nina version to test
+ */
+module.exports.getAlbumInfo = (albumid, callback) => {
+  User.findOne(
+    {
+      'albums._id': mongoose.Types.ObjectId(albumid)
+    },
+    {
+      'albums.$': 1
+    }).
+    exec(
+      (err, user) => {
+        if (err)
+          callback(null, err);
+        else if (!user)
+          callback(null, 'ERROR: Album does not exist.');
+        else
+          callback(user.albums[0], null);
+      }
+    );
+};
+
+
+/** 
+ * @param userId: the object ID for the user
+ * @param albumId: the object ID for the album
+ * @param callback: the callback to be excecuted if true
+ * checks if the user has the authortity to delete an album:
+ * user must own the album or be a moderator or admin
+ */
+module.exports.canDeleteAlbum = (userId, albumId, callback) => {
+
+  userId = sanitize(userId);
+  albumId = sanitize(albumId);
+  let userQuery = User.findById(userId);
+
+  userQuery.exec((err, user) => {
+    if (err) {
+      callback(false, err);
+    } else {
+      //is the user an admin or moderator?
+      if (user.admin || user.moderator) {
+        callback(true, null)
+      } else {
+        // does the user own the album?
+        module.exports.getAlbumInfo(albumId, (album, error) => {
+          if (error) {
+            callback(false, error);
+          }
+          else if (album.userId.equals(userId)) {
+            callback(true, null);
+          }
+        })
+      }
+    };
+  })
+}
+
+/**
+* deletes the comment if the user has authorization
+* @param userId: the object ID for the user
+* @param albumId: the object ID for the album
+* @param callback: the callback to be excecuted if true
+*/
+module.exports.deleteAlbum = (userId, albumId, callback) => {
+
+  // sanitize ID's
+  userId = sanitize(userId);
+  albumId = sanitize(albumId);
+
+  // checks if the user can delete the albums
+  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
+    if (error) {
+      callback(false, error);
+    }
+    else if (!authorized)
+      callback(false, "User is not authorized to delete this album.");
+    // if authorized then set active status to false
+    else {
+      User.updateOne(
+        {
+          "albums._id": { _id: mongoose.Types.ObjectId(albumId) }
+        },
+        { "$set": { "albums.$.active": false } },
+        // use this line if we want to delete it entirely
+        //{ $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
+        function (err, doc) {
+          if (err) {
+            console.log("could not delete album");
+            callback(false, error);
+          } else {
+            console.log("album deleted");
+            callback(true, null);
+          }
+        })
+    }
+  })
+}
+
+module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
+  // removes album completely from the array
+  albumid = sanitize(albumid);
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumid) } } }
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
+      console.log(writeOpResult.nModified);
+      callback(writeOpResult.nModified, null);
+    }
+  })
+});
+
+//delete from album (not image database)
+module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
+  albumid = sanitize(albumid);
+  imageid = sanitize(imageid);
+  // we can also look into the local passport......
+
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
+      callback(writeOpResult.nModified, null);
+    }
+
+  })
+}); 
+
+/**
+ * Get all of the contents of an album.
+ */
+
+// this returns the albums document
+module.exports.albumContentsInfo = (function (userid, albumid, callback) {
+  albumid = sanitize(albumid);
+  User.findOne(
+    {
+      'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
+    }, {
+    'albums.$': 1,
+  }).
+    exec((err, user) => {
+
+      if (err)
+        callback(null, error);
+      else
+        callback(user.albums[0], null);
+    });
+});
+

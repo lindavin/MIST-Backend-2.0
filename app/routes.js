@@ -19,8 +19,7 @@ module.exports = (app, passport, database) => {
 
   app.get('/about', (req, res) => {
     res.render('about', {
-      user: req,
-      userData: req.user
+      user: req.user
     });
   })
 
@@ -58,8 +57,7 @@ module.exports = (app, passport, database) => {
 
   app.get('/privacypolicy', (req,res) => {
     res.render('privacy-policy', {
-      user : req,
-      userData : req.user
+      user : req.user,
     })
   })
 
@@ -72,10 +70,9 @@ module.exports = (app, passport, database) => {
 
   app.get('/help', (req, res) => {
     res.render('help', {
-      user: req,
-      userData: req.user
+      user: req.user,
     })
-  })
+  });
 
   //------------------------------------------------
 
@@ -83,15 +80,6 @@ module.exports = (app, passport, database) => {
     req.logout();
     res.redirect('/');
   });
-
-  //------------------------------------------------
-
-  app.get('/help', (req, res) => {
-    res.render('help', {
-      user: req,
-      userData: req.user
-    })
-  })
 
   // --------------------------------------------------
   // Path: /api
@@ -111,11 +99,10 @@ module.exports = (app, passport, database) => {
 
   // --------------------------------------------------
   // Path: /create
-  //   Page for creating (something)
+  //   Page for creating an image
   app.get('/create', function (req, res) {
     res.render('create', {
-      user: req,
-      userData: req.user,
+      user: req.user,
     });
   });
 
