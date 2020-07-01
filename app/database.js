@@ -229,7 +229,7 @@ const Comment = mongoose.model("Comment", commentsSchema);
 const Album = mongoose.model("Album", albumsSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
 const Workspace = mongoose.model("Workspace", workspacesSchema);
-const Flag = mongoose.model("Workspace", flagSchema);
+const Flag = mongoose.model("Flag", flagSchema);
 
 
 
