@@ -502,7 +502,6 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
       console.log('Failed because of ERROR: ' + err);
       callback(null, err);
     } else {
-      console.log('This is the result ' + writeOpResult);
       callback(true, null);
     }
   });
@@ -595,6 +594,7 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
 
   module.exports.albumContentsInfo(userid, albumid, function (album, err) {
     if (err) {
+      // uhhh this is not how we should have an error
       console.log("no album found");
     } else {
       let imagesIds = album.images;
@@ -631,27 +631,6 @@ module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
   })
 
 }
-
-/**
- * Get some basic information about an album.
- */
-// module.exports.getAlbumInfo = (function (albumid, callback) {
-//   albumid = sanitize(albumid);
-//   callback([], null);
-// STUB
-// module.exports.query("SELECT albums.name, albums.userid, albums.albumid, users.username FROM albums, users WHERE albumid='" + albumid + "' and users.userid=albums.userid;", function (rows, error) {
-//   if (error) {
-//     callback(null, error);
-//   }
-//   else if (rows.length == 0) {
-//     callback(null, "no such album: " + albumid);
-//   }
-//   else {
-//     callback(rows[0], null);
-//   }
-// });
-
-
 
 /**
  * Get some basic information about an album.
@@ -753,3 +732,40 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
     }
   })
 }
+
+module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
+  // removes album completely from the array
+  albumid = sanitize(albumid);
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumid) } } }
+  ).exec((err, writeOpResult) => {
+    if (err)
+      callback(null, err);
+    else {
+      console.log(writeOpResult.nModified);
+      callback(writeOpResult.nModified, null);
+    }
+  })
+});
+
+//delete from album (not image database)
+module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
+  albumid = sanitize(albumid);
+  imageid = sanitize(imageid);
+  // we can also look into the local passport......
+
+  // but for this we will just do a mongoose query
+  User.updateOne(
+    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
+    { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
+  ).exec((err, writeOpResult)=>{
+    if(err)
+    callback(null, err);
+    else{
+      callback(writeOpResult.nModified, null);
+    }
+
+  })
+}); 
