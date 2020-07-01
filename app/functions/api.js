@@ -126,15 +126,13 @@ handlers.saveimage = function (info, req, res) {
   else {
     // create the image object
     let image = new database.Image({
-      title: database.sanitize(info.title),
       userId: req.user._id,
-      code: database.sanitize(info.code),
-      ratings: 0,
       comments: [], // of (of comment _ids)
-      flag: false,
+      title: database.sanitize(info.title),
+      code: database.sanitize(info.code),
+      flags: [],
       public: true,
       caption: "",
-      delete: false,
     });
 
     image.save()
