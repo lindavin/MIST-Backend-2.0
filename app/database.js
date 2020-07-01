@@ -419,22 +419,16 @@ module.exports.imageInfo = (function (imageid, callback) {
 
   // if nothing happens, then callback(null, "ERRO: Images does not exist")
 
-  User.
-    findOne(
-      {
-        'images._id': mongoose.Types.ObjectId(imageid)
-      },
-      {
-        'images.$': 1
-      }).
+  Image.
+    findById(imageid).
     exec(
-      (err, user) => {
+      (err, image) => {
         if (err)
           callback(null, err);
         else if (!user)
           callback(null, 'ERROR: Image does not exist.');
         else
-          callback(user.images[0], null);
+          callback(image, null);
       }
     );
 });
