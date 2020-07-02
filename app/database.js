@@ -302,6 +302,9 @@ deleteFromModel = (objectid, model) => {
   )
 }
 
+// intended to remove something that the user has a reference to
+// no references are removed from the user array
+// do we want to?
 generalDelete = async (userid, objectid, referenceArray, model, callback = null) => {
   userid = sanitize(userid);
   objectid = sanitize(objectid);
@@ -1140,36 +1143,22 @@ module.exports.canDeleteAlbum = (userId, albumId, callback) => {
 * @param albumId: the object ID for the album
 * @param callback: the callback to be excecuted if true
 */
-module.exports.deleteAlbum = (userId, albumId, callback) => {
+module.exports.deleteAlbum = async (userId, albumId, callback) => {
 
   // sanitize ID's
   userId = sanitize(userId);
   albumId = sanitize(albumId);
 
-  // checks if the user can delete the albums
-  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
-    if (error) {
-      callback(false, error);
+  try {
+    let success = await generalDelete(userid, albumId, "albums", "Album");
+    if (success) {
+      callback(true, null);
+    } else {
+      throw "Unknown Error!";
     }
-    else if (!authorized)
-      callback(false, "User is not authorized to delete this album.");
-    // if authorized then set active status to false
-    else {
-      Album.
-        updateOne({ _id: albumId }, { active: false }).
-        exec((err, writeOpResult) => {
-          if (err)
-            callback(false, "Could not delete album because of ERROR: " + err);
-          else {
-            if (writeOpResult.nModified === 0)
-              callback(false, "Could not delete album");
-            else {
-              callback(true, null);
-            }
-          }
-        })
-    }
-  })
+  } catch (err) {
+    callback(false, err);
+  }
 }
 
 module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
