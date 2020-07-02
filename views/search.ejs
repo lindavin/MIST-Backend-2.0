@@ -3,24 +3,20 @@
   edit it directly.
 
   The command used to generate this file was
-    gejs index.gejs -t mist.ejs -o index.ejs
+    gejs search.gejs -t mist.ejs -o search.ejs
  -->
 <!DOCTYPE html>
 <html lang="en">
  <head>
-  <title>MIST by Glimmer
-</title>
+  <title> MIST Search</title>
   <!-- Meta Information -->
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name='google-site-verification' content='P8V7MGREuNuon08HmOnVFcxjSKSXUbpgyXCCIdCqP1o'>
-  
 
   <link rel="shortcut icon" href="/logos/favicon.ico">
 
   <!-- CSS -->
   <link rel='stylesheet' href='/css/styles.css'>
-  <link rel='stylesheet', href='/css/index.css'>
-  
+   <link rel="stylesheet" href="/css/singleImage.css">
 
 
   <!-- Scripts -->
@@ -33,8 +29,6 @@
   <script type="text/javascript" src="/js/analytics.js"></script>
   <script type="text/javascript" src="/js/sharing-tools.js"></script>
 
-  <script type='text/javascript' src='/js/gallery.js'></script>
-  
 
  </head>
 
@@ -56,7 +50,7 @@
           <li><a href="/gallery">gallery</a></li>
           <li><a href="/about">about</a></li>
           <li><a href="/help">help</a></li>
-          <% if (!user.isAuthenticated()) { %>
+          <% if (!user) { %>
             <li id="slider">login/signup</li>
         </span>
           <form method="POST" action="/login" class="hidden" style="display: none; opacity: 0;"><input type="text" placeholder="username" name="username" required="required"><input type="password" placeholder="password" name="password" require="required">
@@ -66,7 +60,7 @@
             <li id="cancel">cancel</li>
           </form>
           <% } else {%>
-            <li><a href='/me'><%= userData.username %></a></li>
+            <li><a href='/me'><%= user.username %></a></li>
             <li><a href='/logout'>logout</a></li>
         </span>
           <% } %>
@@ -74,43 +68,28 @@
     </nav>
   </header>
   <div id="main">
+<div id="pageTitleGeneral"><h1>     MIST Search
 
+</h1></div>
 
-    <div id='intro'>
-      <div id='featuredImage'>
-        <img src='/logos/featured.png'>
-      </div>
-      <div id='about'>
-        <p>Create abstract images and animations using simple math functions.</p>
-      </div>
-    </div>
-    <p id="welcomeLink">MIST is in public beta. Look at the <a href="/welcome">welcome page</a> for more information.</p>
-    <div id='homeButtons'>
-      <a href='/create' id='create'>create</a>
-      <a href='/help' id='tutorials'>tutorials</a>
-      <a href='/gallery' id='gallery'>gallery</a>
-    </div>
-    <p class='warning'> WARNING: Some of the images rendered on this site may feature flashing animations and patterns. <br>For those with a history of epilepsy, viewer discretion is advised.</p>
-    <div id='featuredImages'>
-      <h2><a href='/gallery/featured'>Featured Images</a></h2>
-    
-      <div id='galleryImages'>
-        <% for (var i=0; i < images.length; i++) {%>
-          <figure>
-            <a href='/image/<%= images[i]._id %>'>
-              <canvas id='<%= 'canvas'+i %>' width='150' height='150'></canvas>
-              <input type='hidden' id='<%= 'code'+i %>' value='<%=images[i].code%>'>
-            </a>
-            <% if(images[i].code.indexOf("t.") > -1 || images[i].code.indexOf("m.") > -1) { %>
-              <img src='/icons/time.png' width ='20 px' height='20 px'>
-            <% } %>
-            </a>
-          </figure>
-        <% } %>
-      </div>
+    <h2>Users (<%= results.users.length%>)</h2>
+    <% for (var i=0; i < results.users.length; i++) { %>
+     <p><a href="<%= '/user/' + results.users[i].username %>"><%- results.users[i].username %></a></p>
+    <% } %>
+    <h2>Images (<%= results.images.length%>)</h2>
 
-      <p class='info'>Images with <img src='/icons/time.png' width ='25 px' height='25 px'> will animate when you hover over them</p>
-    </div>
+    <% for (var i=0; i < results.images.length; i++) { %>
+      <!--    <p><a href="<%= '/image/' + results.images[i].imageid %>"><%- results.images[i].title %></a></p> --> 
+
+     <p><a href="<%= '/image/' + results.images[i]._id %>"><%- results.images[i].title %></a></p> 
+    <% } %>
+    <h2>Albums (<%= results.albums.length%>)</h2>
+
+    <% for (var i=0; i < results.albums.length; i++) { %>
+      <!--      <p><a href="<%= '/user/' + results.albums[i].username + '/albums/' + results.albums[i].albumid %>"><%- results.albums[i].name %></a></p> -->
+     <p><a href="<%= '/user/' + results.users[i].username + '/albums/' + results.albums[i]._id %>"><%- results.albums[i].name %></a></p>
+    <% } %>
+
   </div>
   <footer>
    <p>&copy;2014 Glimmer Labs</p>

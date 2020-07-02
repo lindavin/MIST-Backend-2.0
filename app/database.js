@@ -156,6 +156,11 @@ const usersSchema = new mongoose.Schema({
   images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],                   // of image ids
   albums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],                   // of album ids
   workspaces: [workspacesSchema],               // of workspace objects
+  profilepic: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Image",
+    default: null,
+  },
   active: {
     type: Boolean,
     default: true,
@@ -457,6 +462,9 @@ module.exports.getIDforUsername = (function (username, callback) {
   });
 });
 
+
+
+
 // +--------+----------------------------------------------------------
 // | Images |
 // +--------+
@@ -654,6 +662,25 @@ module.exports.deleteImage = (userid, imageId, callback) => {
   })
 }
 
+/**
+ * Set the profile picture for a given userid to a given imageid.
+ */
+module.exports.setProfilePicture = (function (userid, imageid, callback) {
+  userid = sanitize(userid);
+  imageid = sanitize(imageid);
+  
+  User.findOneAndUpdate(
+    { _id: userid },
+    { profilepic : imageid }, 
+    function(err, pic) {
+    if (err) {
+      callback(null, err);
+    }
+    else {
+      callback(pic, null);
+    }
+  });
+});
 
 
 // +----------------+--------------------------------------------------
@@ -721,6 +748,208 @@ module.exports.deleteComment = async (userid, commentId, callback) => {
     callback(false, err);
   }
 }
+
+
+// +-----------+-------------------------------------------------------
+// | Searching |
+// +-----------+
+
+// These probably belong in a separate file.
+
+/*
+  Procedure:
+  database.omnisearch(searchString, callback(resultObject, error));
+  Parameters:
+  searchString, A string to search
+  Purpose:
+  Find content in the database similar to a string
+  Pre-conditions:
+  None
+  Post-conditions:
+  All results will be returned.
+  Preferences:
+  None
+*/
+module.exports.omnisearch = (function (searchString, callback) {
+  var result = {
+    users: [],
+    images: [],
+    albums: [],
+  };
+  module.exports.userSearch(searchString, function (userArray, error) {
+    result.users = userArray;
+    if (error)
+      callback(null, error);
+    else
+      module.exports.imageSearch(searchString, function (imageArray, error) {
+        result.images = imageArray;
+        if (error)
+          callback(null, error);
+        else
+          module.exports.commentSearch(searchString, function (commentArray, error) {
+            result.comments = commentArray;
+            if (error)
+              callback(null, error);
+            else
+              module.exports.albumSearch(searchString, function (albumArray, error) {
+                result.albums = albumArray;
+                if (error)
+                  callback(null, error);
+                else
+                  callback(result, null);
+
+                /* module.exports.functionSearch(searchString, function (functionArray, error) {
+                     result.functions = functionArray;
+                     if (error)
+                         callback(null, error);
+                     else
+                         callback(result, null); 
+                 });*/
+              });
+          });
+      });
+  });
+});
+
+/*
+Procedure:
+database.userSearch(searchString, callback(resultArray, error));
+Parameters:
+searchString, A string to search
+Purpose:
+Find users in the database with a username close to the searchString
+Pre-conditions:
+None
+Post-conditions:
+All results will be returned.
+Preferences:
+Automatically sanitizes.
+*/
+module.exports.userSearch = (function (searchString, callback) {
+  searchString = sanitize(searchString);
+  // find usernames which contiain the searchString
+  User.find({
+    username: new RegExp(searchString, 'i'),
+    //active: true
+  }, { username: 1 }, (err, users) => {
+    //console.log('Users - We are searching for ' + searchString + ' and we have found: ' + users);
+    if (err)
+      callback(null, err);
+    else
+      callback(users, null);
+  });
+});
+
+// user:  {_id: 2345678654, username: first}
+
+
+/*
+Procedure:
+database.imageSearch(searchString, callback(resultArray, error));
+Parameters:
+searchString, A string to search
+Purpose:
+Find images in the database with a title similar to searchString
+Pre-conditions:
+None
+Post-conditions:
+All results will be returned.
+Preferences:
+Automatically sanitizes.
+*/
+
+module.exports.imageSearch = (function (searchString, callback) {
+  searchString = sanitize(searchString);
+  // find usernames which contiain the searchString
+  Image.find(
+    {
+      title: new RegExp(searchString, 'i'),
+      active: true,
+    },
+    {
+      title: 1,
+    }, (error, image) => {
+      if (error) {
+        callback(null, error);
+      }
+      else {
+        callback(image, null);
+      }
+    });
+});
+
+
+/*
+Procedure:
+database.commentSearch(searchString, callback(resultArray, error));
+Parameters:
+searchString, A string to search
+Purpose:
+Find comments in the database with content similar to searchString
+Pre-conditions:
+None
+Post-conditions:
+All results will be returned.
+Preferences:
+Automatically sanitizes.
+*/
+
+module.exports.commentSearch = (function (searchString, callback) {
+  searchString = sanitize(searchString);
+  // find usernames which contiain the searchString
+  Comment.find(
+    {
+      body: new RegExp(searchString, 'i'),
+      active: true,
+    },
+    {
+      body: 1,
+      imageId: 1,
+    }, (error, comment) => {
+      if (error) {
+        callback(null, error);
+      }
+      else {
+        callback(comment, null);
+      }
+    });
+});
+
+
+/*
+  Procedure:
+  database.albumSearch(searchString, callback(resultArray, error));
+  Parameters:
+  searchString, A string to search
+  Purpose:
+  Find albums in the database with a name similar to searchString
+  Pre-conditions:
+  None
+  Post-conditions:
+  All results will be returned.
+  Preferences:
+  Automatically sanitizes.
+*/
+
+module.exports.albumSearch = (function (searchString, callback) {
+  searchString = sanitize(searchString);
+  // find usernames which contiain the searchString
+  Album.find(
+    {
+      name: new RegExp(searchString, 'i'),
+      active: true,
+    },
+    {
+      name: 1,
+    }, (error, album) => {
+      if (error) {
+        callback(null, error);
+      }
+      else {
+        callback(album, null);
+      }
+    });
+});
 
 
 // +--------+----------------------------------------------------------
@@ -809,17 +1038,15 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
 
 /*
   Procedure:
-  database.hasLiked(userid, imageid, callback(liked, error));
+  database.functionSearch(searchString, callback(resultArray, error));
   Parameters:
-  userid, the user to check likes
-  imageid, the image to check likes
+  searchString, A string to search
   Purpose:
-  To check to see if a user has rated an image
+  Find functions in the database with a name similar to searchString
   Pre-conditions:
-  Image exists
-  User exists
+  None
   Post-conditions:
-  liked will be a boolean
+  All results will be returned.
   Preferences:
   Automatically sanitizes.
 */
