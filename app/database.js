@@ -256,10 +256,11 @@ canDelete = (userid, objectid, referenceArray, callback) => {
   userid = sanitize(userid);
   console.log(userid);
   objectid = sanitize(objectid);
-  User.findById(userid)
-    .or([{ admin: true }, { moderator: true }, { [referenceArray]: { $elemMatch: { $eq: objectid } } }])
-    .countDocuments()
-    .exec((err, count) => {
+  User.
+    findById(userid).
+    or([{ admin: true }, { moderator: true }, { [referenceArray]: { $elemMatch: { $eq: objectid } } }]).
+    countDocuments().
+    exec((err, count) => {
       if (err)
         callback(false, err);
       else
@@ -646,48 +647,7 @@ module.exports.commentInfo = (function (imageid, callback) {
  * user must own the comment or image, or be a moderator or admin
  */
 module.exports.canDeleteComment = (userid, commentId, callback) => {
-
-  userid = sanitize(userid);
-  commentId = sanitize(commentId);
-  let userQuery = User.findById(userid);
-
-  userQuery.exec((err, user) => {
-    if (err) {
-      callback(false, err);
-    } else {
-      //is the user an admin or moderator?
-      if (user.admin || user.moderator) {
-        callback(true, null)
-      }
-      else {
-        // does the user own the comment?
-        Comment.findById(commentId, (err, comment) => {
-          if (comment.userId.equals(user._id)) {
-            callback(true, null);
-          } else {
-            // does the user own the image?
-            let imageId = commentDoc.imageId;
-            let isImageOwner = false;
-
-            // loop through user's images and compare to imageID
-            user.images.forEach((image) => {
-              if (image._id.equals(imageId)) {
-                isImageOwner = false;
-                return;
-              }
-            });
-
-            if (isImageOwner) {
-              callback(true, null)
-            } else {
-              callback(false, null)
-            }
-
-          }
-        })
-      }
-    };
-  })
+  canDelete(userid, commentId, 'comments', callback);
 }
 
 /**
@@ -907,28 +867,7 @@ module.exports.getAlbumInfo = (albumid, callback) => {
  * user must own the album or be a moderator or admin
  */
 module.exports.canDeleteAlbum = (userId, albumId, callback) => {
-
-  userId = sanitize(userId);
-  albumId = sanitize(albumId);
-  let userQuery = User.findById(userId);
-
-  userQuery.exec((err, user) => {
-    if (err) {
-      callback(false, err);
-    } else {
-      // does the user own the album?
-      Album.findById(albumId, (err, album) => {
-        if (err)
-          callback(false, err)
-        else if (album.userId.equals(userId))
-          callback(album, null)
-        //is the user an admin or moderator?
-        else if (user.admin || user.moderator) {
-          callback(album, null)
-        } else callback(false, null);
-      })
-    };
-  })
+  canDelete(userId, albumId, 'albums', callback);
 }
 
 /**
@@ -944,16 +883,27 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
   albumId = sanitize(albumId);
 
   // checks if the user can delete the albums
-  module.exports.canDeleteAlbum(userId, albumId, function (album, error) {
+  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
     if (error) {
       callback(false, error);
     }
-    else if (!album)
+    else if (!authorized)
       callback(false, "User is not authorized to delete this album.");
     // if authorized then set active status to false
     else {
-      album.active = false;
-      album.save(callback(true, null))
+      Album.
+        updateOne({ _id: albumId }, {active : false}).
+        exec((err, writeOpResult) => {
+          if (err)
+            callback(false, "Could not delete album because of ERROR: " + err);
+          else {
+            if (writeOpResult.nModified === 0)
+              callback(false, "Could not delete album");
+            else {
+              callback(true, null);
+            }
+          }
+        })
     }
   })
 }
