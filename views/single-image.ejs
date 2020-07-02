@@ -111,7 +111,7 @@
     <figure>
       <canvas id="canvas" width="400" height="400"></canvas>
       <div id="image-sharing" data-imageid=<%= image._id %>>
-        <figcaption class="<%= liked ? 'left starred' : 'left unstarred' %>">★<%- image.rating %></figcaption>
+        <figcaption class="<%= liked ? 'left starred' : 'left unstarred' %>">★<%- image.ratings %></figcaption>
         <div id="image-fb-share" data-href="<%= 'http://glimmer.grinnell.edu/image/' + image._id %>"
           data-type="button" class="fb-share-button"></div>
         <a id="image-tweet" href="https://twitter.com/share" data-lang="en"
