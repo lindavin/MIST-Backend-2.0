@@ -1,10 +1,10 @@
 /**
  * Functions related to the index's gallery.
  */
-var filedatabase;
+//var filedatabase;
 //this still needs to build the featured page
 module.exports.buildFeaturedPage = (function(req, res, database) {
-  filedatabase=database;
+  // filedatabase=database;
   // module.exports.getFeaturedImages (4, function(images, error){
   //   res.render('index',{
   //     user: req.session.user,
@@ -12,9 +12,14 @@ module.exports.buildFeaturedPage = (function(req, res, database) {
   //   });
 
   // });
-  res.render('index', {
-    user: req,
-    userData : req.user,
+
+  database.getFeaturedImages(4, (images, error) => {
+    res.render('index', {
+      user: req,
+      userData : req.user,
+      images: images
+    })
   })
+  
 });
 
