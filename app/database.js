@@ -515,6 +515,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
     }).
     catch(err => callback(null, err))
 }); // module.exports.toggleLike
+
 /** 
  * @param userid: the object ID for the user
  * @param commentId: the object ID for the comment
@@ -525,10 +526,8 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
 module.exports.canDeleteImage = (userid, imageId, callback) => {
 
   userid = sanitize(userid);
-  console.log(userid);
   imageId = sanitize(imageId);
   let userQuery = User.findById(userid);
-
 
   userQuery.exec((err, user) => {
     if (err) {
@@ -539,7 +538,7 @@ module.exports.canDeleteImage = (userid, imageId, callback) => {
         callback(true, null)
       }
       else {
-        // does the user own the comment?
+        // does the user own the image?
         Image.findById(imageId, (err, image) => {
           if (image.userId.equals(user._id)) {
             callback(true, null);
@@ -579,10 +578,9 @@ module.exports.deleteImage = (userid, imageId, callback) => {
 
   // sanitize ID's
   userid = sanitize(userid);
-  console.log(userid);
   imageId = sanitize(imageId);
 
-  // checks if the user can delete the comment
+  // checks if the user can delete the image
   module.exports.canDeleteImage(userid, imageId, function (authorized, error) {
     if (error)
       callback(false, error);
@@ -590,13 +588,22 @@ module.exports.deleteImage = (userid, imageId, callback) => {
       callback(false, "User is not authorized to delete this image.");
     // if authorized then set active status to false
     else {
-      //locate comment and update status
+      //locate image and update status
       Image.findById(imageId, function (err, image) {
         if (err) {
           callback(false, error);
         } else {
           image.active = false;
           image.save(callback(true, null));
+
+          let commentIds = image.comments;
+          commentIds.forEach(commentId => {
+            module.exports.deleteComment(userid, commentId, (success, err) => {
+              if (err) {
+                callback(false, err)
+              }
+            })
+          })
         }
       });
     }
@@ -781,6 +788,7 @@ module.exports.addToAlbum = function (albumid, imageid, callback, unique = false
   const image = {
     images: imageid,
   }
+
   const updateObj = unique ? { $addToSet: image } : { $push: image };
 
   Album.findByIdAndUpdate(albumid, updateObj, (err, doc) => {
@@ -789,20 +797,6 @@ module.exports.addToAlbum = function (albumid, imageid, callback, unique = false
     else
       callback(true, null)
   });
-
-  /*
-  User.updateOne(
-    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
-    { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult) => {
-    if (err) {
-      console.log('Failed because of ERROR: ' + err);
-      callback(null, err);
-    } else {
-      callback(true, null);
-    }
-  });
-*/
 
 };
 
@@ -994,7 +988,7 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   // we can also look into the local passport......
 
   // but for this we will just do a mongoose query
-  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images' : imageid } });
+  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images': imageid } });
 
   deleteQuery.
     exec().
