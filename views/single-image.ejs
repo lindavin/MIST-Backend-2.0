@@ -147,7 +147,7 @@
         </th>
         <td class="comment"><%- comments[i].body %></td>
         <td class="date">
-          <script>document.write(describeDate("<%= comments[i].postedAt %>"))</script>
+          <script>document.write(describeDate("<%= comments[i].createdAt %>"))</script>
         </td>
         <% if(user) { %>
         <td class='flagComment <%= (comments[i].flagged) ? 'flaggedComment' : ''%>'>&#9873</td>
