@@ -25,7 +25,6 @@ handler.
 // +--------------------+
 
 var database = require('../database.js');
-var image = require("./single-image");
 
 // +--------------------+--------------------------------------------
 // | Exported Functions |
@@ -156,6 +155,23 @@ handlers.saveimage = function (info, req, res) {
 
   }
 }; // handlers.saveimage
+
+/**
+ * Toggle the like on an image
+ *   info.action: toggleLike
+ *   info.imageid, to like or unlike
+ */
+handlers.toggleLike = function(info, req, res) {
+  if (!req.user)
+    fail(res, "User is not logged in.");
+  else
+    database.toggleLike(req.user._id, info.imageid, function(success, error){
+      if (error)
+        fail(res, "Error: " + error);
+      else
+        res.end(success.toString());
+    });
+}; // handlers.toggleLike
 
 // +--------------------+----------------------------------------------
 // | Workspace Handlers |

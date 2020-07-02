@@ -426,6 +426,96 @@ module.exports.imageInfo = (function (imageid, callback) {
     );
 });
 
+/*
+  Procedure:
+  database.toggleLike(userid, imageid, callback(success, error));
+  Parameters:
+  userid, the user to toggle the like
+  imageid, the image to toggle
+  Produces:
+  success, a boolean
+  error, if there is onec
+  Purpose:
+  To make it easy to like or unlike an image, depending on its current status
+  Pre-conditions:
+  None
+  Post-conditions:
+  The database will be changed to reflect this change in opinion
+  Preferences:
+  Automatically sanitizes.
+*/
+
+module.exports.toggleLike = (function (userid, imageid, callback) {
+  userid = sanitize(userid);
+  imageid = sanitize(imageid);
+  // check to see if a the user's image array contains the image id
+
+  const addToUserLiked = User.updateOne({ _id: userid },
+    {
+      $addToSet: {
+        liked: imageid,
+      }
+    });
+  const removeFromUserLiked = User.updateOne({_id:userid},
+    {
+      $pull: {
+        liked: imageid,
+      }
+    });
+  const incOrDecRating = (value) => {
+    return (
+      Image.updateOne({_id:imageid}, {
+        $inc: {
+          ratings: value,
+        }
+      }))
+  }
+
+  const respondToWriteOpResult = () => console.log(1);
+
+  addToUserLiked.
+    exec().
+    then(writeOpResult => {
+      if (writeOpResult.nModified === 0) {
+        // user has already liked the image
+        removeFromUserLiked.
+          exec().
+          then(writeOpResult => {
+            if (writeOpResult.nModified === 0) {
+              // could not remove from liked for some reason
+              callback(null, "Failed to remove from user's liked");
+            } else {
+              incOrDecRating(-1).
+                exec().
+                then(writeOpResult => {
+                  if (writeOpResult.nModified === 0) {
+                    // could not update image rating for some reason
+                    callback(null, "Failed to change image rating");
+                  } else {
+                    callback(true, null);
+                  }
+                }).
+                catch(err => callback(false, err))
+            }
+          }).
+          catch(err => callback(false, err))
+      } else {
+        incOrDecRating(1).
+          exec().
+          then(writeOpResult => {
+            if (writeOpResult.nModified === 0) {
+              // could not update image rating for some reason
+              callback(null, "Failed to change image rating");
+            } else {
+              callback(true, null);
+            }
+          }).
+          catch(err => callback(false, err))
+      }
+    }).
+    catch(err => callback(null, err))
+}); // module.exports.toggleLike
+
 // +----------------+--------------------------------------------------
 // | Image Comments |
 // +----------------+
@@ -630,8 +720,8 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
     findById(userid).
     populate('images').
     exec().
-    then(user=> callback(user.images, null)).
-    catch(err=> callback(null, err))
+    then(user => callback(user.images, null)).
+    catch(err => callback(null, err))
 });
 
 /*
