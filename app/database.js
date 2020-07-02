@@ -609,7 +609,7 @@ module.exports.commentInfo = (function (imageid, callback) {
       imageId: mongoose.Types.ObjectId(imageid),
       active: true,
     }).
-    populate('author').
+    populate('userId').
     exec((err, comments) => {
       if (err) {
         console.log(err);
