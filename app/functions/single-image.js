@@ -98,7 +98,7 @@ module.exports.saveComment = function (req, res, database) {
     let imageID = database.sanitize(req.params.imageid)
     console.log("userID: ", userID);
     let comment = new database.Comment({
-        author: userID,
+        userId: userID,
         body: database.sanitize(req.body.newComment),
         active: true,
         flagged: false,
