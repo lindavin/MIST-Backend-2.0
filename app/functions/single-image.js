@@ -40,8 +40,13 @@ var setFlags = function (commentArray, userID, database, callback) {
 // we have to fix set flags
 module.exports.buildPage = function (req, res, database) {
     database.imageInfo(req.params.imageid, function (image, error) {
-        if (error)
+        if (error) {
             res.end(JSON.stringify(error));
+        }
+        else if (image.active == false) {
+            res.redirect("/");
+            //res.redirect("/404");
+        }
         else
             database.hasLiked((req.user) ? req.user._id : null, image._id, function (liked, error) {
                 if (error)
@@ -90,13 +95,14 @@ module.exports.buildPage = function (req, res, database) {
 module.exports.saveComment = function (req, res, database) {
     // build the comment
     let userID = req.user._id;
+    let imageID = database.sanitize(req.params.imageid)
     console.log("userID: ", userID);
     let comment = new database.Comment({
         author: userID,
         body: database.sanitize(req.body.newComment),
         active: true,
         flagged: false,
-        imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
+        imageId: database.Types.ObjectId(imageID),
     });
 
     console.log("commentID: ", comment._id);
@@ -117,6 +123,18 @@ module.exports.saveComment = function (req, res, database) {
                     console.error(err)
                     res.end(JSON.stringify(error));
                 })
+            //push comment to user's comment array
+            database.Image.updateOne({ _id: imageID }, { $push: { comments: comment._id } })
+                .exec()
+                .then((writeOpResult) => {
+                    if (writeOpResult.nModified === 0) {
+                        console.log("Failed to insert comment");
+                    }
+                })
+                .catch(err => {
+                    console.error(err)
+                    res.end(JSON.stringify(error));
+                })
             res.redirect('back');
         })
         .catch(err => {
@@ -125,11 +143,11 @@ module.exports.saveComment = function (req, res, database) {
         })
 }
 
-module.exports.deleteImage= function(req, res, database) {
-    database.deleteImage(req.user._id, req.params.imageid, function(success, error) {
-      if(!success)
-        res.end (JSON.stringify(error));
+module.exports.deleteImage = function (req, res, database) {
+    database.deleteImage(req.user._id, req.params.imageid, function (success, error) {
+        if (!success)
+            res.end(JSON.stringify(error));
         else
-          res.redirect('/');
+            res.redirect('/');
     });
-  }
+}

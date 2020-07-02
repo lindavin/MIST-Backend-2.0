@@ -214,9 +214,10 @@ var describeUnits = function(amt,unit) {
  */
 var describeDate = function(date) {
   var tmp = new Date(date);
-  var timePosted = Date.UTC(tmp.getFullYear(), tmp.getMonth(),
-      tmp.getDate(), tmp.getHours(), tmp.getMinutes(),
-      tmp.getSeconds())/1000;
+  console.log(tmp);
+  var timePosted = Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(),
+      tmp.getUTCDate(), tmp.getUTCHours(), tmp.getUTCMinutes(),
+      tmp.getUTCSeconds())/1000;
   var now = new Date();
   var rightNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
       now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(),
