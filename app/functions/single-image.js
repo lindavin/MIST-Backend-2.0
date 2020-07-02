@@ -124,3 +124,12 @@ module.exports.saveComment = function (req, res, database) {
             res.end(JSON.stringify(error));
         })
 }
+
+module.exports.deleteImage= function(req, res, database) {
+    database.deleteImage(req.user._id, req.params.imageid, function(success, error) {
+      if(!success)
+        res.end (JSON.stringify(error));
+        else
+          res.redirect('/');
+    });
+  }

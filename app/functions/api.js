@@ -161,17 +161,40 @@ handlers.saveimage = function (info, req, res) {
  *   info.action: toggleLike
  *   info.imageid, to like or unlike
  */
-handlers.toggleLike = function(info, req, res) {
+handlers.toggleLike = function (info, req, res) {
   if (!req.user)
     fail(res, "User is not logged in.");
   else
-    database.toggleLike(req.user._id, info.imageid, function(success, error){
+    database.toggleLike(req.user._id, info.imageid, function (success, error) {
       if (error)
         fail(res, "Error: " + error);
       else
         res.end(success.toString());
     });
 }; // handlers.toggleLike
+
+/* * Delete an image.
+ *   info.action: deleteimg
+ *   info.imageid: the id of the image
+ */
+handlers.deleteImage = function (info, req, res) {
+  // Make sure that they are logged in.
+  if (!req.isAuthenticated()) {
+    fail(res, "You must be logged in to delete an image.");
+  } // if they are not logged in
+
+  // Do the real work
+  database.deleteImage(req.user._id, info.image._id, function (success, error) {
+    if (error) {
+      fail(res, JSON.stringify(error));
+    }
+    else if (success) {
+      res.end("Image " + info.image._id + " deleted.");
+    }
+    else
+      fail(res, "Unknown error");
+  });
+};
 
 // +--------------------+----------------------------------------------
 // | Workspace Handlers |
