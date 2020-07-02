@@ -44,7 +44,7 @@ const imagesSchema = new mongoose.Schema({
 });
 
 const commentsSchema = new mongoose.Schema({
-  author: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
@@ -248,6 +248,24 @@ module.exports.Flag = Flag;
 module.exports.Types = mongoose.Types;
 module.exports.sanitize = sanitize; //sanitizes string
 
+// +------------+-------------------------------------------------
+// | Utitilites |
+// +------------+
+
+canDelete = (userid, objectid, referenceArray, callback) => {
+  userid = sanitize(userid);
+  console.log(userid);
+  objectid = sanitize(objectid);
+  User.findById(userid)
+    .or([{ admin: true }, { moderator: true }, { [referenceArray]: { $elemMatch: { $eq: objectid } } }])
+    .countDocuments()
+    .exec((err, count) => {
+      if (err)
+        callback(false, err);
+      else
+        callback(count, null);
+    });
+}
 
 // +-----------------+-------------------------------------------------
 // | User Procedures |
@@ -523,50 +541,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
  * user must own the comment or image, or be a moderator or admin
  */
 module.exports.canDeleteImage = (userid, imageId, callback) => {
-
-  userid = sanitize(userid);
-  console.log(userid);
-  imageId = sanitize(imageId);
-  let userQuery = User.findById(userid);
-
-
-  userQuery.exec((err, user) => {
-    if (err) {
-      callback(false, err);
-    } else {
-      //is the user an admin or moderator?
-      if (user.admin || user.moderator) {
-        callback(true, null)
-      }
-      else {
-        // does the user own the comment?
-        Image.findById(imageId, (err, image) => {
-          if (image.userId.equals(user._id)) {
-            callback(true, null);
-          } else {
-            // does the user own the image?
-            let imageId = imageDoc.imageId;
-            let isImageOwner = false;
-
-            // loop through user's images and compare to imageID
-            user.images.forEach((image) => {
-              if (image.equals(imageId)) {
-                isImageOwner = false;
-                return;
-              }
-            });
-
-            if (isImageOwner) {
-              callback(true, null)
-            } else {
-              callback(false, null)
-            }
-
-          }
-        })
-      }
-    };
-  })
+  canDelete(userid, imageId, 'images', callback);
 }
 
 /**
@@ -661,7 +636,7 @@ module.exports.canDeleteComment = (userid, commentId, callback) => {
       else {
         // does the user own the comment?
         Comment.findById(commentId, (err, comment) => {
-          if (comment.author.equals(user._id)) {
+          if (comment.userId.equals(user._id)) {
             callback(true, null);
           } else {
             // does the user own the image?
@@ -994,7 +969,7 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   // we can also look into the local passport......
 
   // but for this we will just do a mongoose query
-  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images' : imageid } });
+  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images': imageid } });
 
   deleteQuery.
     exec().
