@@ -528,7 +528,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
                     // could not update image rating for some reason
                     callback(null, "Failed to change image rating");
                   } else {
-                    callback(true, null);
+                    callback("Unliked", null);
                   }
                 }).
                 catch(err => callback(false, err))
@@ -543,7 +543,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
               // could not update image rating for some reason
               callback(null, "Failed to change image rating");
             } else {
-              callback(true, null);
+              callback("Liked", null);
             }
           }).
           catch(err => callback(false, err))
