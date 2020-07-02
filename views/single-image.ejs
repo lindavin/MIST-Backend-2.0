@@ -171,7 +171,8 @@
           <!-- Option: Delete image -->
           <li>
             <form id='delete-image' method='POST'>
-              <input type='hidden' value=<%= image.imageid %> name='delete' />
+              <!--              <input type='hidden' value=<%= image.imageid %> name='delete' /> -->
+              <input type='hidden' value=<%= image._id %> name='delete' />
               <a class="menuitem" href='javascript:void(0);' onclick="deleteImage()">
                 delete image
               </a>

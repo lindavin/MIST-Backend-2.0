@@ -426,6 +426,96 @@ module.exports.imageInfo = (function (imageid, callback) {
     );
 });
 
+/** 
+ * @param userid: the object ID for the user
+ * @param commentId: the object ID for the comment
+ * @param callback: the callback to be excecuted if true
+ * checks if the user has the authortity to delete a comment:
+ * user must own the comment or image, or be a moderator or admin
+ */
+module.exports.canDeleteImage = (userid, imageId, callback) => {
+
+  userid = sanitize(userid);
+  console.log(userid);
+  imageId = sanitize(imageId);
+  let userQuery = User.findById(userid);
+
+
+  userQuery.exec((err, user) => {
+    if (err) {
+      callback(false, err);
+    } else {
+      //is the user an admin or moderator?
+      if (user.admin || user.moderator) {
+        callback(true, null)
+      }
+      else {
+        // does the user own the comment?
+        Image.findById(imageId, (err, image) => {
+          if (image.userId.equals(user._id)) {
+            callback(true, null);
+          } else {
+            // does the user own the image?
+            let imageId = imageDoc.imageId;
+            let isImageOwner = false;
+
+            // loop through user's images and compare to imageID
+            user.images.forEach((image) => {
+              if (image.equals(imageId)) {
+                isImageOwner = false;
+                return;
+              }
+            });
+
+            if (isImageOwner) {
+              callback(true, null)
+            } else {
+              callback(false, null)
+            }
+
+          }
+        })
+      }
+    };
+  })
+}
+
+/**
+* deletes the comment if the user has authorization
+* @param userid: the object ID for the user
+* @param imageId: the object ID for the comment
+* @param callback: the callback to be excecuted if true
+*/
+module.exports.deleteImage = (userid, imageId, callback) => {
+
+  // sanitize ID's
+  userid = sanitize(userid);
+  console.log(userid);
+  imageId = sanitize(imageId);
+
+  // checks if the user can delete the comment
+  module.exports.canDeleteImage(userid, imageId, function (authorized, error) {
+    if (error)
+      callback(false, error);
+    else if (!authorized)
+      callback(false, "User is not authorized to delete this image.");
+    // if authorized then set active status to false
+    else {
+      //locate comment and update status
+      Image.findById(imageId, function (err, image) {
+        if (err) {
+          callback(false, error);
+        } else {
+          image.active = false;
+          image.save(callback(true, null));
+        }
+      });
+    }
+  })
+}
+
+
+
 // +----------------+--------------------------------------------------
 // | Image Comments |
 // +----------------+

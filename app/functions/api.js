@@ -157,6 +157,30 @@ handlers.saveimage = function (info, req, res) {
   }
 }; // handlers.saveimage
 
+/**
+ * Delete an image.
+ *   info.action: deleteimg
+ *   info.imageid: the id of the image
+ */
+handlers.deleteImage = function(info, req, res) {
+  // Make sure that they are logged in.
+  if (!req.isAuthenticated()) {
+    fail(res, "You must be logged in to delete an image.");
+  } // if they are not logged in
+
+  // Do the real work
+  database.deleteImage(req.user._id, info.image._id, function (success, error) {
+    if (error) {
+      fail(res, JSON.stringify(error));
+    }
+    else if (success) {
+      res.end("Image " + info.image._id + " deleted.");
+    }
+    else
+      fail(res, "Unknown error");
+  });
+};
+
 // +--------------------+----------------------------------------------
 // | Workspace Handlers |
 // +--------------------+
