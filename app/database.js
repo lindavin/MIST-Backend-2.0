@@ -252,9 +252,18 @@ module.exports.sanitize = sanitize; //sanitizes string
 // | Utitilites |
 // +------------+
 
+const Models = {
+  "Image": Image,
+  "Comment": Comment,
+  "Album": Album,
+  "Challenge": Challenge,
+  "Workspace": Workspace,
+  "Flag": Flag,
+}
+
+
 canDelete = (userid, objectid, referenceArray, callback) => {
   userid = sanitize(userid);
-  console.log(userid);
   objectid = sanitize(objectid);
   User.
     findById(userid).
@@ -266,7 +275,47 @@ canDelete = (userid, objectid, referenceArray, callback) => {
       else
         callback(count, null);
     });
+};
+
+canDeleteTest = (userid, objectid, referenceArray) => {
+  userid = sanitize(userid);
+  objectid = sanitize(objectid);
+  return (
+    User.
+      findById(userid).
+      or([{ admin: true }, { moderator: true }, { [referenceArray]: { $elemMatch: { $eq: objectid } } }]).
+      countDocuments().
+      exec())
+};
+
+deleteFromModel = (objectid, model) => {
+  objectid = sanitize(objectid);
+  return (
+    Models[model].
+      updateOne({ _id: objectid }, { active: false }).
+      exec()
+  )
 }
+
+generalDelete = async (userid, objectid, referenceArray, model, callback = null) => {
+  userid = sanitize(userid);
+  objectid = sanitize(objectid);
+  try {
+    let authorized = await canDeleteTest(userid, objectid, referenceArray);
+    if (authorized) {
+      let success = await deleteFromModel(objectid, model);
+      return success.nModified;
+    } else {
+      throw "Error: User is not authorized";
+    }
+  } catch (err) {
+    return err;
+  }
+
+}
+const userid = '5efd140f5f0ef435a02538e2';
+const imageid = '5efe00efb268b473704cad42';
+generalDelete(userid, imageid, 'images', 'Image');
 
 // +-----------------+-------------------------------------------------
 // | User Procedures |
@@ -656,31 +705,21 @@ module.exports.canDeleteComment = (userid, commentId, callback) => {
 * @param commentId: the object ID for the comment
 * @param callback: the callback to be excecuted if true
 */
-module.exports.deleteComment = (userid, commentId, callback) => {
-
+module.exports.deleteComment = async (userid, commentId, callback) => {
   // sanitize ID's
   userid = sanitize(userid);
   commentId = sanitize(commentId);
 
-  // checks if the user can delete the comment
-  module.exports.canDeleteComment(userid, commentId, function (authorized, error) {
-    if (error)
-      callback(false, error);
-    else if (!authorized)
-      callback(false, "User is not authorized to delete this comment.");
-    // if authorized then set active status to false
-    else {
-      //locate comment and update status
-      Comment.findById(commentId, function (err, comment) {
-        if (err) {
-          callback(false, error);
-        } else {
-          comment.active = false;
-          comment.save(callback(true, null));
-        }
-      });
+  try {
+    let success = await generalDelete(userid, commentId, "comments", "Comment");
+    if (success) {
+      callback(true, null);
+    } else {
+      throw "Unknown Error!";
     }
-  })
+  } catch (err) {
+    callback(false, err);
+  }
 }
 
 
