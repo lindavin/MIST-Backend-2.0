@@ -132,7 +132,10 @@ module.exports.saveComment = function (req, res, database) {
                     }
                 })
                 .catch(err => {
-                    console.error(err)
+   
+  
+  
+                   console.error(err)
                     res.end(JSON.stringify(error));
                 })
             res.redirect('back');
@@ -151,3 +154,13 @@ module.exports.deleteImage = function (req, res, database) {
             res.redirect('/');
     });
 }
+
+module.exports.setProfilePicture = function(req, res, database) {
+    database.setProfilePicture(req.user._id, req.params.imageid, function(success, error) {
+      if (!success)
+        res.end (JSON.stringify(error)); 
+        else {
+          res.redirect('/user/'+ req.user.username + '/');
+        }
+    })
+  };
