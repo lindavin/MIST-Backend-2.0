@@ -456,7 +456,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
         liked: imageid,
       }
     });
-  const removeFromUserLiked = User.updateOne({_id:userid},
+  const removeFromUserLiked = User.updateOne({ _id: userid },
     {
       $pull: {
         liked: imageid,
@@ -464,7 +464,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
     });
   const incOrDecRating = (value) => {
     return (
-      Image.updateOne({_id:imageid}, {
+      Image.updateOne({ _id: imageid }, {
         $inc: {
           ratings: value,
         }
@@ -685,12 +685,16 @@ module.exports.createAlbum = (function (userid, name, callback) {
 }); // createAlbum
 
 // add image to album
-module.exports.addToAlbum = function (albumid, imageid, callback) {
+module.exports.addToAlbum = function (albumid, imageid, callback, unique = false) {
   // Sanitize inputs.  Yay!
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
+  const image = {
+    images: imageid,
+  }
+  const updateObj = unique ? { $addToSet: image } : { $push: image };
 
-  Album.findByIdAndUpdate(albumid, { $push: { images: imageid } }, (err, doc) => {
+  Album.findByIdAndUpdate(albumid, updateObj, (err, doc) => {
     if (err)
       callback(null, err)
     else
