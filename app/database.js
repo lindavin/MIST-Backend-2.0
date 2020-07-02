@@ -551,18 +551,16 @@ module.exports.deleteComment = (userid, commentId, callback) => {
 /**
  * Get information on an album.
  */
-module.exports.albumsInfo = (function (userid, callback) {
-  userid = sanitize(userid);
-  User.findById(userid, { 'albums': 1, }, (err, user) => {
+module.exports.albumsInfo = (function (userId, callback) {
+  userId = sanitize(userId);
+
+  Album.find({ userId: userId, active: true }, (err, albums) => {
     if (err)
       callback(null, err);
     else {
-      // consider using aggregation pipepline and $filter
-      const albums = user.albums.filter((album) => album.active);
       callback(albums, null);
     }
-  });
-
+  })
 });
 
 // create Album
