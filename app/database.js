@@ -594,6 +594,7 @@ module.exports.createAlbum = (function (userid, name, callback) {
     .catch(err => callback(false, err));
 }); // createAlbum
 
+// add image to album
 module.exports.addToAlbum = function (albumid, imageid, callback) {
   // Sanitize inputs.  Yay!
   albumid = sanitize(albumid);
@@ -622,28 +623,16 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
 
 };
 
-// do we use this?
+// Returns all images for a user
 module.exports.getAllImagesforUser = (function (userid, callback) {
   userid = sanitize(userid);
-
   User.
-    findById(
-      userid,
-      {
-        _id: 0,
-        'images': 1,
-      }).
-    exec(
-      (err, user) => {
-        if (err)
-          callback(null, err);
-        else
-          callback(user.images, null);
-      }
-    );
+    findById(userid).
+    populate('images').
+    exec().
+    then(user=> callback(user.images, null)).
+    catch(err=> callback(null, err))
 });
-
-
 
 /*
   Procedure:
