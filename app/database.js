@@ -599,8 +599,14 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
 
-  // different way
+  Album.findByIdAndUpdate(albumid, { $push: { images: imageid } }, (err, doc) => {
+    if (err)
+      callback(null, err)
+    else
+      callback(true, null)
+  });
 
+  /*
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
@@ -612,6 +618,8 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
       callback(true, null);
     }
   });
+*/
+
 };
 
 // do we use this?
@@ -687,21 +695,17 @@ module.exports.albumContentsInfo = (function (userid, albumid, callback) {
 
 
 module.exports.getImagesFromAlbum = function (albumid, callback) {
+
   //find the album
-  Album.findById(albumid, (err, album) => {
-    if (err) {
-      callback(null, null, err)
-    } else {
-      //find the images
-      let imagesIds = album.images;
-      Image.find({ '_id': { $in: imagesIds } }, (err, images) => {
-        if (err)
-          callback(null, null, err)
-        else
-          callback(album, images, null);
-      }) 
-    }
-  })
+  Album.
+    findById(albumid).
+    populate('images').
+    exec(function (err, album) {
+      if (err)
+        callback(null, null, err)
+      else
+        callback(album, album.images, null);
+    });
 }
 
 /**
