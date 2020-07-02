@@ -718,7 +718,10 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
   userid = sanitize(userid);
   User.
     findById(userid).
-    populate('images').
+    populate({
+      path : 'images',
+      match: { active : true } ,
+    }).
     exec().
     then(user=> callback(user.images, null)).
     catch(err=> callback(null, err))
