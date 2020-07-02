@@ -750,20 +750,17 @@ module.exports.canDeleteAlbum = (userId, albumId, callback) => {
     if (err) {
       callback(false, err);
     } else {
-      //is the user an admin or moderator?
-      if (user.admin || user.moderator) {
-        callback(true, null)
-      } else {
-        // does the user own the album?
-        module.exports.getAlbumInfo(albumId, (album, error) => {
-          if (error) {
-            callback(false, error);
-          }
-          else if (album.userId.equals(userId)) {
-            callback(true, null);
-          }
-        })
-      }
+      // does the user own the album?
+      Album.findById(albumId, (err, album) => {
+        if (err)
+          callback(false, err)
+        else if (album.userId.equals(userId))
+          callback(album, null)
+        //is the user an admin or moderator?
+        else if (user.admin || user.moderator) {
+          callback(album, null)
+        } else callback(false, null);
+      })
     };
   })
 }
@@ -781,30 +778,16 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
   albumId = sanitize(albumId);
 
   // checks if the user can delete the albums
-  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
+  module.exports.canDeleteAlbum(userId, albumId, function (album, error) {
     if (error) {
       callback(false, error);
     }
-    else if (!authorized)
+    else if (!album)
       callback(false, "User is not authorized to delete this album.");
     // if authorized then set active status to false
     else {
-      User.updateOne(
-        {
-          "albums._id": { _id: mongoose.Types.ObjectId(albumId) }
-        },
-        { "$set": { "albums.$.active": false } },
-        // use this line if we want to delete it entirely
-        //{ $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
-        function (err, doc) {
-          if (err) {
-            console.log("could not delete album");
-            callback(false, error);
-          } else {
-            console.log("album deleted");
-            callback(true, null);
-          }
-        })
+      album.active = false;
+      album.save(callback(true, null))
     }
   })
 }
