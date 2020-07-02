@@ -156,6 +156,11 @@ const usersSchema = new mongoose.Schema({
   images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],                   // of image ids
   albums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],                   // of album ids
   workspaces: [workspacesSchema],               // of workspace objects
+  profilepic: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Image",
+    default: null,
+  },
   active: {
     type: Boolean,
     default: true,
@@ -613,6 +618,25 @@ module.exports.deleteImage = (userid, imageId, callback) => {
   })
 }
 
+/**
+ * Set the profile picture for a given userid to a given imageid.
+ */
+module.exports.setProfilePicture = (function (userid, imageid, callback) {
+  userid = sanitize(userid);
+  imageid = sanitize(imageid);
+  
+  User.findOneAndUpdate(
+    { _id: userid },
+    { profilepic : imageid }, 
+    function(err, pic) {
+    if (err) {
+      callback(null, err);
+    }
+    else {
+      callback(pic, null);
+    }
+  });
+});
 
 
 // +----------------+--------------------------------------------------
