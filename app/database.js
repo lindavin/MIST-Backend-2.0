@@ -899,15 +899,13 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   // we can also look into the local passport......
 
   // but for this we will just do a mongoose query
-  User.updateOne(
-    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
-    { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult) => {
-    if (err)
-      callback(null, err);
-    else {
-      callback(writeOpResult.nModified, null);
-    }
+  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images' : imageid } });
 
-  })
+  deleteQuery.
+    exec().
+    then(writeOpResult => {
+      callback(writeOpResult.nModified, null);
+    }).
+    catch(err => callback(null, err))
+
 }); 
