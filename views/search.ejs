@@ -87,7 +87,7 @@
 
     <% for (var i=0; i < results.albums.length; i++) { %>
       <!--      <p><a href="<%= '/user/' + results.albums[i].username + '/albums/' + results.albums[i].albumid %>"><%- results.albums[i].name %></a></p> -->
-     <p><a href="<%= '/user/' + results.albums[i].username + '/albums/' + results.albums[i].albumid %>"><%- results.albums[i].name %></a></p>
+     <p><a href="<%= '/user/' + results.users[i].username + '/albums/' + results.albums[i]._id %>"><%- results.albums[i].name %></a></p>
     <% } %>
 
   </div>
