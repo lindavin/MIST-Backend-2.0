@@ -88,36 +88,39 @@ module.exports.buildPage = function (req, res, database) {
 
 
 module.exports.saveComment = function (req, res, database) {
-  // build the comment
-  let userID = req.user._id; 
-  let comment = new database.Comment({
-    author: userID,
-    body: database.sanitize(req.body.newComment),
-    active: true,
-    flagged: false,
-    imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
-  });
-
-  // push commentId to the user's comments array
-  database.User.findById(userID, function(err, user) {
-    if (err) {
-        database.fail(res, "Error: " + error);
-      } else {
-        user.comments.push(comment._id);
-        user.save(function (err) {
-        if (err) console.log("unable to add comment to user"); })
-      }
-  })
-
-  // save the comment
-  // need to check if this is actually safe to do
-  comment.save()
-    .then(doc => {
-      console.log(doc);
-      res.redirect('back');
-    })
-    .catch(err => {
-      console.error(err)
-      res.end(JSON.stringify(error));
+    // build the comment
+    let userID = req.user._id;
+    console.log("userID: ", userID);
+    let comment = new database.Comment({
+        author: userID,
+        body: database.sanitize(req.body.newComment),
+        active: true,
+        flagged: false,
+        imageId: database.Types.ObjectId(database.sanitize(req.params.imageid)),
     });
+
+    console.log("commentID: ", comment._id);
+
+    //save comment
+    comment.save()
+        .then(comment => {
+            console.log("commentID: ", comment._id);
+            //push comment to user's comment array
+            database.User.updateOne({ _id: userID }, { $push: { comments: comment._id } })
+                .exec()
+                .then((writeOpResult) => {
+                    if (writeOpResult.nModified === 0) {
+                        console.log("Failed to insert comment");
+                    }
+                })
+                .catch(err => {
+                    console.error(err)
+                    res.end(JSON.stringify(error));
+                })
+            res.redirect('back');
+        })
+        .catch(err => {
+            console.error(err)
+            res.end(JSON.stringify(error));
+        })
 }
