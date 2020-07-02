@@ -682,61 +682,26 @@ module.exports.hasLiked = (function (userid, imageid, callback) {
 // this returns the albums document
 module.exports.albumContentsInfo = (function (userid, albumid, callback) {
   albumid = sanitize(albumid);
-  User.findOne(
-    {
-      'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
-    }, {
-    'albums.$': 1,
-  }).
-    exec((err, user) => {
-
-      if (err)
-        callback(null, error);
-      else
-        callback(user.albums[0], null);
-    });
+  //STUB - not sure if we need this, the query is very easy
 });
 
-module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
 
-  module.exports.albumContentsInfo(userid, albumid, function (album, err) {
+module.exports.getImagesFromAlbum = function (albumid, callback) {
+  //find the album
+  Album.findById(albumid, (err, album) => {
     if (err) {
-      // uhhh this is not how we should have an error
-      console.log("no album found");
+      callback(null, null, err)
     } else {
+      //find the images
       let imagesIds = album.images;
-      let images = [];
-      let imagePromises = [];
-      const resolve = (image) => {
-        //console.log('image we have found : ' + image);
-        images.push(image);
-      };
-      const reject = (err) => {
-        console.log(err);
-      }
-      // search through every user's images array
-      // and if it matches, grab the image, and push to
-      // images array
-      for (let i = 0; i < imagesIds.length; i++) {
-        imagePromises.push(new Promise((resolve, reject) => {
-          module.exports.imageInfo(imagesIds[i], (image, err) => {
-            if (err)
-              reject(err);
-            else
-              resolve(image);
-          })
-        }));
-      }
-      Promise.allSettled(imagePromises)
-        .then((results) => results.forEach((result) => resolve(result.value)))
-        .then(() => {
+      Image.find({ '_id': { $in: imagesIds } }, (err, images) => {
+        if (err)
+          callback(null, null, err)
+        else
           callback(album, images, null);
-        })
-
-      // we will need to sort
+      }) 
     }
   })
-
 }
 
 /**

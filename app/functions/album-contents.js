@@ -29,7 +29,7 @@ module.exports.buildPage = function (req, res, database) {
         res.end("Error:" + error);
         return;
       } else {
-        database.getImagesFromAlbum(userid, req.params.albumid, (album, images, err)=> {
+        database.getImagesFromAlbum(req.params.albumid, (album, images, err)=> {
           if (err)
             res.end('Error: ' + err);
           else{
