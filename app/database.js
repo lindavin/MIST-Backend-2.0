@@ -279,8 +279,8 @@ module.exports.updateUpdatedAt = function (userID) {
     if (err) {
       fail(res, "Error: " + error);
     } else {
-      var dt = new Date();
-      user.updatedAt = (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + dt.getFullYear();
+
+      user.updatedAt = Date.now();
       user.save(function (err) {
         if (err) console.log("unable to update updatedAt for user");
       })
@@ -771,20 +771,18 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
 module.exports.hasLiked = (function (userid, imageid, callback) {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
-
-  // STUB - Might be done
-  User.findOne({
-    _id: userid,
-    liked:
-      { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
-  }, (err, user) => {
-    if (err)
-      callback(null, err);
-    else if (user)
-      callback(true, null);
-    else
-      callback(false, null);
-  }); // iterate the users collection or User Model : look at each user document
+  User.
+    findById(userid).
+    elemMatch('liked', { $eq: imageid }).
+    countDocuments().
+    exec((err, count) => {
+      if (err)
+        callback(null, err);
+      else if (count)
+        callback(true, null);
+      else
+        callback(false, null);
+    }); // iterate the users collection or User Model : look at each user document
   // for a document whose images array contains an image whose ObjectId matches the 
   // imageid under the request parameter
 });
@@ -875,7 +873,7 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
     // if authorized then set active status to false
     else {
       Album.
-        updateOne({ _id: albumId }, {active : false}).
+        updateOne({ _id: albumId }, { active: false }).
         exec((err, writeOpResult) => {
           if (err)
             callback(false, "Could not delete album because of ERROR: " + err);
