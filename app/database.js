@@ -282,7 +282,7 @@ canDelete = (userid, objectid, referenceArray, callback) => {
     });
 };
 
-canDeleteTest = (userid, objectid, referenceArray) => {
+canDeletePromise = (userid, objectid, referenceArray) => {
   userid = sanitize(userid);
   objectid = sanitize(objectid);
   return (
@@ -306,7 +306,7 @@ generalDelete = async (userid, objectid, referenceArray, model, callback = null)
   userid = sanitize(userid);
   objectid = sanitize(objectid);
   try {
-    let authorized = await canDeleteTest(userid, objectid, referenceArray);
+    let authorized = await canDeletePromise(userid, objectid, referenceArray);
     if (authorized) {
       let success = await deleteFromModel(objectid, model);
       return success.nModified;
@@ -316,8 +316,8 @@ generalDelete = async (userid, objectid, referenceArray, model, callback = null)
   } catch (err) {
     return err;
   }
-
 }
+
 const userid = '5efd140f5f0ef435a02538e2';
 const imageid = '5efe00efb268b473704cad42';
 generalDelete(userid, imageid, 'images', 'Image');
