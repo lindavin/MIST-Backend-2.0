@@ -719,12 +719,12 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
   User.
     findById(userid).
     populate({
-      path : 'images',
-      match: { active : true } ,
+      path: 'images',
+      match: { active: true },
     }).
     exec().
-    then(user=> callback(user.images, null)).
-    catch(err=> callback(null, err))
+    then(user => callback(user.images, null)).
+    catch(err => callback(null, err))
 });
 
 /*
@@ -781,7 +781,10 @@ module.exports.getImagesFromAlbum = function (albumid, callback) {
   //find the album
   Album.
     findById(albumid).
-    populate('images').
+    populate({
+      path: 'images',
+      match: { active: true },
+    }).
     exec(function (err, album) {
       if (err)
         callback(null, null, err)
