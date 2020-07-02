@@ -24,14 +24,7 @@ module.exports = (app, database) => {
   })
 
   app.get('/gallery/featured', (req, res) => {
-    res.render('gallery', {
-      user: req,
-      userData: req.user,
-      type: "",
-      images: "",
-      currentPage: "",
-      nextPage: "",
-    }); //renders the gallery
+    gallery.buildFeaturedPage(req, res, database);
   })
 
   app.get('/gallery/recent', (req, res) => {

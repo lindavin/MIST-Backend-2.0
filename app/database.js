@@ -412,6 +412,23 @@ module.exports.getIDforUsername = (function (username, callback) {
 // +--------+
 
 /**
+ * grab featured images
+ * @param num: the max amount of images returned
+ * @param callback: returns either the images or the error 
+ */
+module.exports.getFeaturedImages = function (num, callback) {
+
+  Image.find({ featured: true }).limit(num).exec((err, images) => {
+    if (err)
+      callback(null, err)
+    else {
+      callback(images, null)
+    }
+  })
+
+}
+
+/**
  * Get the title, code, username, modification date, rating, and more
  * for an image.  If it finds the information, calls `callback(info,null)`.
  * Otherwise, calls `callback(null,error)`.
