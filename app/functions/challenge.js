@@ -24,8 +24,6 @@ module.exports.add = function (req, res, database, info) {
     let challenge = new database.Challenge({
         category: database.sanitize(info.category),
         position: database.sanitize(info.position),
-        createdAt: Date(),
-        modifiedAt: Date(),
         title: database.sanitize(info.title),
         name: database.sanitize(info.name),
         description: database.sanitize(info.description),

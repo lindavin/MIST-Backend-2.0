@@ -35,8 +35,8 @@ module.exports.buildPage = function (req, res, database) {
 module.exports.createAlbum = function (req, res, database) {
     database.createAlbum(req.user._id, req.body.newAlbum, function (success, error) {
         if (!success) {
-            console.log("Failed to create album because" + error);
-            res.end(JSON.stringify(error));
+            console.log("Failed to create album because " + error);
+            res.end("Failed to create album because of Error: " + error);
         }
         else {
             res.redirect('back');

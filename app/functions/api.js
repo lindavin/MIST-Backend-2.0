@@ -25,7 +25,6 @@ handler.
 // +--------------------+
 
 var database = require('../database.js');
-var image = require("./single-image");
 
 // +--------------------+--------------------------------------------
 // | Exported Functions |
@@ -126,34 +125,76 @@ handlers.saveimage = function (info, req, res) {
   else {
     // create the image object
     let image = new database.Image({
-      title: database.sanitize(info.title),
       userId: req.user._id,
-      code: database.sanitize(info.code),
-      ratings: 0,
-      createdAt: Date(),
-      updatedAt: Date(),
       comments: [], // of (of comment _ids)
-      flag: false,
+      title: database.sanitize(info.title),
+      code: database.sanitize(info.code),
+      flags: [],
       public: true,
       caption: "",
-      delete: false,
     });
 
-    database.User.findOneAndUpdate(
-      { _id: req.user._id },
-      { $push: { images: image } },
-      (err, writeUpResult) => {
-        if (err) {
-          console.log(err);
-          fail(res, "Error: " + error);
-        } else {
-          // this needs to be fixed. we need to send something so that the popup can load the single-image page
-          res.send(image);
-        }
-      }
-    );
+    image.save()
+      .then(image => {
+        database.User.findOneAndUpdate(
+          { _id: req.user._id },
+          { $push: { images: image._id } },
+          (err, writeUpResult) => {
+            if (err) {
+              console.log(err);
+              fail(res, "Error: " + error);
+            } else {
+              // this needs to be fixed. we need to send something so that the popup can load the single-image page
+              res.send(image);
+            }
+          }
+        );
+      })
+      .catch(err => fail(res, "Error: " + error));
+
+
   }
 }; // handlers.saveimage
+
+/**
+ * Toggle the like on an image
+ *   info.action: toggleLike
+ *   info.imageid, to like or unlike
+ */
+handlers.toggleLike = function (info, req, res) {
+  if (!req.user)
+    fail(res, "User is not logged in.");
+  else
+    database.toggleLike(req.user._id, info.imageid, function (success, error) {
+      if (error)
+        fail(res, "Error: " + error);
+      else
+        res.end(success.toString());
+    });
+}; // handlers.toggleLike
+
+/* * Delete an image.
+ *   info.action: deleteimg
+ *   info.imageid: the id of the image
+ */
+handlers.deleteImage = function (info, req, res) {
+  // Make sure that they are logged in.
+  if (!req.isAuthenticated()) {
+    fail(res, "You must be logged in to delete an image.");
+  } // if they are not logged in
+
+  // Do the real work
+  database.deleteImage(req.user._id, info.image._id, function (success, error) {
+    if (error) {
+      fail(res, JSON.stringify(error));
+    }
+    else if (success) {
+      res.end("Image " + info.image._id + " deleted.");
+    }
+    else
+      fail(res, "Unknown error");
+  });
+};
 
 // +--------------------+----------------------------------------------
 // | Workspace Handlers |
@@ -203,8 +244,6 @@ handlers.savews = function (info, req, res) {
     let workspace = new database.Workspace({
       name: database.sanitize(info.name),
       data: info.data,
-      createdAt: Date(),
-      updatedAt: Date(),
     }) // create workspace document object
     // save it to their array
     // find the user doc and embed the album object into the userdoc
@@ -382,7 +421,7 @@ handlers.deleteComment = function (info, req, res) {
   // check if the user is logged in
   if (!req.isAuthenticated())
     fail(res, "User Not logged in")
-  
+
   // delete comment (set active to false)
   database.deleteComment(req.user._id, info.commentId, function (success, error) {
     if (error) {
@@ -404,23 +443,25 @@ handlers.deleteComment = function (info, req, res) {
 handlers.flagComment = (info, req, res) => {
   if (!req.isAuthenticated()) {
     res.send("logged out");
-  }  
-  else { 
+  }
+  else {
     console.log(req.user);
-      database.Comment.findByIdAndUpdate(info.commentId, 
-        { $inc: {
-          flagged : 1 }
-        })
-        .exec((err, result) => {
-          if (err) {
-            fail(res, "Error: " + err);
-            console.log(err);
-          } else {
-            res.end("Comment " + info.commentId + " flagged.");
-            console.log(result);
-          }
+    database.Comment.findByIdAndUpdate(info.commentId,
+      {
+        $inc: {
+          flagged: 1
+        }
+      })
+      .exec((err, result) => {
+        if (err) {
+          fail(res, "Error: " + err);
+          console.log(err);
+        } else {
+          res.end("Comment " + info.commentId + " flagged.");
+          console.log(result);
+        }
       });
-    }
+  }
 }
 
 
@@ -435,8 +476,8 @@ handlers.flagComment = (info, req, res) => {
  *   info.albumid: the id of the album (an integer)
  *   info.imageid: the id of the image (an integer)
  */
-handlers.addToAlbum = function(info, req, res) {
-  
+handlers.addToAlbum = function (info, req, res) {
+
   if (!info.albumid) {
     fail(res, "missing required albumid field");
     return;
@@ -445,16 +486,16 @@ handlers.addToAlbum = function(info, req, res) {
     fail(res, "missing required imageid field");
     return;
   }
-  database.addToAlbum(info.albumid, info.imageid, 
-      function(success,err) {
-    if (!success) {
-      fail(res,err);
-      return;
-    }
-    else {
-      res.end("true");
-    }
-  });
+  database.addToAlbum(info.albumid, info.imageid,
+    function (success, err) {
+      if (!success) {
+        fail(res, err);
+        return;
+      }
+      else {
+        res.end("true");
+      }
+    });
 }; // handlers.addToAlbum
 
 

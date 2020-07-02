@@ -13,84 +13,212 @@ mongoose.set('useFindAndModify', false);
 // Schemas
 
 const imagesSchema = new mongoose.Schema({
-  title: String,
-  userId: Object,
-  code: String,
-  ratings: Number,
-  createdAt: Date,
-  updatedAt: Date,
-  comments: Array, // of (of comment _ids)
-  flag: Boolean,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment", }], // of (of comment _ids)
+  title: { type: String, required: true, },
+  code: { type: String, required: true, },
+  ratings: { type: Number, default: 0, },
+  createdAt: { type: Date, default: Date.now, },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
   public: Boolean, //true = public, false = private
   caption: String,
-  active: Boolean,
-  featured: Boolean,
+  featured: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const commentsSchema = new mongoose.Schema({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  imageId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Image",
+  },
   body: String,
-  createdAt: Date,
-  active: Boolean,
-  flagged: Number,
-  flaggedBy: Array,
-  imageId: Object,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+});
+
+const flagSchema = new mongoose.Schema({
+  body: String,
+  flaggedAt: Date,
 });
 
 const albumsSchema = new mongoose.Schema({
   name: String,
-  userId: Object,
+  userId: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    require: true,
+  },
+  images: [{
+    type: mongoose.Schema.ObjectId,
+    ref: "Image",
+  }],                      // (of Ids)
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+
   public: Boolean, // true = public, false = private
-  createdAt: Date,
-  updatedAt: Date,
-  images: [{ type: mongoose.Schema.Types.ObjectId }],                      // (of Ids)
   active: Boolean,
-  flag: Boolean,
   caption: String,
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
 });
 
 const workspacesSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
   data: Object,
-  createdAt: Date,
-  updatedAt: Date,
-  active: Boolean,
 });
 
 const usersSchema = new mongoose.Schema({
-  //objectId: String,                 //aka user id
-  forename: String,
-  surname: String,
-  email: String,
-  username: String,
-  password: String,                //encrypted
-  createdAt: Date,
-  updatedAt: Date,
+  forename: {
+    type: String,
+    required: true,
+  },
+  surname: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },              //hashed
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
   verified: Boolean,
   admin: Boolean,
   moderator: Boolean,
-  images: [imagesSchema],                   // of image schemas
-  albums: [albumsSchema],                   // of album schemas
+  images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],                   // of image ids
+  albums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],                   // of album ids
   workspaces: [workspacesSchema],               // of workspace objects
-  active: Boolean,
-  flag: Boolean,
-  liked: [{ type: mongoose.Schema.ObjectId }],   // of image _ids
-  comments: Array,                 //(of comment _ids)
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+  liked: [{ type: mongoose.Schema.Types.ObjectId }],   // of image _ids
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],                 //(of comment _ids)
   about: String,
 });
 
 const challengeSchema = new mongoose.Schema({
-  userId: Object,
-  name: String,
-  title: String,
-  code: String,
-  createdAt: String,
-  updatedAt: String,
-  active: Boolean,
-  flag: Boolean,
-  category: String, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
-  position: String,
-  description: String,
+  userId: {
+    type: mongoose.Schema.ObjectId,
+    require: true,
+  },
+  name: {
+    type: String,
+    require: true,
+  },
+  title: {
+    type: String,
+    require: true,
+  },
+  category: {
+    type: String,
+    require: true,
+  }, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+
+  code: {
+    type: String,
+    require: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  flags: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Flag",
+  }], // of (of flag_ids)
+  code: {
+    type: String,
+    require: true,
+  }, // (Beginning,Intermediate,Advanced)(Greyscale,RGB)(Static,Animated)
+  position: {
+    type: String,
+    require: true,
+  },
+  description: {
+    type: String,
+    require: true,
+  },
 });
 
 // Configuring Schemas
@@ -103,7 +231,7 @@ const Comment = mongoose.model("Comment", commentsSchema);
 const Album = mongoose.model("Album", albumsSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
 const Workspace = mongoose.model("Workspace", workspacesSchema);
-
+const Flag = mongoose.model("Flag", flagSchema);
 
 
 // Export models
@@ -113,6 +241,8 @@ module.exports.Comment = Comment;
 module.exports.Album = Album;
 module.exports.Challenge = Challenge;
 module.exports.Workspace = Workspace;
+module.exports.Flag = Flag;
+
 
 // Export Utilities
 module.exports.Types = mongoose.Types;
@@ -276,104 +406,207 @@ module.exports.imageInfo = (function (imageid, callback) {
   imageid = sanitize(imageid);
 
   // two methods
-
-  // method one
-
+  // method one:
   // find the user who owns an image with this id and that this imageid is active
-
   // then return the user document
-
   // then search for this image again
-
   // and send return the document
-
   // method two
-
   // use the positional operator to retrieve the image document
-
   // if nothing happens, then callback(null, "ERRO: Images does not exist")
 
-  User.
-    findOne(
-      {
-        'images._id': mongoose.Types.ObjectId(imageid)
-      },
-      {
-        'images.$': 1
-      }).
+  Image.
+    findById(imageid).
     exec(
-      (err, user) => {
+      (err, image) => {
         if (err)
           callback(null, err);
-        else if (!user)
+        else if (!image)
           callback(null, 'ERROR: Image does not exist.');
         else
-          callback(user.images[0], null);
+          callback(image, null);
       }
     );
 });
-
-
-// do we use this?
-module.exports.getAllImagesforUser = (function (userid, callback) {
-  userid = sanitize(userid);
-
-  User.
-    findById(
-      userid,
-      {
-        _id: 0,
-        'images': 1,
-      }).
-    exec(
-      (err, user) => {
-        if (err)
-          callback(null, err);
-        else
-          callback(user.images, null);
-      }
-    );
-});
-
-
 
 /*
   Procedure:
-  database.hasLiked(userid, imageid, callback(liked, error));
+  database.toggleLike(userid, imageid, callback(success, error));
   Parameters:
-  userid, the user to check likes
-  imageid, the image to check likes
+  userid, the user to toggle the like
+  imageid, the image to toggle
+  Produces:
+  success, a boolean
+  error, if there is onec
   Purpose:
-  To check to see if a user has rated an image
+  To make it easy to like or unlike an image, depending on its current status
   Pre-conditions:
-  Image exists
-  User exists
+  None
   Post-conditions:
-  liked will be a boolean
+  The database will be changed to reflect this change in opinion
   Preferences:
   Automatically sanitizes.
 */
-// needs testing
-module.exports.hasLiked = (function (userid, imageid, callback) {
-  imageid = sanitize(imageid);
-  userid = sanitize(userid);
 
-  // STUB - Might be done
-  User.findOne({
-    _id: userid,
-    liked:
-      { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
-  }, (err, user) => {
-    if (err)
-      callback(null, err);
-    else if (user)
-      callback(true, null);
-    else
-      callback(false, null);
-  }); // iterate the users collection or User Model : look at each user document
-  // for a document whose images array contains an image whose ObjectId matches the 
-  // imageid under the request parameter
-});
+module.exports.toggleLike = (function (userid, imageid, callback) {
+  userid = sanitize(userid);
+  imageid = sanitize(imageid);
+  // check to see if a the user's image array contains the image id
+
+  const addToUserLiked = User.updateOne({ _id: userid },
+    {
+      $addToSet: {
+        liked: imageid,
+      }
+    });
+  const removeFromUserLiked = User.updateOne({ _id: userid },
+    {
+      $pull: {
+        liked: imageid,
+      }
+    });
+  const incOrDecRating = (value) => {
+    return (
+      Image.updateOne({ _id: imageid }, {
+        $inc: {
+          ratings: value,
+        }
+      }))
+  }
+
+  const respondToWriteOpResult = () => console.log(1);
+
+  addToUserLiked.
+    exec().
+    then(writeOpResult => {
+      if (writeOpResult.nModified === 0) {
+        // user has already liked the image
+        removeFromUserLiked.
+          exec().
+          then(writeOpResult => {
+            if (writeOpResult.nModified === 0) {
+              // could not remove from liked for some reason
+              callback(null, "Failed to remove from user's liked");
+            } else {
+              incOrDecRating(-1).
+                exec().
+                then(writeOpResult => {
+                  if (writeOpResult.nModified === 0) {
+                    // could not update image rating for some reason
+                    callback(null, "Failed to change image rating");
+                  } else {
+                    callback(true, null);
+                  }
+                }).
+                catch(err => callback(false, err))
+            }
+          }).
+          catch(err => callback(false, err))
+      } else {
+        incOrDecRating(1).
+          exec().
+          then(writeOpResult => {
+            if (writeOpResult.nModified === 0) {
+              // could not update image rating for some reason
+              callback(null, "Failed to change image rating");
+            } else {
+              callback(true, null);
+            }
+          }).
+          catch(err => callback(false, err))
+      }
+    }).
+    catch(err => callback(null, err))
+}); // module.exports.toggleLike
+/** 
+ * @param userid: the object ID for the user
+ * @param commentId: the object ID for the comment
+ * @param callback: the callback to be excecuted if true
+ * checks if the user has the authortity to delete a comment:
+ * user must own the comment or image, or be a moderator or admin
+ */
+module.exports.canDeleteImage = (userid, imageId, callback) => {
+
+  userid = sanitize(userid);
+  console.log(userid);
+  imageId = sanitize(imageId);
+  let userQuery = User.findById(userid);
+
+
+  userQuery.exec((err, user) => {
+    if (err) {
+      callback(false, err);
+    } else {
+      //is the user an admin or moderator?
+      if (user.admin || user.moderator) {
+        callback(true, null)
+      }
+      else {
+        // does the user own the comment?
+        Image.findById(imageId, (err, image) => {
+          if (image.userId.equals(user._id)) {
+            callback(true, null);
+          } else {
+            // does the user own the image?
+            let imageId = imageDoc.imageId;
+            let isImageOwner = false;
+
+            // loop through user's images and compare to imageID
+            user.images.forEach((image) => {
+              if (image.equals(imageId)) {
+                isImageOwner = false;
+                return;
+              }
+            });
+
+            if (isImageOwner) {
+              callback(true, null)
+            } else {
+              callback(false, null)
+            }
+
+          }
+        })
+      }
+    };
+  })
+}
+
+/**
+* deletes the comment if the user has authorization
+* @param userid: the object ID for the user
+* @param imageId: the object ID for the comment
+* @param callback: the callback to be excecuted if true
+*/
+module.exports.deleteImage = (userid, imageId, callback) => {
+
+  // sanitize ID's
+  userid = sanitize(userid);
+  console.log(userid);
+  imageId = sanitize(imageId);
+
+  // checks if the user can delete the comment
+  module.exports.canDeleteImage(userid, imageId, function (authorized, error) {
+    if (error)
+      callback(false, error);
+    else if (!authorized)
+      callback(false, "User is not authorized to delete this image.");
+    // if authorized then set active status to false
+    else {
+      //locate comment and update status
+      Image.findById(imageId, function (err, image) {
+        if (err) {
+          callback(false, error);
+        } else {
+          image.active = false;
+          image.save(callback(true, null));
+        }
+      });
+    }
+  })
+}
+
+
 
 // +----------------+--------------------------------------------------
 // | Image Comments |
@@ -600,52 +833,26 @@ All results will be returned.
 Preferences:
 Automatically sanitizes.
 */
+
 module.exports.imageSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
-
-  User.find(
-    { 'images.title': new RegExp(searchString, 'i') }) // get array of User objects
-    .select('images') // select images field
-    .exec((error, arrOfObj) => { // execute the query
-
+  // find usernames which contiain the searchString
+  Image.find(
+    {
+      title: new RegExp(searchString, 'i'),
+      active: true,
+    },
+    {
+      title: 1,
+    }, (error, image) => {
       if (error) {
         callback(null, error);
       }
       else {
-
-        // Documentation for simplObj :
-        // function that takes an object with an id field and an images field
-        // returns the value assigned to the images key
-        // ex. input : { _id: 5efb83ab3f178f00eea8a495,
-        //        images: [ [Object], [Object] ] },  <--- this part right here
-        //     output: [ [Object], [Object] ] 
-        // map this function over object array (line 719)
-        function simplObj(obj) {
-          return obj.images;
-        }
-
-        // reduce from array of user objects to 
-        // array of images arrays
-        arrOfArr = arrOfObj.map(simplObj);
-
-        function filterImages(image) {
-          var imageTitle = image.title;
-          // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
-          if (imageTitle.includes(searchString)) return true;
-          return false;
-        }
-
-        //filter out so only images fitting the search remain
-        arrMapped = arrOfArr.map((img) => img.filter(filterImages));
-
-        //combine arrays into one array
-        result = [].concat.apply([], arrMapped);
-
-        callback(result, null);
+        callback(image, null);
       }
     });
 });
-
 
 
 /*
@@ -699,48 +906,23 @@ module.exports.commentSearch = (function (searchString, callback) {
   Preferences:
   Automatically sanitizes.
 */
+
 module.exports.albumSearch = (function (searchString, callback) {
   searchString = sanitize(searchString);
-
-  User.find(
-    { 'albums.name': new RegExp(searchString, 'i') }) // get array of User objects
-    .select('albums') // select albums field
-    .exec((error, arrOfObj) => { // execute the query
-
+  // find usernames which contiain the searchString
+  Album.find(
+    {
+      name: new RegExp(searchString, 'i'),
+      active: true,
+    },
+    {
+      name: 1,
+    }, (error, album) => {
       if (error) {
         callback(null, error);
       }
       else {
-
-        // Documentation for simplObj :
-        // function that takes an object with an id field and an albums field
-        // returns the value assigned to the albums key
-        // ex. input : { _id: 5efb83ab3f178f00eea8a495,
-        //        albums: [ [Object], [Object] ] },  <--- this part right here
-        //     output: [ [Object], [Object] ] 
-        // map this function over object array (line 719)
-        function simplObj(obj) {
-          return obj.albums;
-        }
-
-        // reduce from array of user objects to 
-        // array of album arrays
-        arrOfArr = arrOfObj.map(simplObj);
-
-        function filterAlbum(album) {
-          var albumName = album.name;
-          // Note: we'll need to update function below to use regular expressions, check if it's case insensitive
-          if (albumName.includes(searchString)) return true;
-          return false;
-        }
-
-        //filter out so only album fitting the search remain
-        arrMapped = arrOfArr.map((alb) => alb.filter(filterAlbum));
-
-        //combine arrays into one array
-        result = [].concat.apply([], arrMapped);
-
-        callback(result, null);
+        callback(album, null);
       }
     });
 });
@@ -753,65 +935,67 @@ module.exports.albumSearch = (function (searchString, callback) {
 /**
  * Get information on an album.
  */
-module.exports.albumsInfo = (function (userid, callback) {
-  userid = sanitize(userid);
-  User.findById(userid, { 'albums': 1, }, (err, user) => {
+module.exports.albumsInfo = (function (userId, callback) {
+  userId = sanitize(userId);
+
+  Album.find({ userId: userId, active: true }, (err, albums) => {
     if (err)
       callback(null, err);
     else {
-      // consider using aggregation pipepline and $filter
-      const albums = user.albums.filter((album) => album.active);
       callback(albums, null);
     }
-  });
-
+  })
 });
 
 // create Album
 module.exports.createAlbum = (function (userid, name, callback) {
   userid = sanitize(userid);
   name = sanitize(name);
-
-  User.
-    findByIdAndUpdate(
-      userid,
-      {
-        $push: {
-          albums: new Album({
-            name: name,
-            userId: userid,
-            public: false,
-            createdAt: Date(),
-            updatedAt: Date(),
-            images: [],                      // (of imageObjectIds)
-            active: true,
-            flag: false,
-            caption: '',
-          }) // create album document object 
-        }
-      },
-      (err, user) => {
-        if (err) {
-          console.log("Failed to create album");
-          callback(null, err);
-        } else {
-          callback(user, null);
-        }
-
-      }
-
-
-    )// create Mongoose query object
-
+  let album = new Album({
+    name: name,
+    userId: userid,
+    public: false,
+    active: true,
+    flag: false,
+    caption: '',
+  }) // create album document object 
+  album.save()
+    .then(album => {
+      User.updateOne({ _id: userid }, { $push: { albums: album._id } })
+        .exec()
+        .then((writeOpResult) => {
+          // if this query fails what do we do about the albums collection
+          // this does not disallow owning two albums by the same name
+          if (writeOpResult.nModified === 0) {
+            console.log("Failed to insert album");
+            callback(false, "Failed to insert album");
+          }
+          else
+            callback(true, null);
+        })
+        .catch(err => callback(false, err))
+    })
+    .catch(err => callback(false, err));
 }); // createAlbum
 
-module.exports.addToAlbum = function (albumid, imageid, callback) {
+// add image to album
+module.exports.addToAlbum = function (albumid, imageid, callback, unique = false) {
   // Sanitize inputs.  Yay!
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
+  const image = {
+    images: imageid,
+  }
+  const updateObj = unique ? { $addToSet: image } : { $push: image };
 
-  // different way
+  Album.findByIdAndUpdate(albumid, updateObj, (err, doc) => {
+    if (err)
+      callback(null, err)
+    else
+      callback(true, null)
+  });
 
+  /*
   User.updateOne(
     { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
     { $push: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
@@ -823,7 +1007,24 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
       callback(true, null);
     }
   });
+*/
+
 };
+
+// Returns all images for a user
+module.exports.getAllImagesforUser = (function (userid, callback) {
+  userid = sanitize(userid);
+  User.
+    findById(userid).
+    populate({
+      path: 'images',
+      match: { active: true },
+    }).
+    exec().
+    then(user => callback(user.images, null)).
+    catch(err => callback(null, err))
+});
+
 /*
   Procedure:
   database.functionSearch(searchString, callback(resultArray, error));
@@ -838,56 +1039,54 @@ module.exports.addToAlbum = function (albumid, imageid, callback) {
   Preferences:
   Automatically sanitizes.
 */
-//   module.exports.functionSearch = (function(searchString, callback){
-//     searchString = sanitize(searchString);
-//     database.Comment.findAll({ "body": '/.*' + searchString + '.*/' }, (err, users)=>{
-//     module.exports.query("SELECT * FROM functions WHERE functionName LIKE '%" + searchString + "%';", function (results, error){
-//       if (error)
-//         callback(null, error);
-//       else
-//         callback(results, null);
-//     });
-//   });
-module.exports.getImagesFromAlbum = function (userid, albumid, callback) {
+// needs testing
+module.exports.hasLiked = (function (userid, imageid, callback) {
+  imageid = sanitize(imageid);
+  userid = sanitize(userid);
 
-  module.exports.albumContentsInfo(userid, albumid, function (album, err) {
-    if (err) {
-      // uhhh this is not how we should have an error
-      console.log("no album found");
-    } else {
-      let imagesIds = album.images;
-      let images = [];
-      let imagePromises = [];
-      const resolve = (image) => {
-        //console.log('image we have found : ' + image);
-        images.push(image);
-      };
-      const reject = (err) => {
-        console.log(err);
-      }
-      // search through every user's images array
-      // and if it matches, grab the image, and push to
-      // images array
-      for (let i = 0; i < imagesIds.length; i++) {
-        imagePromises.push(new Promise((resolve, reject) => {
-          module.exports.imageInfo(imagesIds[i], (image, err) => {
-            if (err)
-              reject(err);
-            else
-              resolve(image);
-          })
-        }));
-      }
-      Promise.allSettled(imagePromises)
-        .then((results) => results.forEach((result) => resolve(result.value)))
-        .then(() => {
-          callback(album, images, null);
-        })
+  // STUB - Might be done
+  User.findOne({
+    _id: userid,
+    liked:
+      { $elemMatch: { _id: mongoose.Types.ObjectId(imageid) } },
+  }, (err, user) => {
+    if (err)
+      callback(null, err);
+    else if (user)
+      callback(true, null);
+    else
+      callback(false, null);
+  }); // iterate the users collection or User Model : look at each user document
+  // for a document whose images array contains an image whose ObjectId matches the 
+  // imageid under the request parameter
+});
 
-      // we will need to sort
-    }
-  })
+/**
+ * Get all of the contents of an album.
+ */
 
+// this returns the albums document
+module.exports.albumContentsInfo = (function (userid, albumid, callback) {
+  albumid = sanitize(albumid);
+  //STUB - not sure if we need this, the query is very easy
+});
+
+
+module.exports.getImagesFromAlbum = function (albumid, callback) {
+
+  //find the album
+  Album.
+    findById(albumid).
+    populate({
+      path: 'images',
+      match: { active: true },
+    }).
+    exec(function (err, album) {
+      if (err)
+        callback(null, null, err)
+      else
+        callback(album, album.images, null);
+    });
 }
 
 /**
@@ -932,20 +1131,17 @@ module.exports.canDeleteAlbum = (userId, albumId, callback) => {
     if (err) {
       callback(false, err);
     } else {
-      //is the user an admin or moderator?
-      if (user.admin || user.moderator) {
-        callback(true, null)
-      } else {
-        // does the user own the album?
-        module.exports.getAlbumInfo(albumId, (album, error) => {
-          if (error) {
-            callback(false, error);
-          }
-          else if (album.userId.equals(userId)) {
-            callback(true, null);
-          }
-        })
-      }
+      // does the user own the album?
+      Album.findById(albumId, (err, album) => {
+        if (err)
+          callback(false, err)
+        else if (album.userId.equals(userId))
+          callback(album, null)
+        //is the user an admin or moderator?
+        else if (user.admin || user.moderator) {
+          callback(album, null)
+        } else callback(false, null);
+      })
     };
   })
 }
@@ -963,30 +1159,16 @@ module.exports.deleteAlbum = (userId, albumId, callback) => {
   albumId = sanitize(albumId);
 
   // checks if the user can delete the albums
-  module.exports.canDeleteAlbum(userId, albumId, function (authorized, error) {
+  module.exports.canDeleteAlbum(userId, albumId, function (album, error) {
     if (error) {
       callback(false, error);
     }
-    else if (!authorized)
+    else if (!album)
       callback(false, "User is not authorized to delete this album.");
     // if authorized then set active status to false
     else {
-      User.updateOne(
-        {
-          "albums._id": { _id: mongoose.Types.ObjectId(albumId) }
-        },
-        { "$set": { "albums.$.active": false } },
-        // use this line if we want to delete it entirely
-        //{ $pull: { 'albums': { _id: mongoose.Types.ObjectId(albumId) } } }, 
-        function (err, doc) {
-          if (err) {
-            console.log("could not delete album");
-            callback(false, error);
-          } else {
-            console.log("album deleted");
-            callback(true, null);
-          }
-        })
+      album.active = false;
+      album.save(callback(true, null))
     }
   })
 }
@@ -1015,38 +1197,13 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
   // we can also look into the local passport......
 
   // but for this we will just do a mongoose query
-  User.updateOne(
-    { 'albums._id': { _id: mongoose.Types.ObjectId(albumid) }, },
-    { $pull: { 'albums.$.images': mongoose.Types.ObjectId(imageid) } }
-  ).exec((err, writeOpResult) => {
-    if (err)
-      callback(null, err);
-    else {
+  const deleteQuery = Album.updateOne({ _id: albumid }, { $pull: { 'images' : imageid } });
+
+  deleteQuery.
+    exec().
+    then(writeOpResult => {
       callback(writeOpResult.nModified, null);
-    }
+    }).
+    catch(err => callback(null, err))
 
-  })
 }); 
-
-/**
- * Get all of the contents of an album.
- */
-
-// this returns the albums document
-module.exports.albumContentsInfo = (function (userid, albumid, callback) {
-  albumid = sanitize(albumid);
-  User.findOne(
-    {
-      'albums._id': { _id: mongoose.Types.ObjectId(albumid) },
-    }, {
-    'albums.$': 1,
-  }).
-    exec((err, user) => {
-
-      if (err)
-        callback(null, error);
-      else
-        callback(user.albums[0], null);
-    });
-});
-

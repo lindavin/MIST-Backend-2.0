@@ -13,7 +13,7 @@
   </title>
   <!-- Meta Information -->
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <% var jpgURL= "\"http://glimmer.grinnell.edu/jpg/"+image.imageid+"/?width=200&height=200\"" %>
+  <% var jpgURL= "\"http://glimmer.grinnell.edu/jpg/"+image._id+"/?width=200&height=200\"" %>
   <meta property="og:image" content=<%- jpgURL %> />
 
   <link rel="shortcut icon" href="/logos/favicon.ico">
@@ -110,12 +110,12 @@
 
     <figure>
       <canvas id="canvas" width="400" height="400"></canvas>
-      <div id="image-sharing" data-imageid=<%= image.imageid %>>
+      <div id="image-sharing" data-imageid=<%= image._id %>>
         <figcaption class="<%= liked ? 'left starred' : 'left unstarred' %>">★<%- image.rating %></figcaption>
-        <div id="image-fb-share" data-href="<%= 'http://glimmer.grinnell.edu/image/' + image.imageid %>"
+        <div id="image-fb-share" data-href="<%= 'http://glimmer.grinnell.edu/image/' + image._id %>"
           data-type="button" class="fb-share-button"></div>
         <a id="image-tweet" href="https://twitter.com/share" data-lang="en"
-          data-url=<%- "\"http://glimmer.grinnell.edu/image/" + image.imageid + "\"" %> class="twitter-share-button">
+          data-url=<%- "\"http://glimmer.grinnell.edu/image/" + image._id + "\"" %> class="twitter-share-button">
           <Tweet> </Tweet>
         </a>
         <a href="<%='/user/' + image.username %>">
@@ -164,14 +164,15 @@
           <!-- Option: make profile image -->
           <li>
             <form id='profile-image' method='POST'>
-              <input type='hidden' value=<%= image.imageid %> name='profile' />
+              <input type='hidden' value=<%= image._id %> name='profile' />
               <a class="menuitem" href='javascript:void(0);' onclick="setProfileImage()">set profile image</a>
             </form>
           </li>
           <!-- Option: Delete image -->
           <li>
             <form id='delete-image' method='POST'>
-              <input type='hidden' value=<%= image.imageid %> name='delete' />
+              <!--              <input type='hidden' value=<%= image.imageid %> name='delete' /> -->
+              <input type='hidden' value=<%= image._id %> name='delete' />
               <a class="menuitem" href='javascript:void(0);' onclick="deleteImage()">
                 delete image
               </a>
@@ -181,9 +182,9 @@
           <!-- Option: Feature Image -->
           <% if(user.type == "A" || user.type == "M") { %>
           <% if(image.featured) { %>
-          <li id="featureImage" data-featureStatus="false" data-imageid='<%=image.imageid%>'>unfeature image</li>
+          <li id="featureImage" data-featureStatus="false" data-imageid='<%=image._id%>'>unfeature image</li>
           <% } else { %>
-          <li id="featureImage" data-featureStatus="true" data-imageid='<%=image.imageid%>'>feature image</li>
+          <li id="featureImage" data-featureStatus="true" data-imageid='<%=image._id%>'>feature image</li>
           <% } %>
           <% } // If user is moderator or admin %>
           <!-- Option: Add to album -->
