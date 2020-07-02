@@ -95,8 +95,18 @@
       <h2><a href='/gallery/featured'>Featured Images</a></h2>
     
       <div id='galleryImages'>
-       
-        
+        <% for (var i=0; i < images.length; i++) {%>
+          <figure>
+            <a href='/image/<%= images[i]._id %>'>
+              <canvas id='<%= 'canvas'+i %>' width='150' height='150'></canvas>
+              <input type='hidden' id='<%= 'code'+i %>' value='<%=images[i].code%>'>
+            </a>
+            <% if(images[i].code.indexOf("t.") > -1 || images[i].code.indexOf("m.") > -1) { %>
+              <img src='/icons/time.png' width ='20 px' height='20 px'>
+            <% } %>
+            </a>
+          </figure>
+        <% } %>
       </div>
 
       <p class='info'>Images with <img src='/icons/time.png' width ='25 px' height='25 px'> will animate when you hover over them</p>
