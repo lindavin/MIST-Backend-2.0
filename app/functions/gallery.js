@@ -1,8 +1,71 @@
 
-module.exports.buildFeaturedPage = function (req, res, database) {
 
+module.exports.buildTopRatedPage = function (req, res, database) {
+    
+    database.getTopRated(9, req.params.pageNumber, function (images, nextPage, error) {
+        if (error) {
+            res.redirect("/404");
+        }
+        else {
+            res.render('gallery', {
+                user: req,
+                userData: req.user,
+                images: images,
+                currentPage: req.params.pageNumber,
+                nextPage: nextPage,
+                type: "toprated"
+            });
+        }
+    });
+};
+
+
+module.exports.buildRecentsPage = function (req, res, database) {
+
+    database.getRecentImages(9, req.params.pageNumber, function (images, nextPage, error) {
+        if (error) {
+            res.redirect("/");
+            //res.redirect("/404");
+        }
+        else {
+            res.render('gallery', {
+                user: req,
+                userData: req.user,
+                images: images,
+                nextPage: nextPage,
+                currentPage: req.params.pageNumber,  // mulitple pages long
+                type: "recent"
+            }
+            );
+        }
+    });
+};
+
+
+module.exports.buildRandomPage = function (req, res, database) {
+    database.getRandomImages(9, function (images, error) {
+        if (error) {
+            //res.redirect("/404");
+            res.redirect("/");
+        }
+        else {
+            res.render('gallery', {
+                user: req,
+                userData: req.user,
+                //user: req.user,
+                images: images,
+                //images: imageArray,
+                nextPage: false,
+                currentPage: req.params.pageNumber,
+                type: "featured"
+            }
+            );
+        }
+    });
+};
+
+module.exports.buildFeaturedPage = function (req, res, database) {
     // there are 9 images on a page
-    // might want to pull this out to a global variable
     database.getFeaturedImages(9, function (images, error) {
         if (error) {
             //res.redirect("/404");

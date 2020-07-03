@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
+var random = require('mongoose-simple-random');
 
 mongoose.connect("mongodb://localhost:27017/usersDB", {
   useCreateIndex: true,
@@ -42,6 +43,7 @@ const imagesSchema = new mongoose.Schema({
     default: false,
   },
 });
+imagesSchema.plugin(random);
 
 const commentsSchema = new mongoose.Schema({
   userId: {
@@ -157,7 +159,7 @@ const usersSchema = new mongoose.Schema({
   albums: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],                   // of album ids
   workspaces: [workspacesSchema],               // of workspace objects
   profilepic: {
-    type: mongoose.Schema.Types.ObjectId, 
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Image",
     default: null,
   },
@@ -413,21 +415,78 @@ module.exports.getIDforUsername = (function (username, callback) {
   });
 });
 
-
-
-
 // +--------+----------------------------------------------------------
 // | Images |
 // +--------+
 
 /**
- * grab featured images
- * @param num: the max amount of images returned
+ * grab top rated images
+ * @param count: the max amount of images returned
+ * @param page: //orginial mist team parameter, probably needed to support multiple pages (front-end)
+ * @param callback: returns either the images, page(boolean), and the error 
+ */
+module.exports.getTopRated = function (count, page, callback) {
+
+  Image.find({ public: true, active: true })
+    .sort({ ratings: -1 })
+    .limit(count)
+    .exec((err, images) => {
+      if (err)
+        callback(null, null, err); // might need to be null
+      else if (images.length <= count)
+        callback(images, false, err)
+      else
+        callback(images, true, err)
+    })
+};
+
+/**
+ * grab recent images
+ * @param count: the max amount of images returned
+ * @param page //orginial mist team parameter, probably needed to support multiple pages (front-end)
+ * @param callback: returns either the images, page(boolean), and the error 
+ */
+module.exports.getRecentImages = function (count, page, callback) {
+
+  Image.find({ public: true, active: true })
+    .sort({ createdAt: -1 })
+    .limit(count)
+    .exec((err, images) => {
+      if (err)
+        callback(null, null, err); // might need to be null
+      else if (images.length <= count) {
+        callback(images, false, err)
+      }
+      else {
+        callback(images, true, err)
+      }
+    })
+};
+
+/**
+ * grab random images
+ * @param count: the max amount of images returned
  * @param callback: returns either the images or the error 
  */
-module.exports.getFeaturedImages = function (num, callback) {
+module.exports.getRandomImages = function (count, callback) {
 
-  Image.find({ featured: true }).limit(num).exec((err, images) => {
+  Image.findRandom({ public: true, active: true }, {}, { limit: count }, function (err, images) {
+    if (err)
+      callback(null, err)
+    else
+      callback(images, null)
+  });
+
+}
+
+/**
+ * grab featured images
+ * @param count: the max amount of images returned
+ * @param callback: returns either the images or the error 
+ */
+module.exports.getFeaturedImages = function (count, callback) {
+
+  Image.find({ featured: true, active: true }).limit(count).exec((err, images) => {
     if (err)
       callback(null, err)
     else {
@@ -619,18 +678,18 @@ module.exports.deleteImage = (userid, imageId, callback) => {
 module.exports.setProfilePicture = (function (userid, imageid, callback) {
   userid = sanitize(userid);
   imageid = sanitize(imageid);
-  
+
   User.findOneAndUpdate(
     { _id: userid },
-    { profilepic : imageid }, 
-    function(err, pic) {
-    if (err) {
-      callback(null, err);
-    }
-    else {
-      callback(pic, null);
-    }
-  });
+    { profilepic: imageid },
+    function (err, pic) {
+      if (err) {
+        callback(null, err);
+      }
+      else {
+        callback(pic, null);
+      }
+    });
 });
 
 
