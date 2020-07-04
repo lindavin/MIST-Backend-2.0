@@ -323,9 +323,10 @@ generalDelete = async (userid, objectid, referenceArray, model, callback = null)
   }
 }
 
-const userid = '5efd140f5f0ef435a02538e2';
-const imageid = '5efe00efb268b473704cad42';
-generalDelete(userid, imageid, 'images', 'Image');
+// Testing
+// const userid = '5efd140f5f0ef435a02538e2';
+// const imageid = '5efe00efb268b473704cad42';
+// generalDelete(userid, imageid, 'images', 'Image');
 
 // +-----------------+-------------------------------------------------
 // | User Procedures |
@@ -333,14 +334,14 @@ generalDelete(userid, imageid, 'images', 'Image');
 
 
 // update the updatedAt property of a user to current date
-module.exports.updateUpdatedAt = function (userID) {
-  User.findById(userID, function (err, user) {
+module.exports.updateUpdatedAt = (userID) => {
+  User.findById(userID, (err, user) => {
     if (err) {
       fail(res, "Error: " + error);
     } else {
 
       user.updatedAt = Date.now();
-      user.save(function (err) {
+      user.save(err => {
         if (err) console.log("unable to update updatedAt for user");
       })
     }
@@ -364,11 +365,10 @@ module.exports.updateUpdatedAt = function (userID) {
   Post-conditions:
     about section has to be changed
 */
-module.exports.changeAboutSection = (function (userid, newAbout, callback) {
+module.exports.changeAboutSection = (userid, newAbout, callback) => {
   newAbout = sanitize(newAbout);
   userid = sanitize(userid);
-  console.log('userid ' + userid);
-  console.log('new about ' + newAbout);
+
   User.findByIdAndUpdate(userid,
     {
       about: newAbout,
@@ -382,7 +382,7 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
       }
     });
   module.exports.updateUpdatedAt(userid);
-});//database.changeAboutSection(userid, newAbout, callback(boolean, error));
+};//database.changeAboutSection(userid, newAbout, callback(boolean, error));
 
 
 /*
@@ -417,7 +417,7 @@ module.exports.changeAboutSection = (function (userid, newAbout, callback) {
   Preferences:
     Use database.getIDforUsername to get the id to pass to this function
 */
-module.exports.getUser = (function (userid, callback) {
+module.exports.getUser = (userid, callback) => {
 
   userid = sanitize(userid);
 
@@ -429,7 +429,7 @@ module.exports.getUser = (function (userid, callback) {
     else
       callback(user, null);
   });
-}); // database.getUser(userid, callback(userObject, error));
+}; // database.getUser(userid, callback(userObject, error));
 
 
 /*
@@ -451,7 +451,7 @@ module.exports.getUser = (function (userid, callback) {
     Use in conjunction with database.getUser() to retrieve information on 
       a user
 */
-module.exports.getIDforUsername = (function (username, callback) {
+module.exports.getIDforUsername = (username, callback) => {
   username = sanitize(username);
   // projection : modifies the fields that get returned as the user parameter
   User.findOne({ 'username': username }).exec((err, user) => {
@@ -465,7 +465,7 @@ module.exports.getIDforUsername = (function (username, callback) {
       // site: https://stackoverflow.com/questions/13104690/nodejs-mongodb-object-id-to-string
       callback(user._id.toString(), null);
   });
-});
+};
 
 // +--------+----------------------------------------------------------
 // | Images |
@@ -477,7 +477,7 @@ module.exports.getIDforUsername = (function (username, callback) {
  * @param page: //orginial mist team parameter, probably needed to support multiple pages (front-end)
  * @param callback: returns either the images, page(boolean), and the error 
  */
-module.exports.getTopRated = function (count, page, callback) {
+module.exports.getTopRated = (count, page, callback) => {
 
   Image.find({ public: true, active: true })
     .sort({ ratings: -1 })
@@ -498,7 +498,7 @@ module.exports.getTopRated = function (count, page, callback) {
  * @param page //orginial mist team parameter, probably needed to support multiple pages (front-end)
  * @param callback: returns either the images, page(boolean), and the error 
  */
-module.exports.getRecentImages = function (count, page, callback) {
+module.exports.getRecentImages = (count, page, callback) => {
 
   Image.find({ public: true, active: true })
     .sort({ createdAt: -1 })
@@ -520,9 +520,9 @@ module.exports.getRecentImages = function (count, page, callback) {
  * @param count: the max amount of images returned
  * @param callback: returns either the images or the error 
  */
-module.exports.getRandomImages = function (count, callback) {
+module.exports.getRandomImages = (count, callback) => {
 
-  Image.findRandom({ public: true, active: true }, {}, { limit: count }, function (err, images) {
+  Image.findRandom({ public: true, active: true }, {}, { limit: count }, (err, images) => {
     if (err)
       callback(null, err)
     else
@@ -536,7 +536,7 @@ module.exports.getRandomImages = function (count, callback) {
  * @param count: the max amount of images returned
  * @param callback: returns either the images or the error 
  */
-module.exports.getFeaturedImages = function (count, callback) {
+module.exports.getFeaturedImages = (count, callback) => {
 
   Image.find({ featured: true, active: true }).limit(count).exec((err, images) => {
     if (err)
@@ -554,18 +554,8 @@ module.exports.getFeaturedImages = function (count, callback) {
  * Otherwise, calls `callback(null,error)`.
  */
 // needs testing
-module.exports.imageInfo = (function (imageid, callback) {
+module.exports.imageInfo = (imageid, callback) => {
   imageid = sanitize(imageid);
-
-  // two methods
-  // method one:
-  // find the user who owns an image with this id and that this imageid is active
-  // then return the user document
-  // then search for this image again
-  // and send return the document
-  // method two
-  // use the positional operator to retrieve the image document
-  // if nothing happens, then callback(null, "ERRO: Images does not exist")
 
   Image.
     findById(imageid).
@@ -579,7 +569,7 @@ module.exports.imageInfo = (function (imageid, callback) {
           callback(image, null);
       }
     );
-});
+};
 
 /*
   Procedure:
@@ -600,7 +590,7 @@ module.exports.imageInfo = (function (imageid, callback) {
   Automatically sanitizes.
 */
 
-module.exports.toggleLike = (function (userid, imageid, callback) {
+module.exports.toggleLike = (userid, imageid, callback) => {
   userid = sanitize(userid);
   imageid = sanitize(imageid);
   // check to see if a the user's image array contains the image id
@@ -669,7 +659,7 @@ module.exports.toggleLike = (function (userid, imageid, callback) {
       }
     }).
     catch(err => callback(null, err))
-}); // module.exports.toggleLike
+}; // module.exports.toggleLike
 
 /** 
  * @param userid: the object ID for the user
@@ -695,7 +685,7 @@ module.exports.deleteImage = (userid, imageId, callback) => {
   imageId = sanitize(imageId);
 
   // checks if the user can delete the image
-  module.exports.canDeleteImage(userid, imageId, function (authorized, error) {
+  module.exports.canDeleteImage(userid, imageId, (authorized, error) => {
     if (error)
       callback(false, error);
     else if (!authorized)
@@ -703,7 +693,7 @@ module.exports.deleteImage = (userid, imageId, callback) => {
     // if authorized then set active status to false
     else {
       //locate image and update status
-      Image.findById(imageId, function (err, image) {
+      Image.findById(imageId, (err, image) => {
         if (err) {
           callback(false, error);
         } else {
@@ -727,14 +717,14 @@ module.exports.deleteImage = (userid, imageId, callback) => {
 /**
  * Set the profile picture for a given userid to a given imageid.
  */
-module.exports.setProfilePicture = (function (userid, imageid, callback) {
+module.exports.setProfilePicture = (userid, imageid, callback) => {
   userid = sanitize(userid);
   imageid = sanitize(imageid);
 
   User.findOneAndUpdate(
     { _id: userid },
     { profilepic: imageid },
-    function (err, pic) {
+    (err, pic) => {
       if (err) {
         callback(null, err);
       }
@@ -742,7 +732,7 @@ module.exports.setProfilePicture = (function (userid, imageid, callback) {
         callback(pic, null);
       }
     });
-});
+};
 
 
 // +----------------+--------------------------------------------------
@@ -752,7 +742,7 @@ module.exports.setProfilePicture = (function (userid, imageid, callback) {
 /**
  * Get commenter information for a single image.
  */
-module.exports.commentInfo = (function (imageid, callback) {
+module.exports.commentInfo = (imageid, callback) => {
   imageid = sanitize(imageid);
 
   // search the comments collection for documents that with imageid that match image._id
@@ -774,7 +764,7 @@ module.exports.commentInfo = (function (imageid, callback) {
         callback(comments, null);
       }
     });
-});
+};
 
 
 /** 
@@ -832,35 +822,35 @@ module.exports.deleteComment = async (userid, commentId, callback) => {
   Preferences:
   None
 */
-module.exports.omnisearch = (function (searchString, callback) {
+module.exports.omnisearch = (searchString, callback) => {
   var result = {
     users: [],
     images: [],
     albums: [],
   };
-  module.exports.userSearch(searchString, function (userArray, error) {
+  module.exports.userSearch(searchString, (userArray, error) => {
     result.users = userArray;
     if (error)
       callback(null, error);
     else
-      module.exports.imageSearch(searchString, function (imageArray, error) {
+      module.exports.imageSearch(searchString, (imageArray, error) => {
         result.images = imageArray;
         if (error)
           callback(null, error);
         else
-          module.exports.commentSearch(searchString, function (commentArray, error) {
+          module.exports.commentSearch(searchString, (commentArray, error) => {
             result.comments = commentArray;
             if (error)
               callback(null, error);
             else
-              module.exports.albumSearch(searchString, function (albumArray, error) {
+              module.exports.albumSearch(searchString, (albumArray, error) => {
                 result.albums = albumArray;
                 if (error)
                   callback(null, error);
                 else
                   callback(result, null);
 
-                /* module.exports.functionSearch(searchString, function (functionArray, error) {
+                /* module.exports.functionSearch(searchString, (functionArray, error) => {
                      result.functions = functionArray;
                      if (error)
                          callback(null, error);
@@ -871,7 +861,7 @@ module.exports.omnisearch = (function (searchString, callback) {
           });
       });
   });
-});
+};
 
 /*
 Procedure:
@@ -887,7 +877,7 @@ All results will be returned.
 Preferences:
 Automatically sanitizes.
 */
-module.exports.userSearch = (function (searchString, callback) {
+module.exports.userSearch = (searchString, callback) => {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
   User.find({
@@ -900,7 +890,7 @@ module.exports.userSearch = (function (searchString, callback) {
     else
       callback(users, null);
   });
-});
+};
 
 // user:  {_id: 2345678654, username: first}
 
@@ -920,7 +910,7 @@ Preferences:
 Automatically sanitizes.
 */
 
-module.exports.imageSearch = (function (searchString, callback) {
+module.exports.imageSearch = (searchString, callback) => {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
   Image.find(
@@ -938,7 +928,7 @@ module.exports.imageSearch = (function (searchString, callback) {
         callback(image, null);
       }
     });
-});
+};
 
 
 /*
@@ -956,7 +946,7 @@ Preferences:
 Automatically sanitizes.
 */
 
-module.exports.commentSearch = (function (searchString, callback) {
+module.exports.commentSearch = (searchString, callback) => {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
   Comment.find(
@@ -975,7 +965,7 @@ module.exports.commentSearch = (function (searchString, callback) {
         callback(comment, null);
       }
     });
-});
+};
 
 
 /*
@@ -993,7 +983,7 @@ module.exports.commentSearch = (function (searchString, callback) {
   Automatically sanitizes.
 */
 
-module.exports.albumSearch = (function (searchString, callback) {
+module.exports.albumSearch = (searchString, callback) => {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
   Album.find(
@@ -1011,7 +1001,7 @@ module.exports.albumSearch = (function (searchString, callback) {
         callback(album, null);
       }
     });
-});
+};
 
 
 // +--------+----------------------------------------------------------
@@ -1021,7 +1011,7 @@ module.exports.albumSearch = (function (searchString, callback) {
 /**
  * Get information on an album.
  */
-module.exports.albumsInfo = (function (userId, callback) {
+module.exports.albumsInfo = (userId, callback) => {
   userId = sanitize(userId);
 
   Album.find({ userId: userId, active: true }, (err, albums) => {
@@ -1031,10 +1021,10 @@ module.exports.albumsInfo = (function (userId, callback) {
       callback(albums, null);
     }
   })
-});
+};
 
 // create Album
-module.exports.createAlbum = (function (userid, name, callback) {
+module.exports.createAlbum = (userid, name, callback) => {
   userid = sanitize(userid);
   name = sanitize(name);
   let album = new Album({
@@ -1062,10 +1052,10 @@ module.exports.createAlbum = (function (userid, name, callback) {
         .catch(err => callback(false, err))
     })
     .catch(err => callback(false, err));
-}); // createAlbum
+}; // createAlbum
 
 // add image to album
-module.exports.addToAlbum = function (albumid, imageid, callback, unique = false) {
+module.exports.addToAlbum = (albumid, imageid, callback, unique = false) => {
   // Sanitize inputs.  Yay!
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
@@ -1085,7 +1075,7 @@ module.exports.addToAlbum = function (albumid, imageid, callback, unique = false
 };
 
 // Returns all images for a user
-module.exports.getAllImagesforUser = (function (userid, callback) {
+module.exports.getAllImagesforUser = (userid, callback) => {
   userid = sanitize(userid);
   User.
     findById(userid).
@@ -1096,7 +1086,7 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
     exec().
     then(user => callback(user.images, null)).
     catch(err => callback(null, err))
-});
+};
 
 /*
   Procedure:
@@ -1113,7 +1103,7 @@ module.exports.getAllImagesforUser = (function (userid, callback) {
   Automatically sanitizes.
 */
 // needs testing
-module.exports.hasLiked = (function (userid, imageid, callback) {
+module.exports.hasLiked = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
   User.
@@ -1130,20 +1120,20 @@ module.exports.hasLiked = (function (userid, imageid, callback) {
     }); // iterate the users collection or User Model : look at each user document
   // for a document whose images array contains an image whose ObjectId matches the 
   // imageid under the request parameter
-});
+};
 
 /**
  * Get all of the contents of an album.
  */
 
 // this returns the albums document
-module.exports.albumContentsInfo = (function (userid, albumid, callback) {
+module.exports.albumContentsInfo = (userid, albumid, callback) => {
   albumid = sanitize(albumid);
   //STUB - not sure if we need this, the query is very easy
-});
+};
 
 
-module.exports.getImagesFromAlbum = function (albumid, callback) {
+module.exports.getImagesFromAlbum = (albumid, callback) => {
 
   //find the album
   Album.
@@ -1152,7 +1142,7 @@ module.exports.getImagesFromAlbum = function (albumid, callback) {
       path: 'images',
       match: { active: true },
     }).
-    exec(function (err, album) {
+    exec((err, album) => {
       if (err)
         callback(null, null, err)
       else
@@ -1220,7 +1210,7 @@ module.exports.deleteAlbum = async (userId, albumId, callback) => {
   }
 }
 
-module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
+module.exports.deleteAlbumAlternative = (userid, albumid, callback) => {
   // removes album completely from the array
   albumid = sanitize(albumid);
   // but for this we will just do a mongoose query
@@ -1235,10 +1225,10 @@ module.exports.deleteAlbumAlternative = (function (userid, albumid, callback) {
       callback(writeOpResult.nModified, null);
     }
   })
-});
+};
 
 //delete from album (not image database)
-module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
+module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
   // we can also look into the local passport......
@@ -1253,4 +1243,4 @@ module.exports.deleteFromAlbums = (function (albumid, imageid, callback) {
     }).
     catch(err => callback(null, err))
 
-}); 
+}; 
