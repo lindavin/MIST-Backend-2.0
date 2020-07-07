@@ -70,8 +70,22 @@ const commentsSchema = new mongoose.Schema({
 });
 
 const flagSchema = new mongoose.Schema({
-  body: String,
-  flaggedAt: Date,
+  type: String, // type: Comment, Album, User, Image
+  body: String, // description of the offense, choosen from a list or given by user
+  description: String , //optional description of why this was offensive
+  count: Number, // count of how many times it has been flagged
+  lastFlaggedAt: { // the most recent flag
+    type: Date,
+    default: Date.now,
+  },
+  flaggedBy:  [{ //array of users(ids) who flagged it
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }], 
+  flaggedUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }
 });
 
 const albumsSchema = new mongoose.Schema({
@@ -1244,3 +1258,12 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
     catch(err => callback(null, err))
 
 }; 
+
+// +----------+----------------------------------------------------------
+// | Flagging |
+// +----------+
+
+
+module.exports.createFlag = (req) => {
+
+}
