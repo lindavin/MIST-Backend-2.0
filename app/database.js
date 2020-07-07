@@ -11,7 +11,9 @@ mongoose.connect("mongodb://localhost:27017/usersDB", {
 
 mongoose.set('useFindAndModify', false);
 
-// Schemas
+// +---------+----------------------------------------------------------
+// | Schemas |
+// +---------+
 
 const imagesSchema = new mongoose.Schema({
   userId: {
@@ -43,7 +45,7 @@ const imagesSchema = new mongoose.Schema({
     default: false,
   },
 });
-imagesSchema.plugin(random);
+imagesSchema.plugin(random); // this is needed for displaying random images in the gallery
 
 const commentsSchema = new mongoose.Schema({
   userId: {
@@ -72,16 +74,16 @@ const commentsSchema = new mongoose.Schema({
 const flagSchema = new mongoose.Schema({
   type: String, // type: Comment, Album, User, Image
   body: String, // description of the offense, choosen from a list or given by user
-  description: String , //optional description of why this was offensive
+  description: String, //optional description of why this was offensive
   count: Number, // count of how many times it has been flagged
-  lastFlaggedAt: { // the most recent flag
+  lastFlaggedAt: { // the most recent flag date
     type: Date,
     default: Date.now,
   },
-  flaggedBy:  [{ //array of users(ids) who flagged it
+  flaggedBy: [{ //array of users(ids) who flagged it
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-  }], 
+  }],
   flaggedUser: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -107,7 +109,6 @@ const albumsSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
   public: Boolean, // true = public, false = private
   active: Boolean,
   caption: String,
@@ -282,13 +283,21 @@ const Models = {
   "Flag": Flag,
 }
 
-
+/** 
+ * checks if the user has the authortity to delete the object:
+ * user must own the object or be a moderator/admin
+ * @param userid: the object ID for the user
+ * @param objectid: the object ID for the object wanting to be deleted
+ * @param referenceArray: the array that contains the objectid (albums, comments, etc.)
+ * @param callback: the callback to be excecuted if true
+ */
 canDelete = (userid, objectid, referenceArray, callback) => {
   userid = sanitize(userid);
   objectid = sanitize(objectid);
   User.
     findById(userid).
     or([{ admin: true }, { moderator: true }, { [referenceArray]: { $elemMatch: { $eq: objectid } } }]).
+    //since we don't need the documents, count is an efficent solution
     countDocuments().
     exec((err, count) => {
       if (err)
@@ -298,6 +307,8 @@ canDelete = (userid, objectid, referenceArray, callback) => {
     });
 };
 
+// helper function for generalDelete
+// same functionality as canDelete except does not execute promise
 canDeletePromise = (userid, objectid, referenceArray) => {
   userid = sanitize(userid);
   objectid = sanitize(objectid);
@@ -309,6 +320,11 @@ canDeletePromise = (userid, objectid, referenceArray) => {
       exec())
 };
 
+/**
+ * "deletes" object - sets the active status to false
+ * @param objectid: the object ID for the object wanting to be deleted
+ * @param model: the type of object going to be deleted (comment, album, etc.)
+ */
 deleteFromModel = (objectid, model) => {
   objectid = sanitize(objectid);
   return (
@@ -318,9 +334,18 @@ deleteFromModel = (objectid, model) => {
   )
 }
 
-// intended to remove something that the user has a reference to
+
 // no references are removed from the user array
-// do we want to?
+// do we want to? 
+// Yes - not implemented yet
+/**
+ * If the user has the authority to delete, "deletes" the object
+ * @param userid: the object ID for the user
+ * @param objectid: the object ID for the object wanting to be deleted
+ * @param referenceArray: the array that contains the objectid (albums, comments, etc.)
+ * @param callback: the callback to be excecuted if true
+ *  Note: callback currently set to null, but left there if wanted in the future
+ */
 generalDelete = async (userid, objectid, referenceArray, model, callback = null) => {
   userid = sanitize(userid);
   objectid = sanitize(objectid);
@@ -487,12 +512,13 @@ module.exports.getIDforUsername = (username, callback) => {
 
 /**
  * grab top rated images
- * @param count: the max amount of images returned
- * @param page: //orginial mist team parameter, probably needed to support multiple pages (front-end)
+ * @param count: the max amount of images returned for the page
+ * @param page: the current page
+ *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
+ *        This has not been implemented on the front-end yet, but it is left here for future use
  * @param callback: returns either the images, page(boolean), and the error 
  */
 module.exports.getTopRated = (count, page, callback) => {
-
   Image.find({ public: true, active: true })
     .sort({ ratings: -1 })
     .limit(count)
@@ -508,18 +534,19 @@ module.exports.getTopRated = (count, page, callback) => {
 
 /**
  * grab recent images
- * @param count: the max amount of images returned
- * @param page //orginial mist team parameter, probably needed to support multiple pages (front-end)
+ * @param count: the max amount of images returned for the page
+ * @param page: the current page
+ *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
+ *        This has not been implemented on the front-end yet, but it is left here for future use
  * @param callback: returns either the images, page(boolean), and the error 
  */
 module.exports.getRecentImages = (count, page, callback) => {
-
   Image.find({ public: true, active: true })
     .sort({ createdAt: -1 })
     .limit(count)
     .exec((err, images) => {
       if (err)
-        callback(null, null, err); // might need to be null
+        callback(null, null, err);
       else if (images.length <= count) {
         callback(images, false, err)
       }
@@ -535,7 +562,6 @@ module.exports.getRecentImages = (count, page, callback) => {
  * @param callback: returns either the images or the error 
  */
 module.exports.getRandomImages = (count, callback) => {
-
   Image.findRandom({ public: true, active: true }, {}, { limit: count }, (err, images) => {
     if (err)
       callback(null, err)
@@ -551,7 +577,6 @@ module.exports.getRandomImages = (count, callback) => {
  * @param callback: returns either the images or the error 
  */
 module.exports.getFeaturedImages = (count, callback) => {
-
   Image.find({ featured: true, active: true }).limit(count).exec((err, images) => {
     if (err)
       callback(null, err)
@@ -570,7 +595,6 @@ module.exports.getFeaturedImages = (count, callback) => {
 // needs testing
 module.exports.imageInfo = (imageid, callback) => {
   imageid = sanitize(imageid);
-
   Image.
     findById(imageid).
     exec(
@@ -603,7 +627,6 @@ module.exports.imageInfo = (imageid, callback) => {
   Preferences:
   Automatically sanitizes.
 */
-
 module.exports.toggleLike = (userid, imageid, callback) => {
   userid = sanitize(userid);
   imageid = sanitize(imageid);
@@ -677,21 +700,22 @@ module.exports.toggleLike = (userid, imageid, callback) => {
 
 /** 
  * @param userid: the object ID for the user
- * @param commentId: the object ID for the comment
+ * @param commentId: the object ID for the image
  * @param callback: the callback to be excecuted if true
- * checks if the user has the authortity to delete a comment:
- * user must own the comment or image, or be a moderator or admin
+ * checks if the user has the authortity to delete a image:
+ * user must own the image, or be a moderator or admin
  */
 module.exports.canDeleteImage = (userid, imageId, callback) => {
   canDelete(userid, imageId, 'images', callback);
 }
 
 /**
-* deletes the comment if the user has authorization
+* deletes the image if the user has authorization
 * @param userid: the object ID for the user
-* @param imageId: the object ID for the comment
+* @param imageId: the object ID for the image
 * @param callback: the callback to be excecuted if true
 */
+// Note: should be switched to using generalDelete if possible
 module.exports.deleteImage = (userid, imageId, callback) => {
 
   // sanitize ID's
@@ -782,11 +806,11 @@ module.exports.commentInfo = (imageid, callback) => {
 
 
 /** 
+ * checks if the user has the authortity to delete a comment:
+ * user must own the comment or image, or be a moderator or admin
  * @param userid: the object ID for the user
  * @param commentId: the object ID for the comment
  * @param callback: the callback to be excecuted if true
- * checks if the user has the authortity to delete a comment:
- * user must own the comment or image, or be a moderator or admin
  */
 module.exports.canDeleteComment = (userid, commentId, callback) => {
   canDelete(userid, commentId, 'comments', callback);
@@ -996,7 +1020,6 @@ module.exports.commentSearch = (searchString, callback) => {
   Preferences:
   Automatically sanitizes.
 */
-
 module.exports.albumSearch = (searchString, callback) => {
   searchString = sanitize(searchString);
   // find usernames which contiain the searchString
@@ -1051,6 +1074,7 @@ module.exports.createAlbum = (userid, name, callback) => {
   }) // create album document object 
   album.save()
     .then(album => {
+      // push album to user albums array
       User.updateOne({ _id: userid }, { $push: { albums: album._id } })
         .exec()
         .then((writeOpResult) => {
@@ -1088,7 +1112,7 @@ module.exports.addToAlbum = (albumid, imageid, callback, unique = false) => {
 
 };
 
-// Returns all images for a user
+// Returns all active images for a user
 module.exports.getAllImagesforUser = (userid, callback) => {
   userid = sanitize(userid);
   User.
@@ -1146,9 +1170,8 @@ module.exports.albumContentsInfo = (userid, albumid, callback) => {
   //STUB - not sure if we need this, the query is very easy
 };
 
-
+// gets all images from an album
 module.exports.getImagesFromAlbum = (albumid, callback) => {
-
   //find the album
   Album.
     findById(albumid).
@@ -1165,9 +1188,11 @@ module.exports.getImagesFromAlbum = (albumid, callback) => {
 }
 
 /**
+ * DEPRECATED 
  * Get some basic information about an album.
  * Nina version to test
  */
+/*
 module.exports.getAlbumInfo = (albumid, callback) => {
   User.findOne(
     {
@@ -1186,15 +1211,15 @@ module.exports.getAlbumInfo = (albumid, callback) => {
           callback(user.albums[0], null);
       }
     );
-};
+}; */
 
 
 /** 
+ * checks if the user has the authortity to delete an album:
+ * user must own the album or be a moderator or admin
  * @param userId: the object ID for the user
  * @param albumId: the object ID for the album
  * @param callback: the callback to be excecuted if true
- * checks if the user has the authortity to delete an album:
- * user must own the album or be a moderator or admin
  */
 module.exports.canDeleteAlbum = (userId, albumId, callback) => {
   canDelete(userId, albumId, 'albums', callback);
@@ -1224,6 +1249,9 @@ module.exports.deleteAlbum = async (userId, albumId, callback) => {
   }
 }
 
+// deletes album from database instead of setting active to false
+// Not in use, but may be helpful if we want to switch
+/*
 module.exports.deleteAlbumAlternative = (userid, albumid, callback) => {
   // removes album completely from the array
   albumid = sanitize(albumid);
@@ -1239,9 +1267,9 @@ module.exports.deleteAlbumAlternative = (userid, albumid, callback) => {
       callback(writeOpResult.nModified, null);
     }
   })
-};
+}; */
 
-//delete from album (not image database)
+//delete and image from an album (not image database)
 module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
   albumid = sanitize(albumid);
   imageid = sanitize(imageid);
@@ -1257,7 +1285,7 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
     }).
     catch(err => callback(null, err))
 
-}; 
+};
 
 // +----------+----------------------------------------------------------
 // | Flagging |

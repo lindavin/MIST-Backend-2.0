@@ -14,6 +14,7 @@ var database = require('../database')
 // +-----------+
 
 // setFlags sets the flagged property of every comment in a given array
+// not implemented yet
 var setFlags = function (commentArray, userID, database, callback) {
     if (commentArray.length == 0)
         callback([]);
@@ -91,7 +92,10 @@ module.exports.buildPage = function (req, res, database) {
     });
 };
 
-
+/**
+ * saves the comment in the comments collection,
+ * the user's comment array, and to image's comment array
+ */
 module.exports.saveComment = function (req, res, database) {
     // build the comment
     let userID = req.user._id;
@@ -123,7 +127,7 @@ module.exports.saveComment = function (req, res, database) {
                     console.error(err)
                     res.end(JSON.stringify(error));
                 })
-            //push comment to user's comment array
+            //push comment to image's comment array
             database.Image.updateOne({ _id: imageID }, { $push: { comments: comment._id } })
                 .exec()
                 .then((writeOpResult) => {

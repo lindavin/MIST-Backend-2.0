@@ -469,7 +469,6 @@ handlers.flagComment = (info, req, res) => {
 // | Albums |
 // +--------+
 
-
 /**
  * Add an image to an album.
  *   info.action: addToAlbum
