@@ -3,7 +3,7 @@ const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
 var random = require('mongoose-simple-random');
 
-mongoose.connect("mongodb://localhost:27017/usersDB", {
+mongoose.connect("mongodb://localhost:27017/acme", {
   useCreateIndex: true,
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -34,7 +34,7 @@ const imagesSchema = new mongoose.Schema({
   },
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Flag",
+    ref: "Report",
   }], // of (of flag_ids)
   public: Boolean, //true = public, false = private
   caption: String,
@@ -65,12 +65,13 @@ const commentsSchema = new mongoose.Schema({
   },
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Flag",
+    ref: "Report",
   }], // of (of flag_ids)
 });
 
-const flagSchema = new mongoose.Schema({
+const reportSchema = new mongoose.Schema({
   type: String, // type: Comment, Album, User, Image
+  reportedId: mongoose.Schema.Types.ObjectId,
   body: String, // description of the offense, choosen from a list or given by user
   description: String , //optional description of why this was offensive
   count: Number, // count of how many times it has been flagged
@@ -81,11 +82,14 @@ const flagSchema = new mongoose.Schema({
   flaggedBy:  [{ //array of users(ids) who flagged it
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-  }], 
+  }], /*
+  This could be useful for the future, if the moderators would like the id of 
+  the user explitily. For now, the moderator, will have to search the appropirate collection
+  for the given id and then check the user information
   flaggedUser: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-  }
+  } */
 });
 
 const albumsSchema = new mongoose.Schema({
@@ -113,7 +117,7 @@ const albumsSchema = new mongoose.Schema({
   caption: String,
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Flag",
+    ref: "Report",
   }], // of (of flag_ids)
 });
 
@@ -181,9 +185,17 @@ const usersSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  hidden: [{
+    commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    albumIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
+    imageIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }] 
+  }],
+  blocked: [{
+    userIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  }],
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Flag",
+    ref: "Report",
   }], // of (of flag_ids)
   liked: [{ type: mongoose.Schema.Types.ObjectId }],   // of image _ids
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],                 //(of comment _ids)
@@ -226,7 +238,7 @@ const challengeSchema = new mongoose.Schema({
   },
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Flag",
+    ref: "Report",
   }], // of (of flag_ids)
   code: {
     type: String,
@@ -252,7 +264,7 @@ const Comment = mongoose.model("Comment", commentsSchema);
 const Album = mongoose.model("Album", albumsSchema);
 const Challenge = mongoose.model("Challenge", challengeSchema);
 const Workspace = mongoose.model("Workspace", workspacesSchema);
-const Flag = mongoose.model("Flag", flagSchema);
+const Report = mongoose.model("Report", reportSchema);
 
 
 // Export models
@@ -262,7 +274,7 @@ module.exports.Comment = Comment;
 module.exports.Album = Album;
 module.exports.Challenge = Challenge;
 module.exports.Workspace = Workspace;
-module.exports.Flag = Flag;
+module.exports.Report = Report;
 
 
 // Export Utilities
@@ -1260,10 +1272,48 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
 }; 
 
 // +----------+----------------------------------------------------------
-// | Flagging |
-// +----------+
+// | Flagging/Reporting |
+// +--------------------+
 
 
-module.exports.createFlag = (req) => {
+module.exports.createReport = (userid, type, body, description, reportedId, callback) => {
+  userid = sanitize(userid);
+  body = sanitize(body);
+  description = sanitize(decription);
+  reportedId = sanitize(reportedId);
 
-}
+  const hideOrBlock = (type == "User") 
+    ? { $push: { blocked: reportedId } } 
+    : { $push: { hidden: reportedId } };
+
+  let report = new Report ({
+    type: type,
+    id: userid,
+    body: body,
+    description: description,
+    count: 1,
+    flaggedBy:  [userid], 
+    //flaggedUser: flaggedUserID // userid for future
+    reportedId: reportedId,
+  })
+
+  report.save()
+      .then(report => {
+        // update user schema to reflect new report
+        // pushed to blocked if a user,
+        // pushed to hidden if not
+        User.updateOne({ _id: userid }, hideOrBlock)
+          .exec()
+          .then((writeOpResult) => {
+              if (writeOpResult.nModified === 0) {
+                console.log("Failed to write report");
+                callback(false, "Failed to write report");
+            }
+            else
+              callback(true, null);
+          })
+          .catch(err => callback(false, err))
+      })
+      .catch(err => callback(false, err));
+  }; // createReport
+
