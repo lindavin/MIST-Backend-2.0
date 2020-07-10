@@ -10,7 +10,7 @@ var setLikes = function (imageArray, userID, database, callback) {
         callback(imageArray);
     }
     //STUB
-}
+} 
 
 module.exports.buildPage = function (req, res, database) {
     database.getIDforUsername(req.params.username,

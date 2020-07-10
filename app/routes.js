@@ -90,7 +90,7 @@ module.exports = (app, passport, database) => {
 
   require('./userRouter')(app, database);
   require('./challengesRouter')(app, database);
-  require('./indexRouter')(app, database);
+  require('./homeRouter')(app, database);
   require('./galleryRouter')(app, database);
   require('./albumsRouter')(app, database);
   require('./imageRouter')(app, database);

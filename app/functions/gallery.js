@@ -1,7 +1,7 @@
 
 
+// builds top rated gallery page
 module.exports.buildTopRatedPage = function (req, res, database) {
-    
     database.getTopRated(9, req.params.pageNumber, function (images, nextPage, error) {
         if (error) {
             res.redirect("/404");
@@ -19,9 +19,8 @@ module.exports.buildTopRatedPage = function (req, res, database) {
     });
 };
 
-
+// builds recent gallery page
 module.exports.buildRecentsPage = function (req, res, database) {
-
     database.getRecentImages(9, req.params.pageNumber, function (images, nextPage, error) {
         if (error) {
             res.redirect("/");
@@ -41,7 +40,7 @@ module.exports.buildRecentsPage = function (req, res, database) {
     });
 };
 
-
+// builds random gallery page
 module.exports.buildRandomPage = function (req, res, database) {
     database.getRandomImages(9, function (images, error) {
         if (error) {
@@ -64,6 +63,7 @@ module.exports.buildRandomPage = function (req, res, database) {
     });
 };
 
+// builds featured gallery page
 module.exports.buildFeaturedPage = function (req, res, database) {
     // there are 9 images on a page
     database.getFeaturedImages(9, function (images, error) {
@@ -75,9 +75,7 @@ module.exports.buildFeaturedPage = function (req, res, database) {
             res.render('gallery', {
                 user: req,
                 userData: req.user,
-                //user: req.user,
                 images: images,
-                //images: imageArray,
                 nextPage: false,         // featured is one page long
                 currentPage: 1,
                 type: "featured"

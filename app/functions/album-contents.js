@@ -13,6 +13,7 @@ var utils = require('./utils.js');
 // | Functions |
 // +-----------+
 
+/* DEPRECATED
 var setLikes = function (imageArray, userID, callback) {
   if (imageArray.length == 0)
     callback([]);
@@ -20,9 +21,11 @@ var setLikes = function (imageArray, userID, callback) {
     callback(imageArray);
   }
   // STUB
-}
+} */
 
 module.exports.buildPage = function (req, res, database) {
+  // do we need to use this function?
+  // might be deprecated
   database.getIDforUsername(req.params.username,
     function (userid, error) {
       if (error) {
@@ -45,8 +48,9 @@ module.exports.buildPage = function (req, res, database) {
         });
       }
     })
+}
 
-
+// DEPRECATED
   /*
 database.getIDforUsername(req.params.username,
   function (userid, error) {
@@ -81,8 +85,6 @@ database.getIDforUsername(req.params.username,
       }); // database.albumContentsInfo
   });
   */
-}
-
 
 module.exports.deleteAlbum = function (req, res, database) {
   database.deleteAlbum(req.user._id, req.params.albumid, function (success, error) {

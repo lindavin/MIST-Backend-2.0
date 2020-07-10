@@ -1,7 +1,6 @@
 /**
  * User's Profile page
  */
-
 module.exports.buildPage = function (req, res, database) {
 	database.getIDforUsername(req.params.username, function (userid, error) {
 		if (error)
