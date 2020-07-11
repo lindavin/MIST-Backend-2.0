@@ -44,6 +44,18 @@ module.exports.createAlbum = function (req, res, database) {
     });
 };
 
+// not tested - can't test until connected with front-end
+// Note: we must make sure in the front end we pass in the the userId and albumId
+// params may need to be body, depending on how we pass in the values
+module.exports.hideAlbum = function (req, res, databse) {
+    database.hideContent(req.user._id, "album", req.params.album, function (success, error) {
+        if (!success)
+            res.end(JSON.stringify(error));
+        else 
+            res.redirect('/');
+    });
+}
+
 module.exports.allImagesinAlbum = function (req, res, database) {
     database.getIDforUsername(req.params.username,
         function (userid, error) {

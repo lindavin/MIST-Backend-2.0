@@ -8,7 +8,7 @@ module.exports.buildPage = function (req, res, database) {
 		else
 			database.getUser(userid, function (userObject, error) {
 				if (userObject.featuredImage !== 0) {
-					database.imageInfo(userObject.featuredImage, function (featuredImage, error) {
+					database.imageInfo(userid, userObject.featuredImage, function (featuredImage, error) {
 						res.render('profile', {
 							user: req.user,
 							viewing: userObject,

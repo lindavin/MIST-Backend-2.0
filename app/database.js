@@ -3,7 +3,8 @@ const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
 var random = require('mongoose-simple-random');
 
-mongoose.connect("mongodb://localhost:27017/acme", {
+// why was this changed to acme??
+mongoose.connect("mongodb://localhost:27017/usersDB", {
   useCreateIndex: true,
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -186,14 +187,12 @@ const usersSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  hidden: [{
-    commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-    albumIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
-    imageIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }] 
-  }],
-  blocked: [{
-    userIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
-  }],
+  hidden: {
+    commentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment"} ],
+    albumIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
+    imageIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }]
+  },
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   flags: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Report",
@@ -292,7 +291,7 @@ const Models = {
   "Album": Album,
   "Challenge": Challenge,
   "Workspace": Workspace,
-  "Flag": Flag,
+  "Report": Report,
 }
 
 /** 
@@ -604,21 +603,35 @@ module.exports.getFeaturedImages = (count, callback) => {
  * for an image.  If it finds the information, calls `callback(info,null)`.
  * Otherwise, calls `callback(null,error)`.
  */
-// needs testing
-module.exports.imageInfo = (imageid, callback) => {
+// needs testing - not functional yet
+module.exports.imageInfo = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
-  Image.
-    findById(imageid).
-    exec(
-      (err, image) => {
-        if (err)
-          callback(null, err);
-        else if (!image)
-          callback(null, 'ERROR: Image does not exist.');
-        else
-          callback(image, null);
-      }
-    );
+  userid = sanitize(userid);
+
+  // find the user and what albums they have hidden
+  User.findById(userid).exec((err, user) => {
+    let hiddenImages = user.hidden.albumIds;
+
+    Image.
+      findOne({
+        $and: [
+          { _id: imageid },
+          { _id: { $nin: hiddenImages } }
+        ]
+      }).
+      /*findById(imageid). */
+      exec(
+        (err, image) => {
+          console.log("image: ", image)
+          if (err)
+            callback(null, err);
+          else if (!image)
+            callback(null, 'ERROR: Image does not exist.');
+          else
+            callback(image, null);
+        }
+      );
+  })
 };
 
 /*
@@ -790,30 +803,45 @@ module.exports.setProfilePicture = (userid, imageid, callback) => {
 // +----------------+
 
 /**
- * Get commenter information for a single image.
+ * grab comment information
+ * only returns active not-hidden comments
+ * @param userid 
+ * @param imageid 
+ * @param callback 
  */
-module.exports.commentInfo = (imageid, callback) => {
+module.exports.commentInfo = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
+  userid = sanitize(userid);
 
-  // search the comments collection for documents that with imageid that match image._id
-  // add a sort feature
-  // how to return five at time? because rn we are returning all comments
-  // username!!!!!
-  // look into aggregation
-  Comment.
-    find({
-      imageId: mongoose.Types.ObjectId(imageid),
-      active: true,
-    }).
-    populate('userId').
-    exec((err, comments) => {
-      if (err) {
-        console.log(err);
-        callback(null, err);
-      } else {
-        callback(comments, null);
-      }
-    });
+  // find the user and what comments they have hidden
+  User.findById(userid).exec((err, user) => {
+    let hiddenComments = user.hidden.commentIds;
+
+    // search the comments collection for documents that with imageid that match image._id
+    // add a sort feature
+    // how to return five at time? because rn we are returning all comments
+    // username!!!!!
+    // look into aggregation
+    Comment.
+      find({
+        //exclude hidden comments in our search
+        _id: { $nin: hiddenComments },
+        imageId: mongoose.Types.ObjectId(imageid),
+        //include only active comments
+        active: true,
+      }).
+      populate('userId').
+      exec((err, comments) => {
+        if (err) {
+          console.log(err);
+          callback(null, err);
+        } else {
+          callback(comments, null);
+        }
+      });
+
+  })
+
 };
 
 
@@ -1063,12 +1091,19 @@ module.exports.albumSearch = (searchString, callback) => {
 module.exports.albumsInfo = (userId, callback) => {
   userId = sanitize(userId);
 
-  Album.find({ userId: userId, active: true }, (err, albums) => {
-    if (err)
-      callback(null, err);
-    else {
-      callback(albums, null);
-    }
+  // find the user and what albums they have hidden
+  User.findById(userId).exec((err, user) => {
+    let hiddenAlbums = user.hidden.albumIds;
+
+    // find albums that are not hidden and are active
+    Album.find({ _id: { $nin: hiddenAlbums }, userId: userId, active: true }, (err, albums) => {
+      if (err)
+        callback(null, err);
+      else {
+        callback(albums, null);
+      }
+    })
+
   })
 };
 
@@ -1303,45 +1338,95 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
 // | Flagging/Reporting |
 // +--------------------+
 
+// not tested - need front-end for that
+/**
+ * hide content from a user
+ * @param userid: the objectId of the user wanting to hide something
+ * @param type: the type of content being hidden: "comment", "image", or "album" 
+ * @param contentid: the objectId of the content being hidden 
+ * @param callback: pass true if successfull, false elsewise 
+ */
+module.exports.hideContent = (userid, type, contentid, callback) => {
+  /*hidden: {
+    commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    albumIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
+    imageIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }] 
+  }, */
 
+  let update;
+  if (type == "comment") {
+    update = { $push: { "hidden.commentIds": contentid } }
+  } else if (type == "album") {
+    update = { $push: { "hidden.albumIds": contentid } }
+  } else if (type == "image") {
+    update = { $push: { "hidden.imageIds": contentid } }
+  } else callback(false, "invalid type");
+
+
+  User.findByIdAndUpdate(userid, update, (err, doc) => {
+    if (err)
+      callback(false, err)
+    else
+      callback(true, null)
+  })
+}
+
+// not tested - need front-end for that
+/**
+ * 
+ * @param userid: the objectId of the user who wants to block a user 
+ * @param contentid: the objectId of the user to be blocked 
+ * @param callback: true if successfull, false otherwise
+ */
+module.exports.blockUser = (userid, contentid, callback) => {
+  User.findByIdAndUpdate(userid, { $push: { blockedUsers: contentid } }, (err, doc) => {
+    if (err)
+      callback(false, err)
+    else
+      callback(true, null)
+  })
+}
+
+
+// not fully tested - need front-end for that
 module.exports.createReport = (userid, type, body, description, reportedId, callback) => {
   userid = sanitize(userid);
   body = sanitize(body);
   description = sanitize(decription);
   reportedId = sanitize(reportedId);
 
-  const hideOrBlock = (type == "User") 
-    ? { $push: { blocked: reportedId } } 
+  const hideOrBlock = (type == "User")
+    ? { $push: { blocked: reportedId } }
     : { $push: { hidden: reportedId } };
 
-  let report = new Report ({
+  let report = new Report({
     type: type,
     id: userid,
     body: body,
     description: description,
     count: 1,
-    flaggedBy:  [userid], 
+    flaggedBy: [userid],
     //flaggedUser: flaggedUserID // userid for future
     reportedId: reportedId,
   })
 
   report.save()
-      .then(report => {
-        // update user schema to reflect new report
-        // pushed to blocked if a user,
-        // pushed to hidden if not
-        User.updateOne({ _id: userid }, hideOrBlock)
-          .exec()
-          .then((writeOpResult) => {
-              if (writeOpResult.nModified === 0) {
-                console.log("Failed to write report");
-                callback(false, "Failed to write report");
-            }
-            else
-              callback(true, null);
-          })
-          .catch(err => callback(false, err))
-      })
-      .catch(err => callback(false, err));
-  }; // createReport
+    .then(report => {
+      // update user schema to reflect new report
+      // pushed to blocked if a user,
+      // pushed to hidden if not
+      User.updateOne({ _id: userid }, hideOrBlock)
+        .exec()
+        .then((writeOpResult) => {
+          if (writeOpResult.nModified === 0) {
+            console.log("Failed to write report");
+            callback(false, "Failed to write report");
+          }
+          else
+            callback(true, null);
+        })
+        .catch(err => callback(false, err))
+    })
+    .catch(err => callback(false, err));
+}; // createReport
 

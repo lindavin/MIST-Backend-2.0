@@ -40,7 +40,7 @@ var setFlags = function (commentArray, userID, database, callback) {
 
 // we have to fix set flags
 module.exports.buildPage = function (req, res, database) {
-    database.imageInfo(req.params.imageid, function (image, error) {
+    database.imageInfo(req.user._id, req.params.imageid, function (image, error) {
         if (error) {
             res.end(JSON.stringify(error));
         }
@@ -53,7 +53,7 @@ module.exports.buildPage = function (req, res, database) {
                 if (error)
                     res.end(JSON.stringify(error));
                 else {
-                    database.commentInfo(image._id, function (comment, error) {
+                    database.commentInfo(req.user._id, image._id, function (comment, error) {
                         if (error)
                             res.end(JSON.stringify(error));
                         else if (req.user != null) {
@@ -92,6 +92,30 @@ module.exports.buildPage = function (req, res, database) {
     });
 };
 
+// not tested - can't test until connected with front-end
+// Note: we must make sure in the front end we pass in the the userId and imageId
+// params may need to be body, depending on how we pass in the values
+module.exports.hideImage = function (req, res, databse) {
+    database.hideContent(req.user._id, "image", req.params.imageid, function (success, error) {
+        if (!success)
+            res.end(JSON.stringify(error));
+        else
+            res.redirect('/');
+    });
+}
+
+// not tested - can't test until connected with front-end
+// Note: we must make sure in the front end we pass in the the userId and commentId
+// params may need to be body, depending on how we pass in the values
+module.exports.hideComment = function (req, res, databse) {
+    database.hideContent(req.user._id, "comment", req.params.comment, function (success, error) {
+        if (!success)
+            res.end(JSON.stringify(error));
+        else
+            res.redirect('/');
+    });
+}
+
 /**
  * saves the comment in the comments collection,
  * the user's comment array, and to image's comment array
@@ -108,8 +132,6 @@ module.exports.saveComment = function (req, res, database) {
         flagged: false,
         imageId: database.Types.ObjectId(imageID),
     });
-
-    console.log("commentID: ", comment._id);
 
     //save comment
     comment.save()
@@ -136,10 +158,10 @@ module.exports.saveComment = function (req, res, database) {
                     }
                 })
                 .catch(err => {
-   
-  
-  
-                   console.error(err)
+
+
+
+                    console.error(err)
                     res.end(JSON.stringify(error));
                 })
             res.redirect('back');
@@ -159,12 +181,12 @@ module.exports.deleteImage = function (req, res, database) {
     });
 }
 
-module.exports.setProfilePicture = function(req, res, database) {
-    database.setProfilePicture(req.user._id, req.params.imageid, function(success, error) {
-      if (!success)
-        res.end (JSON.stringify(error)); 
+module.exports.setProfilePicture = function (req, res, database) {
+    database.setProfilePicture(req.user._id, req.params.imageid, function (success, error) {
+        if (!success)
+            res.end(JSON.stringify(error));
         else {
-          res.redirect('/user/'+ req.user.username + '/');
+            res.redirect('/user/' + req.user.username + '/');
         }
     })
-  };
+};
