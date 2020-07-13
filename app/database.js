@@ -564,11 +564,16 @@ module.exports.getTopRatedLoggedOut = (count, page, callback) => {
 };
 
 module.exports.getTopRatedLoggedIn = (userId, count, page, callback) => {
-  module.exports.getHiddenContentIDs(userId, "image", (contentIds, err) => {
+  module.exports.getHiddenAndBlockedIDs(userId, "image", (contentIds, blockedUsers, err) => {
     if (err)
       callback(null, null, err)
     else {
-      Image.find({ public: true, active: true, _id: { $nin: contentIds } })
+      Image.find({
+        public: true,
+        active: true,
+        _id: { $nin: contentIds },
+        userId: { $nin: blockedUsers }
+      })
         .sort({ ratings: -1 })
         .limit(count)
         .exec((err, images) => {
@@ -648,7 +653,7 @@ module.exports.imageInfo = (userid, imageid, callback) => {
   userid = sanitize(userid);
 
   // find hidden images
-  module.exports.getHiddenContentIDs(userid, "image", (contentIds, err) => {
+  module.exports.getHiddenAndBlockedIDs(userid, "image", (contentIds, blockedUsers, err) => {
     if (err)
       callback(null, err)
     else {
@@ -657,7 +662,8 @@ module.exports.imageInfo = (userid, imageid, callback) => {
         findOne({
           $and: [
             { _id: imageid },
-            { _id: { $nin: contentIds } }
+            { _id: { $nin: contentIds } },
+            { userId: { $nin: blockedUsers } }
           ]
         })
         .exec(
@@ -665,7 +671,7 @@ module.exports.imageInfo = (userid, imageid, callback) => {
             if (err)
               callback(null, err);
             else if (!image)
-              callback(null, 'Image does not exist or is hidden.');
+              callback(null, 'Image does not exist, is hidden, or made by a blocked user.');
             else
               callback(image, null);
           }
@@ -853,7 +859,7 @@ module.exports.commentInfo = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
 
-  module.exports.getHiddenContentIDs(userid, "comment", (contentIds, err) => {
+  module.exports.getHiddenAndBlockedIDs(userid, "comment", (contentIds, blockedUsers, err) => {
     if (err)
       callback(null, err)
     else {
@@ -862,8 +868,9 @@ module.exports.commentInfo = (userid, imageid, callback) => {
       // look into aggregation
       Comment.
         find({
-          //exclude hidden comments in our search
+          //exclude hidden comments and blocked users
           _id: { $nin: contentIds },
+          userId: { $nin: blockedUsers },
           imageId: mongoose.Types.ObjectId(imageid),
           //include only active comments
           active: true,
@@ -1129,12 +1136,17 @@ module.exports.albumsInfo = (userId, callback) => {
   userId = sanitize(userId);
 
   //get hidden ids
-  module.exports.getHiddenContentIDs(userId, "album", (contentIds, err) => {
+  module.exports.getHiddenAndBlockedIDs(userId, "album", (contentIds, blockedUsers, err) => {
     if (err)
       callback(null, err)
     else {
-      // find albums that are not hidden and are active
-      Album.find({ _id: { $nin: contentIds }, userId: userId, active: true }, (err, albums) => {
+      // find albums that are not hidden, are active, and not made by a blocked user
+      Album.find({
+        _id: { $nin: contentIds },
+        userId: userId,
+        userId: { $nin: blockedUsers },
+        active: true
+      }, (err, albums) => {
         if (err)
           callback(null, err);
         else {
@@ -1197,29 +1209,36 @@ module.exports.addToAlbum = (albumid, imageid, callback, unique = false) => {
 
 };
 
+
 // Returns all active images for a user
-// excludes hidden Images
-// there might be a more efficent way to do this??
+// excludes hidden images 
 module.exports.getAllImagesforUser = (userid, callback) => {
   userid = sanitize(userid);
-  User.
-    findById(userid).
-    populate({
-      path: 'images',
-      match: { active: true },
-    }).
-    exec().
-    then(user => {
-      // discards hidden images
-      let hiddenImages = user.hidden.imageIds;
-      let images = user.images.filter(image => {
-        return hiddenImages.every(hidden => {
-          return !hidden.equals(image._id)
-        }); 
-      })
-      callback(images, null)
-    })
-    .catch(err => callback(null, err))
+
+  module.exports.getHiddenAndBlockedIDs(userid, "image", (contentIds, blockedUsers, err) => {
+    if (err)
+      callback(null, err)
+    else {
+      Image.
+        find({
+          $and: [
+            { _id: { $nin: contentIds } },
+            { userId: userid },
+            //{ userId: { $nin: blockedUsers } } Testing: to see if blocked user's images are not shown
+          ]
+        })
+        .exec(
+          (err, image) => {
+            if (err)
+              callback(null, err);
+            else if (!image)
+              callback(null, 'Image does not exist, is hidden, or made by a blocked user.');
+            else
+              callback(image, null);
+          }
+        );
+    }
+  })
 };
 
 /*
@@ -1520,6 +1539,23 @@ module.exports.getHiddenContentIDs = (userId, type, callback) => {
         callback(user.hidden.albumIds, null);
       else if (type === "image")
         callback(user.hidden.imageIds, null);
+      else
+        callback(false, "Incorrect type");
+    }
+  });
+}
+
+module.exports.getHiddenAndBlockedIDs = (userId, type, callback) => {
+  User.findById(userId).exec((err, user) => {
+    if (!user)
+      callback(false, "User does not exist.");
+    else {
+      if (type === "comment")
+        callback(user.hidden.commentIds, user.blockedUsers, null);
+      else if (type === "album")
+        callback(user.hidden.albumIds, user.blockedUsers, null);
+      else if (type === "image")
+        callback(user.hidden.imageIds, user.blockedUsers, null);
       else
         callback(false, "Incorrect type");
     }

@@ -128,7 +128,6 @@ module.exports.saveComment = function (req, res, database) {
     // build the comment
     let userID = req.user._id;
     let imageID = database.sanitize(req.params.imageid)
-    console.log("userID: ", userID);
     let comment = new database.Comment({
         userId: userID,
         body: database.sanitize(req.body.newComment),
@@ -140,7 +139,6 @@ module.exports.saveComment = function (req, res, database) {
     //save comment
     comment.save()
         .then(comment => {
-            console.log("commentID: ", comment._id);
             //push comment to user's comment array
             database.User.updateOne({ _id: userID }, { $push: { comments: comment._id } })
                 .exec()
