@@ -40,56 +40,60 @@ var setFlags = function (commentArray, userID, database, callback) {
 
 // we have to fix set flags
 module.exports.buildPage = function (req, res, database) {
-    database.imageInfo(req.user._id, req.params.imageid, function (image, error) {
-        if (error) {
-            res.end(JSON.stringify(error));
-        }
-        else if (image.active == false) {
-            res.redirect("/");
-            //res.redirect("/404");
-        }
-        else
-            database.hasLiked((req.user) ? req.user._id : null, image._id, function (liked, error) {
-                if (error)
-                    res.end(JSON.stringify(error));
-                else {
-                    database.commentInfo(req.user._id, image._id, function (comment, error) {
-                        if (error)
-                            res.end(JSON.stringify(error));
-                        else if (req.user != null) {
-                            database.albumsInfo(req.user._id, function (albums, error) {
-                                if (error)
-                                    res.end(JSON.stringify(error));
-                                else {
-                                    var userid = (req.user) ? req.user._id : null;
-                                    setFlags(comment, userid, database, function (comments) {
-                                        res.render('single-image', {
-                                            comments: comments,
-                                            user: req.user,
-                                            image: image,
-                                            liked: liked,
-                                            albums: albums
-                                        }); // if user logged in, can comment
+    if (!req.user) {
+        res.end("Please log in to view images.");
+    } else {
+        database.imageInfo(req.user._id, req.params.imageid, function (image, error) {
+            if (error) {
+                res.end(JSON.stringify(error));
+            }
+            else if (image.active == false) {
+                res.redirect("/");
+                //res.redirect("/404");
+            }
+            else
+                database.hasLiked((req.user) ? req.user._id : null, image._id, function (liked, error) {
+                    if (error)
+                        res.end(JSON.stringify(error));
+                    else {
+                        database.commentInfo(req.user._id, image._id, function (comment, error) {
+                            if (error)
+                                res.end(JSON.stringify(error));
+                            else if (req.user != null) {
+                                database.albumsInfo(req.user._id, function (albums, error) {
+                                    if (error)
+                                        res.end(JSON.stringify(error));
+                                    else {
+                                        var userid = (req.user) ? req.user._id : null;
+                                        setFlags(comment, userid, database, function (comments) {
+                                            res.render('single-image', {
+                                                comments: comments,
+                                                user: req.user,
+                                                image: image,
+                                                liked: liked,
+                                                albums: albums
+                                            }); // if user logged in, can comment
+                                        });
+                                    } //
+                                });  // database.albumsInfo
+                            } // if there is a user
+                            else {
+                                console.log('we do not have a user');
+                                var userid = (req.user) ? req.user_id : null;
+                                setFlags(comment, userid, database, function (comments) {
+                                    res.render('single-image', {
+                                        comments: comments,
+                                        user: req.user,
+                                        image: image,
+                                        liked: liked
                                     });
-                                } //
-                            });  // database.albumsInfo
-                        } // if there is a user
-                        else {
-                            console.log('we do not have a user');
-                            var userid = (req.user) ? req.user_id : null;
-                            setFlags(comment, userid, database, function (comments) {
-                                res.render('single-image', {
-                                    comments: comments,
-                                    user: req.user,
-                                    image: image,
-                                    liked: liked
                                 });
-                            });
-                        }
-                    });
-                }
-            });
-    });
+                            }
+                        });
+                    }
+                });
+        });
+    }
 };
 
 // not tested - can't test until connected with front-end

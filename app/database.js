@@ -188,7 +188,7 @@ const usersSchema = new mongoose.Schema({
     default: true,
   },
   hidden: {
-    commentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment"} ],
+    commentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     albumIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
     imageIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }]
   },
@@ -529,7 +529,27 @@ module.exports.getIDforUsername = (username, callback) => {
  *        This has not been implemented on the front-end yet, but it is left here for future use
  * @param callback: returns either the images, page(boolean), and the error 
  */
-module.exports.getTopRated = (count, page, callback) => {
+/*
+module.exports.getTopRated = (userId, count, page, callback) => {
+  module.exports.getHiddenContentIDs(userId, "image", (contentIds, err) => {
+    if (err)
+      callback(null, null, err)
+    else {
+      Image.find({ public: true, active: true, _id: { $nin: contentIds } })
+        .sort({ ratings: -1 })
+        .limit(count)
+        .exec((err, images) => {
+          if (err)
+            callback(null, null, err); // might need to be null
+          else if (images.length <= count)
+            callback(images, false, err)
+          else
+            callback(images, true, err)
+        })
+    }
+  })
+}; */
+module.exports.getTopRatedLoggedOut = (count, page, callback) => {
   Image.find({ public: true, active: true })
     .sort({ ratings: -1 })
     .limit(count)
@@ -540,7 +560,27 @@ module.exports.getTopRated = (count, page, callback) => {
         callback(images, false, err)
       else
         callback(images, true, err)
-    })
+    });
+};
+
+module.exports.getTopRatedLoggedIn = (userId, count, page, callback) => {
+  module.exports.getHiddenContentIDs(userId, "image", (contentIds, err) => {
+    if (err)
+      callback(null, null, err)
+    else {
+      Image.find({ public: true, active: true, _id: { $nin: contentIds } })
+        .sort({ ratings: -1 })
+        .limit(count)
+        .exec((err, images) => {
+          if (err)
+            callback(null, null, err); // might need to be null
+          else if (images.length <= count)
+            callback(images, false, err)
+          else
+            callback(images, true, err)
+        })
+    }
+  })
 };
 
 /**
@@ -603,34 +643,34 @@ module.exports.getFeaturedImages = (count, callback) => {
  * for an image.  If it finds the information, calls `callback(info,null)`.
  * Otherwise, calls `callback(null,error)`.
  */
-// needs testing - not functional yet
 module.exports.imageInfo = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
 
-  // find the user and what albums they have hidden
-  User.findById(userid).exec((err, user) => {
-    let hiddenImages = user.hidden.albumIds;
-
-    Image.
-      findOne({
-        $and: [
-          { _id: imageid },
-          { _id: { $nin: hiddenImages } }
-        ]
-      }).
-      /*findById(imageid). */
-      exec(
-        (err, image) => {
-          console.log("image: ", image)
-          if (err)
-            callback(null, err);
-          else if (!image)
-            callback(null, 'ERROR: Image does not exist.');
-          else
-            callback(image, null);
-        }
-      );
+  // find hidden images
+  module.exports.getHiddenContentIDs(userid, "image", (contentIds, err) => {
+    if (err)
+      callback(null, err)
+    else {
+      // return image if not hidden
+      Image.
+        findOne({
+          $and: [
+            { _id: imageid },
+            { _id: { $nin: contentIds } }
+          ]
+        })
+        .exec(
+          (err, image) => {
+            if (err)
+              callback(null, err);
+            else if (!image)
+              callback(null, 'Image does not exist or is hidden.');
+            else
+              callback(image, null);
+          }
+        );
+    }
   })
 };
 
@@ -813,35 +853,32 @@ module.exports.commentInfo = (userid, imageid, callback) => {
   imageid = sanitize(imageid);
   userid = sanitize(userid);
 
-  // find the user and what comments they have hidden
-  User.findById(userid).exec((err, user) => {
-    let hiddenComments = user.hidden.commentIds;
-
-    // search the comments collection for documents that with imageid that match image._id
-    // add a sort feature
-    // how to return five at time? because rn we are returning all comments
-    // username!!!!!
-    // look into aggregation
-    Comment.
-      find({
-        //exclude hidden comments in our search
-        _id: { $nin: hiddenComments },
-        imageId: mongoose.Types.ObjectId(imageid),
-        //include only active comments
-        active: true,
-      }).
-      populate('userId').
-      exec((err, comments) => {
-        if (err) {
-          console.log(err);
-          callback(null, err);
-        } else {
-          callback(comments, null);
-        }
-      });
-
+  module.exports.getHiddenContentIDs(userid, "comment", (contentIds, err) => {
+    if (err)
+      callback(null, err)
+    else {
+      // how to return five at time? because rn we are returning all comments
+      // username!!!!!
+      // look into aggregation
+      Comment.
+        find({
+          //exclude hidden comments in our search
+          _id: { $nin: contentIds },
+          imageId: mongoose.Types.ObjectId(imageid),
+          //include only active comments
+          active: true,
+        }).
+        populate('userId').
+        exec((err, comments) => {
+          if (err) {
+            console.log(err);
+            callback(null, err);
+          } else {
+            callback(comments, null);
+          }
+        });
+    }
   })
-
 };
 
 
@@ -1091,19 +1128,20 @@ module.exports.albumSearch = (searchString, callback) => {
 module.exports.albumsInfo = (userId, callback) => {
   userId = sanitize(userId);
 
-  // find the user and what albums they have hidden
-  User.findById(userId).exec((err, user) => {
-    let hiddenAlbums = user.hidden.albumIds;
-
-    // find albums that are not hidden and are active
-    Album.find({ _id: { $nin: hiddenAlbums }, userId: userId, active: true }, (err, albums) => {
-      if (err)
-        callback(null, err);
-      else {
-        callback(albums, null);
-      }
-    })
-
+  //get hidden ids
+  module.exports.getHiddenContentIDs(userId, "album", (contentIds, err) => {
+    if (err)
+      callback(null, err)
+    else {
+      // find albums that are not hidden and are active
+      Album.find({ _id: { $nin: contentIds }, userId: userId, active: true }, (err, albums) => {
+        if (err)
+          callback(null, err);
+        else {
+          callback(albums, null);
+        }
+      })
+    }
   })
 };
 
@@ -1160,6 +1198,8 @@ module.exports.addToAlbum = (albumid, imageid, callback, unique = false) => {
 };
 
 // Returns all active images for a user
+// excludes hidden Images
+// there might be a more efficent way to do this??
 module.exports.getAllImagesforUser = (userid, callback) => {
   userid = sanitize(userid);
   User.
@@ -1169,8 +1209,17 @@ module.exports.getAllImagesforUser = (userid, callback) => {
       match: { active: true },
     }).
     exec().
-    then(user => callback(user.images, null)).
-    catch(err => callback(null, err))
+    then(user => {
+      // discards hidden images
+      let hiddenImages = user.hidden.imageIds;
+      let images = user.images.filter(image => {
+        return hiddenImages.every(hidden => {
+          return !hidden.equals(image._id)
+        }); 
+      })
+      callback(images, null)
+    })
+    .catch(err => callback(null, err))
 };
 
 /*
@@ -1347,11 +1396,6 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
  * @param callback: pass true if successfull, false elsewise 
  */
 module.exports.hideContent = (userid, type, contentid, callback) => {
-  /*hidden: {
-    commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-    albumIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Album" }],
-    imageIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }] 
-  }, */
 
   let update;
   if (type == "comment") {
@@ -1430,3 +1474,25 @@ module.exports.createReport = (userid, type, body, description, reportedId, call
     .catch(err => callback(false, err));
 }; // createReport
 
+/**
+ * returns the contentIds for a user's hidden content
+ * @param userId: the object id of the user
+ * @param type: the type of content (comment, album, or image) 
+ * @param callback : returns the ids or the error
+ */
+module.exports.getHiddenContentIDs = (userId, type, callback) => {
+  User.findById(userId).exec((err, user) => {
+    if (!user)
+      callback(false, "User does not exist.");
+    else {
+      if (type === "comment")
+        callback(user.hidden.commentIds, null);
+      else if (type === "album")
+        callback(user.hidden.albumIds, null);
+      else if (type === "image")
+        callback(user.hidden.imageIds, null);
+      else
+        callback(false, "Incorrect type");
+    }
+  });
+}
