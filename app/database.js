@@ -1417,6 +1417,35 @@ module.exports.hideContent = (userid, type, contentid, callback) => {
 
 // not tested - need front-end for that
 /**
+ * unhide content from a user
+ * @param userid: the objectId of the user wanting to unhide something
+ * @param type: the type of content being hidden: "comment", "image", or "album" 
+ * @param contentid: the objectId of the content being unhidden 
+ * @param callback: pass true if successfull, false elsewise 
+ */
+module.exports.unhideContent = (userid, type, contentid, callback) => {
+
+  let update;
+  if (type == "comment") {
+    update = { $pull: { "hidden.commentIds": contentid } }
+  } else if (type == "album") {
+    update = { $pull: { "hidden.albumIds": contentid } }
+  } else if (type == "image") {
+    update = { $pull: { "hidden.imageIds": contentid } }
+  } else callback(false, "invalid type");
+
+
+  User.findByIdAndUpdate(userid, update, (err, doc) => {
+    if (err)
+      callback(false, err)
+    else
+      callback(true, null)
+  })
+}
+
+
+// not tested - need front-end for that
+/**
  * 
  * @param userid: the objectId of the user who wants to block a user 
  * @param contentid: the objectId of the user to be blocked 
