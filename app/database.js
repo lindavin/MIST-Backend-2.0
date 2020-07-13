@@ -1353,7 +1353,7 @@ module.exports.deleteAlbum = async (userId, albumId, callback) => {
   albumId = sanitize(albumId);
 
   try {
-    let success = await generalDelete(userid, albumId, "albums", "Album");
+    let success = await generalDelete(userId, albumId, "albums", "Album");
     if (success) {
       callback(true, null);
     } else {
