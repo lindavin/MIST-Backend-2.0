@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
-var random = require('mongoose-simple-random');
-// this is throwing a deprecating warning for collection.count
-// I changed .count to .countDocuments and it was fixed, but this change could
-// not be pushed to the repo. Maybe we should bring in the edited document and no 
-// longer use the library, or we could make our own fork with this change
 
 // why was this changed to acme??
 mongoose.connect("mongodb://localhost:27017/usersDB", {
@@ -50,7 +45,6 @@ const imagesSchema = new mongoose.Schema({
     default: false,
   },
 });
-imagesSchema.plugin(random); // this is needed for displaying random images in the gallery
 
 const commentsSchema = new mongoose.Schema({
   userId: {
@@ -648,13 +642,15 @@ module.exports.getRecentImagesLoggedIn = (userId, count, page, callback) => {
  * @param callback: returns either the images or the error 
  */
 module.exports.getRandomImagesLoggedOut = (count, callback) => {
-  Image.findRandom({ public: true, active: true }, {}, { limit: count }, (err, images) => {
-    if (err)
-      callback(null, err)
-    else
-      callback(images, null)
-  });
-
+  Image.aggregate([
+    { $match: { public: true, active: true } },
+    { $sample: { size: count } }])
+    .exec((err, images) => {
+      if (err)
+        callback(null, err)
+      else
+        callback(images, null)
+    });
 }
 
 /**
@@ -668,21 +664,23 @@ module.exports.getRandomImagesLoggedIn = (userId, count, callback) => {
     if (err)
       callback(null, null, err)
     else {
-      Image.findRandom({
-        public: true,
-        active: true,
-        _id: { $nin: contentIds },
-        userId: { $nin: blockedUsers }
-      }, {}, { limit: count },
-        (err, images) => {
+      Image.aggregate([
+        {
+          $match: {
+            public: true,
+            active: true,
+            _id: { $nin: contentIds },
+            userId: { $nin: blockedUsers }
+          }
+        },
+        { $sample: { size: count } }])
+        .exec((err, images) => {
           if (err)
             callback(null, err)
           else
             callback(images, null)
         });
-
-    }
-  })
+    }})
 };
 
 
@@ -1620,16 +1618,16 @@ module.exports.createReport = (userid, type, body, description, reportedId, call
 module.exports.getHiddenContentIDs = (userId, type, callback) => {
 User.findById(userId).exec((err, user) => {
 if (!user)
- callback(false, "User does not exist.");
+callback(false, "User does not exist.");
 else {
- if (type === "comment")
-   callback(user.hidden.commentIds, null);
- else if (type === "album")
-   callback(user.hidden.albumIds, null);
- else if (type === "image")
-   callback(user.hidden.imageIds, null);
- else
-   callback(false, "Incorrect type");
+if (type === "comment")
+callback(user.hidden.commentIds, null);
+else if (type === "album")
+callback(user.hidden.albumIds, null);
+else if (type === "image")
+callback(user.hidden.imageIds, null);
+else
+callback(false, "Incorrect type");
 }
 });
 } */
