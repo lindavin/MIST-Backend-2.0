@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 const passportLocal = require("passport-local-mongoose");
 const sanitize = require('mongo-sanitize');
 var random = require('mongoose-simple-random');
+// this is throwing a deprecating warning for collection.count
+// I changed .count to .countDocuments and it was fixed, but this change could
+// not be pushed to the repo. Maybe we should bring in the edited document and no 
+// longer use the library, or we could make our own fork with this change
 
 // why was this changed to acme??
 mongoose.connect("mongodb://localhost:27017/usersDB", {
@@ -522,33 +526,13 @@ module.exports.getIDforUsername = (username, callback) => {
 // +--------+
 
 /**
- * grab top rated images
+ * grab top rated images for logged out user
  * @param count: the max amount of images returned for the page
  * @param page: the current page
  *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
  *        This has not been implemented on the front-end yet, but it is left here for future use
  * @param callback: returns either the images, page(boolean), and the error 
  */
-/*
-module.exports.getTopRated = (userId, count, page, callback) => {
-  module.exports.getHiddenContentIDs(userId, "image", (contentIds, err) => {
-    if (err)
-      callback(null, null, err)
-    else {
-      Image.find({ public: true, active: true, _id: { $nin: contentIds } })
-        .sort({ ratings: -1 })
-        .limit(count)
-        .exec((err, images) => {
-          if (err)
-            callback(null, null, err); // might need to be null
-          else if (images.length <= count)
-            callback(images, false, err)
-          else
-            callback(images, true, err)
-        })
-    }
-  })
-}; */
 module.exports.getTopRatedLoggedOut = (count, page, callback) => {
   Image.find({ public: true, active: true })
     .sort({ ratings: -1 })
@@ -563,6 +547,15 @@ module.exports.getTopRatedLoggedOut = (count, page, callback) => {
     });
 };
 
+/**
+ * grab top rated images for logged in user
+ * Excludes images the user has hidden or blocked
+ * @param count: the max amount of images returned for the page
+ * @param page: the current page
+ *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
+ *        This has not been implemented on the front-end yet, but it is left here for future use
+ * @param callback: returns either the images, page(boolean), and the error 
+ */
 module.exports.getTopRatedLoggedIn = (userId, count, page, callback) => {
   module.exports.getHiddenAndBlockedIDs(userId, "image", (contentIds, blockedUsers, err) => {
     if (err)
@@ -589,14 +582,14 @@ module.exports.getTopRatedLoggedIn = (userId, count, page, callback) => {
 };
 
 /**
- * grab recent images
+ * grab recent images for logged out user
  * @param count: the max amount of images returned for the page
  * @param page: the current page
  *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
  *        This has not been implemented on the front-end yet, but it is left here for future use
  * @param callback: returns either the images, page(boolean), and the error 
  */
-module.exports.getRecentImages = (count, page, callback) => {
+module.exports.getRecentImagesLoggedOut = (count, page, callback) => {
   Image.find({ public: true, active: true })
     .sort({ createdAt: -1 })
     .limit(count)
@@ -612,12 +605,49 @@ module.exports.getRecentImages = (count, page, callback) => {
     })
 };
 
+
 /**
- * grab random images
+ * grab recent images for logged in user
+ * Excludes images the user has hidden or blocked
+ * @param count: the max amount of images returned for the page
+ * @param page: the current page
+ *  Note: page was an orginial mist team parameter, which was used to support multiple gallery pages. 
+ *        This has not been implemented on the front-end yet, but it is left here for future use
+ * @param callback: returns either the images, page(boolean), and the error 
+ */
+module.exports.getRecentImagesLoggedIn = (userId, count, page, callback) => {
+  module.exports.getHiddenAndBlockedIDs(userId, "image", (contentIds, blockedUsers, err) => {
+    if (err)
+      callback(null, null, err)
+    else {
+      Image.find({
+        public: true,
+        active: true,
+        _id: { $nin: contentIds },
+        userId: { $nin: blockedUsers }
+      })
+        .sort({ createdAt: -1 })
+        .limit(count)
+        .exec((err, images) => {
+          if (err)
+            callback(null, null, err);
+          else if (images.length <= count) {
+            callback(images, false, err)
+          }
+          else {
+            callback(images, true, err)
+          }
+        })
+    }
+  })
+};
+
+/**
+ * grab random images for logged out user
  * @param count: the max amount of images returned
  * @param callback: returns either the images or the error 
  */
-module.exports.getRandomImages = (count, callback) => {
+module.exports.getRandomImagesLoggedOut = (count, callback) => {
   Image.findRandom({ public: true, active: true }, {}, { limit: count }, (err, images) => {
     if (err)
       callback(null, err)
@@ -628,11 +658,40 @@ module.exports.getRandomImages = (count, callback) => {
 }
 
 /**
- * grab featured images
+ * grab random images for logged in user
+ * Excludes images the user has hidden or blocked
+ * @param count: the max amount of images returned 
+ * @param callback: returns either the images or the error 
+ */
+module.exports.getRandomImagesLoggedIn = (userId, count, callback) => {
+  module.exports.getHiddenAndBlockedIDs(userId, "image", (contentIds, blockedUsers, err) => {
+    if (err)
+      callback(null, null, err)
+    else {
+      Image.findRandom({
+        public: true,
+        active: true,
+        _id: { $nin: contentIds },
+        userId: { $nin: blockedUsers }
+      }, {}, { limit: count },
+        (err, images) => {
+          if (err)
+            callback(null, err)
+          else
+            callback(images, null)
+        });
+
+    }
+  })
+};
+
+
+/**
+ * grab featured images for logged out user
  * @param count: the max amount of images returned
  * @param callback: returns either the images or the error 
  */
-module.exports.getFeaturedImages = (count, callback) => {
+module.exports.getFeaturedImagesLoggedOut = (count, callback) => {
   Image.find({ featured: true, active: true }).limit(count).exec((err, images) => {
     if (err)
       callback(null, err)
@@ -642,6 +701,36 @@ module.exports.getFeaturedImages = (count, callback) => {
   })
 
 }
+
+/**
+ * grab featured images for logged in user
+ * Excludes images the user has hidden or blocked
+ * @param count: the max amount of images returned 
+ * @param callback: returns either the images or the error 
+ */
+module.exports.getFeaturedImagesLoggedIn = (userId, count, callback) => {
+  module.exports.getHiddenAndBlockedIDs(userId, "image", (contentIds, blockedUsers, err) => {
+    if (err)
+      callback(null, null, err)
+    else {
+      Image.find({
+        featured: true,
+        active: true,
+        _id: { $nin: contentIds },
+        userId: { $nin: blockedUsers }
+      })
+        .limit(count)
+        .exec((err, images) => {
+          if (err)
+            callback(null, err)
+          else {
+            callback(images, null)
+          }
+        })
+    }
+  })
+};
+
 
 /**
  * Get the title, code, username, modification date, rating, and more
@@ -1522,33 +1611,39 @@ module.exports.createReport = (userid, type, body, description, reportedId, call
     .catch(err => callback(false, err));
 }; // createReport
 
-/**
+/** NOT IN USE
  * returns the contentIds for a user's hidden content
  * @param userId: the object id of the user
  * @param type: the type of content (comment, album, or image) 
  * @param callback : returns the ids or the error
- */
+ */ /*
 module.exports.getHiddenContentIDs = (userId, type, callback) => {
-  User.findById(userId).exec((err, user) => {
-    if (!user)
-      callback(false, "User does not exist.");
-    else {
-      if (type === "comment")
-        callback(user.hidden.commentIds, null);
-      else if (type === "album")
-        callback(user.hidden.albumIds, null);
-      else if (type === "image")
-        callback(user.hidden.imageIds, null);
-      else
-        callback(false, "Incorrect type");
-    }
-  });
+User.findById(userId).exec((err, user) => {
+if (!user)
+ callback(false, "User does not exist.");
+else {
+ if (type === "comment")
+   callback(user.hidden.commentIds, null);
+ else if (type === "album")
+   callback(user.hidden.albumIds, null);
+ else if (type === "image")
+   callback(user.hidden.imageIds, null);
+ else
+   callback(false, "Incorrect type");
 }
+});
+} */
 
+/**
+ * returns the contentIds for a user's hidden content and their blocked users
+ * @param userId: the object id of the user
+ * @param type: the type of content (comment, album, or image) 
+ * @param callback : returns the ids or the error
+ */
 module.exports.getHiddenAndBlockedIDs = (userId, type, callback) => {
   User.findById(userId).exec((err, user) => {
     if (!user)
-      callback(false, "User does not exist.");
+      callback(false, false, "User does not exist.");
     else {
       if (type === "comment")
         callback(user.hidden.commentIds, user.blockedUsers, null);
@@ -1557,7 +1652,7 @@ module.exports.getHiddenAndBlockedIDs = (userId, type, callback) => {
       else if (type === "image")
         callback(user.hidden.imageIds, user.blockedUsers, null);
       else
-        callback(false, "Incorrect type");
+        callback(false, false, "Incorrect type");
     }
   });
 }
