@@ -1309,6 +1309,7 @@ module.exports.getAllImagesforUser = (userid, callback) => {
       Image.
         find({
           $and: [
+            {active: true},
             { _id: { $nin: contentIds } },
             { userId: userid },
             //{ userId: { $nin: blockedUsers } } Testing: to see if blocked user's images are not shown
@@ -1490,8 +1491,8 @@ module.exports.deleteFromAlbums = (albumid, imageid, callback) => {
 };
 
 // +----------+----------------------------------------------------------
-// | Flagging/Reporting |
-// +--------------------+
+// | Reporting/Hiding/Blocking |
+// +---------------------------+
 
 // not tested - need front-end for that
 /**
@@ -1549,16 +1550,31 @@ module.exports.unhideContent = (userid, type, contentid, callback) => {
   })
 }
 
-
 // not tested - need front-end for that
 /**
- * 
+ * blocks a user
  * @param userid: the objectId of the user who wants to block a user 
  * @param contentid: the objectId of the user to be blocked 
  * @param callback: true if successfull, false otherwise
  */
 module.exports.blockUser = (userid, contentid, callback) => {
   User.findByIdAndUpdate(userid, { $push: { blockedUsers: contentid } }, (err, doc) => {
+    if (err)
+      callback(false, err)
+    else
+      callback(true, null)
+  })
+}
+
+// not tested - need front-end for that
+/**
+ * unblocks a user
+ * @param userid: the objectId of the user who wants to block a user 
+ * @param contentid: the objectId of the user to be blocked 
+ * @param callback: true if successfull, false otherwise
+ */
+module.exports.unblockUser = (userid, contentid, callback) => {
+  User.findByIdAndUpdate(userid, { $pull: { blockedUsers: contentid } }, (err, doc) => {
     if (err)
       callback(false, err)
     else
@@ -1608,29 +1624,6 @@ module.exports.createReport = (userid, type, body, description, reportedId, call
     })
     .catch(err => callback(false, err));
 }; // createReport
-
-/** NOT IN USE
- * returns the contentIds for a user's hidden content
- * @param userId: the object id of the user
- * @param type: the type of content (comment, album, or image) 
- * @param callback : returns the ids or the error
- */ /*
-module.exports.getHiddenContentIDs = (userId, type, callback) => {
-User.findById(userId).exec((err, user) => {
-if (!user)
-callback(false, "User does not exist.");
-else {
-if (type === "comment")
-callback(user.hidden.commentIds, null);
-else if (type === "album")
-callback(user.hidden.albumIds, null);
-else if (type === "image")
-callback(user.hidden.imageIds, null);
-else
-callback(false, "Incorrect type");
-}
-});
-} */
 
 /**
  * returns the contentIds for a user's hidden content and their blocked users
